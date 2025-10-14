@@ -1,0 +1,70 @@
+/**
+ * @module node-opcua-nodeid
+ */
+import { parseUaNodeId } from ".";
+import { UaNodeId, UaNodeIdType } from ".";
+
+export class UaExpandedNodeId {
+    public static nullExpandedNodeId = new UaExpandedNodeId(0, 0, UaNodeIdType.NUMERIC);
+
+    private _nodeId: UaNodeId;
+    private _namespaceUri: string | null;
+    private _serverIndex: number;
+
+    constructor(        
+        value: number | string ,
+        namespace?: number,
+        identifierType?: UaNodeIdType | null,
+        namespaceUri?: null | string,
+        serverIndex?: number) 
+    {
+        this._nodeId = new UaNodeId(value, namespace, identifierType);
+        this._namespaceUri = (namespaceUri) ? namespaceUri : null;
+        this._serverIndex = (serverIndex) ? serverIndex : 0;
+    }
+
+    get namespaceUri() : string | null
+    {
+        return this._namespaceUri;
+    }
+
+    get serverIndex() : number
+    {
+        return this._serverIndex;
+    }
+
+    isEmpty(): boolean {
+        return this._nodeId.isEmpty();        
+    }
+
+    equal(other: UaExpandedNodeId) : boolean
+    {
+        if (!this._nodeId.equal(other._nodeId)) return false;
+        if (this._serverIndex !== other._serverIndex) return false;
+        if (this._namespaceUri !== other._namespaceUri) return false; 
+        return true;
+    }
+
+    isLocalNodeId() : boolean
+    {
+        return (this._namespaceUri) ? false : true;
+    }
+
+    getNodeId(namespaceUris?: Array<string>) : UaNodeId | null
+    {
+        if (this.isLocalNodeId()) return this._nodeId;
+
+        // To be implemented
+        return null;
+    }
+
+    toString(): string {      
+        // To be implemented  
+        return this._nodeId.toString();
+    }
+}
+
+export function parseUaExpandedNodeId(value: string): UaExpandedNodeId {
+    let nodeId = parseUaNodeId(value);
+    return new UaExpandedNodeId(nodeId.value, nodeId.nsIndex, nodeId.identifierType, null, 0);
+}

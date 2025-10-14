@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace：必须与 Mapper 接口全类名一致 -->
+<mapper namespace="org.opcfoundation.uawebservicedemo.database.mapper.DepartmentMapper">
+
+    <resultMap id="DepartmentResult" type="Department">
+        <id column="Id" property="id"/>
+        <result column="Name" property="name"/>
+        <result column="Comment" property="comment"/>
+        <result column="ParentDepartmentId" property="parentDepartmentId"/>
+    </resultMap>
+
+    <select id="getDepartment" resultMap="DepartmentResult">
+        SELECT ID, Name, Comment, ParentDepartmentId FROM Department WHERE ID = #{id}
+    </select>
+
+    <select id="getChildDepartment" resultMap="DepartmentResult">
+        SELECT ID, Name, Comment, ParentDepartmentId FROM Department WHERE
+        <if test="id != null">
+            ParentDepartmentId = #{id}
+        </if>
+        <if test="id == null">
+            ParentDepartmentId IS NULL
+        </if>
+    </select>
+
+</mapper>

@@ -1,0 +1,14 @@
+export * from "./UaError";
+export * from "./UaStatusCode";
+export * from "./UaGuid";
+export * from "./UaLocalizedText";
+export * from "./UaNodeId";
+export * from "./UaVariant";
+export * from "./UaClientConfigure";
+export * from "./UaRequestPatameters";
+export * from "./UaReferenceDescriptor";
+export * from "./UaBrowseResult";
+export * from "./UaNodeAttributes";
+type func = (...args: any[]) => any;
+export declare function ua_assert(cond: boolean | unknown | null | undefined | func, message?: string): void;
+export default ua_assert;

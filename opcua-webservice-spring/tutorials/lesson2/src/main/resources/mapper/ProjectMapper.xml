@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace：必须与 Mapper 接口全类名一致 -->
+<mapper namespace="org.opcfoundation.uawebservicedemo.database.mapper.ProjectMapper">
+
+    <resultMap id="ProjectResult" type="Project">
+        <id column="Id" property="id"/>
+        <result column="Name" property="name"/>
+        <result column="MissionDescription" property="description"/>
+        <result column="StartTime" property="startTime"/>
+        <result column="EndTime" property="endTime"/>
+        <result column="Budget" property="budget"/>
+    </resultMap>
+
+    <select id="getProjectInfo" resultMap="ProjectResult">
+        SELECT ID, Name, MissionDescription FROM Project WHERE ID = #{id}
+    </select>
+
+    <select id="getProjectData" resultMap="ProjectResult">
+        SELECT StartTime, EndTime, Budget FROM Project WHERE ID = #{id}
+    </select>
+
+    <select id="getProjectOfDepartment" resultMap="ProjectResult">
+        SELECT ID, Name FROM Project WHERE DepartmentId = #{departmentId}
+    </select>
+</mapper>

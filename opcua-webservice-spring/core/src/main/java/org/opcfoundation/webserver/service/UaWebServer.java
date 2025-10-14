@@ -1,0 +1,259 @@
+package org.opcfoundation.webserver.service;
+
+import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
+import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
+import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
+import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
+import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerBase;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerList;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerNs0;
+import org.opcfoundation.webserver.service.transactions.*;
+import org.opcfoundation.webapi.service.types.*;
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.UaBrowseContinuationPoint;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+
+public abstract class UaWebServer extends UaWebServerBase {
+    public UaWebServer()
+    {
+        super();
+    }
+
+    public void addNodeManager(NodeManager nodeManager)
+    {
+        NodeManagerList.nodeManagerList.addNodeManager(nodeManager);
+    }
+
+    @Override
+    public void startUp() throws UaRuntimeException
+    {
+        // Create built in namespace ns0
+        NodeManagerNs0 ns0 = new NodeManagerNs0();
+        NodeManagerList.nodeManagerList.addNodeManager(ns0);
+
+        // Initialize server
+        onStartUp();
+
+        // Initialize each namespace
+        Set<Integer> nsIndexes = new TreeSet<>(NodeManagerList.nodeManagerList.getNsIndexes());
+        ArrayList<String> namespaceUris = new ArrayList<>();
+
+        for (Integer item : nsIndexes)
+        {
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item);
+            if (null == nodeManager) continue;
+            nodeManager.onStartUp();
+            namespaceUris.add(nodeManager.namespaceUri());
+        }
+
+        // Update server information
+        ns0.updateNamespaceArray(namespaceUris.toArray(new String[0]));
+
+        String[] serverArray = {getServerConfigure().getApplicationUri()};
+        ns0.updateServerArray(serverArray);
+    }
+
+    @Override
+    public void shutDown() throws UaRuntimeException
+    {
+        Set<Integer> nsIndexes = new TreeSet<>(NodeManagerList.nodeManagerList.getNsIndexes()).descendingSet();
+        for (Integer item : nsIndexes)
+        {
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item);
+            if (null == nodeManager) continue;
+            nodeManager.onShutDown();
+        }
+
+        onShutDown();
+    }
+
+    @Override
+    public CompletableFuture<List<BrowseResult>> browse(BrowseContext context) throws UaRuntimeException
+    {
+        UaTransactionManager<BrowseDescription, BrowseResult> transactionManager = new UaTransactionManager<>();
+        UaBrowseAdditionalInfo additionalInfo = new UaBrowseAdditionalInfo(
+                context.getRequestedMaxReferencesPerNode().intValue(),0,0);
+
+        int currentIndex = 0;
+        for (BrowseDescription item: context.getNodesToBrowse())
+        {
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(
+                    item.getNodeId().getNamespaceIndex().intValue());
+
+            UaBrowseTransaction transaction;
+            if (null != nodeManager)
+            {
+                transaction = nodeManager.getBrowseTransaction(
+                        context, item, additionalInfo, currentIndex);
+
+            } else {
+                transaction = new UaBrowseTransaction(context,item,additionalInfo,currentIndex);
+                transaction.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
+            }
+
+            transactionManager.addTransaction(transaction);
+            currentIndex++;
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager::getMergedResults);
+    }
+
+    @Override
+    public CompletableFuture<List<BrowseResult>> browseNext(BrowseNextContext context) throws UaRuntimeException
+    {
+        UaTransactionManager<BrowseDescription, BrowseResult> transactionManager = new UaTransactionManager<>();
+
+        int currentIndex = 0;
+        for (ByteString item: context.getContinuationPoints())
+        {
+            UaBrowseContinuationPoint cp = UaBrowseContinuationPoint.fromByteString(item);
+            UaBrowseTransaction transaction;
+
+            BrowseDescription browseDescription = null;
+            if (null != cp) browseDescription = cp.browseDescription();
+
+            if (null != browseDescription)
+            {
+                NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(
+                        browseDescription.getNodeId().getNamespaceIndex().intValue());
+
+                if (null != nodeManager)
+                {
+                    transaction = nodeManager.getBrowseTransaction(
+                            context,
+                            browseDescription,
+                            cp.additionalInfo(),
+                            currentIndex);
+                } else {
+                    transaction = new UaBrowseTransaction(
+                            context,
+                            browseDescription,
+                            cp.additionalInfo(),
+                            currentIndex);
+
+                    transaction.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
+                }
+            } else {
+                transaction = new UaBrowseTransaction(
+                        context,
+                        new BrowseDescription(NodeId.NULL_VALUE, BrowseDirection.Both, NodeId.NULL_VALUE, false, UInteger.valueOf(0), UInteger.valueOf(0)),
+                        new UaBrowseAdditionalInfo(0,0,0),
+                        currentIndex);
+
+                transaction.setStatusCode(StatusCode.of(StatusCodes.Bad_ContinuationPointInvalid));
+            }
+
+            transactionManager.addTransaction(transaction);
+            currentIndex++;
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager::getMergedResults);
+    }
+
+    @Override
+    public CompletableFuture<List<DataValue>> read(ReadContext context) throws UaRuntimeException
+    {
+        UaTransactionManager2<ReadValueId, DataValue> transactionManager = new UaTransactionManager2<>();
+
+        List<NodeId> nodeIds = new ArrayList<>();
+        for (ReadValueId item: context.getNodesToRead())
+        {
+            nodeIds.add(item.getNodeId());
+        }
+
+        List<Integer> nsIndexes = UaTransactionManager2.getNsIndexes(nodeIds);
+
+        for (Integer item: nsIndexes)
+        {
+            List<Integer> handleIds = UaTransactionManager2.getHandleIds(nodeIds, item);
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item);
+
+            if (null != nodeManager)
+            {
+                List<UaReadTransaction> transactions = nodeManager.getReadTransactions(context, handleIds);
+                for (UaReadTransaction transaction: transactions)
+                {
+                    transactionManager.addTransaction(transaction);
+                }
+            } else {
+                UaReadTransaction transaction = new UaReadTransaction(context,handleIds);
+                transactionManager.addTransaction(transaction);
+            }
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager2::getMergedResults);
+    }
+
+    @Override
+    public CompletableFuture<List<StatusCode>> write(WriteContext context) throws UaRuntimeException
+    {
+        UaTransactionManager2<WriteValue, StatusCode> transactionManager = new UaTransactionManager2<>();
+        List<NodeId> nodeIds = new ArrayList<>();
+        for (WriteValue item: context.getNodesToWrite())
+        {
+            nodeIds.add(item.getNodeId());
+        }
+
+        List<Integer> nsIndexes = UaTransactionManager2.getNsIndexes(nodeIds);
+
+        for (Integer item: nsIndexes)
+        {
+            List<Integer> handleIds = UaTransactionManager2.getHandleIds(nodeIds, item);
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item);
+
+            if (null != nodeManager)
+            {
+                List<UaWriteTransaction> transactions = nodeManager.getWriteTransactions(context, handleIds);
+                for (UaWriteTransaction transaction: transactions)
+                {
+                    transactionManager.addTransaction(transaction);
+                }
+            } else {
+                UaWriteTransaction transaction = new UaWriteTransaction(context,handleIds);
+                transactionManager.addTransaction(transaction);
+            }
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager2::getMergedResults);
+    }
+
+    @Override
+    public CompletableFuture<List<CallMethodResult>> call(CallContext context) throws UaRuntimeException
+    {
+        UaTransactionManager<CallMethodRequest, CallMethodResult> transactionManager = new UaTransactionManager<>();
+
+        int currentIndex = 0;
+        for (CallMethodRequest item: context.getMethodsToCall())
+        {
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(
+                    item.getObjectId().getNamespaceIndex().intValue());
+
+            UaMethodCallTransaction transaction;
+            if (null != nodeManager)
+            {
+                transaction = nodeManager.getMethodCallTransaction(context, currentIndex);
+
+            } else {
+                transaction = new UaMethodCallTransaction(
+                        context,
+                        currentIndex);
+            }
+
+            transactionManager.addTransaction(transaction);
+            currentIndex++;
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager::getMergedResults);
+    }
+}
