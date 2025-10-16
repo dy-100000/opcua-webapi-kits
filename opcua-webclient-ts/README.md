@@ -29,6 +29,6 @@ npm run build
 First build the package then run `npm publish`
 
 ### Consuming
-npm install opcua-webclient-ts@1.0.0 --save
+npm install opcua-webclient-ts
 
 !Note: Currently, the source code of this module is on AtomGit platform, and it will be available on GitHub soon.
