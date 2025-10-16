@@ -21,6 +21,6 @@ opcua-webservice-spring是一套基于Java Spring框架的OPC UA Web服务开发
 
 4.运行main程序启动测试服务
 
-5.浏览器打开opcua-webbrowser-tool，网址(https://opcua-webbrowser-tool.opcfoundation.cn/)
+5.浏览器打开opcua-webbrowser-tool，网址(http://opcua-webbrowser-tool.opcfoundation.cn/)
 
 6.在Servers下点击add添加连接，并指定服务地址(如UaWebService部署在本机，URL地址为http://locahost:4840)
