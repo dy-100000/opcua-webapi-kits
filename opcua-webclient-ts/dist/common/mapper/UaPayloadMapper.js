@@ -1,168 +1,203 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UaPayloadMapper = void 0;
+const opcua_webapi_1 = require("opcua-webapi");
 const types_1 = require("../types");
-const node_opcua_nodeid_1 = require("node-opcua-nodeid");
-const node_opcua_variant_1 = require("node-opcua-variant");
-const node_opcua_status_code_1 = require("node-opcua-status-code");
-const node_opcua_data_model_1 = require("node-opcua-data-model");
-const node_opcua_data_value_1 = require("node-opcua-data-value");
-const UaExtensionObject_1 = require("../types/UaExtensionObject");
+const types_2 = require("../types");
 class UaPayloadMapper {
+    static statusCodeFromWebApi(statusCode) {
+        if (!statusCode)
+            return (0, types_1.makeUaStatusCode)();
+        return (0, types_1.makeUaStatusCode)(statusCode.Code);
+    }
+    static statusCodeToWebApi(statusCode) {
+        return { Code: statusCode.value };
+    }
     static localizedTextFromWebApi(text) {
-        return new node_opcua_data_model_1.LocalizedText({
-            locale: text.Locale,
-            text: text.Text
-        });
+        if (!text)
+            return null;
+        return new types_2.UaLocalizedText(text.Text, text.Locale);
+    }
+    static localizedTextToWebApi(text) {
+        return {
+            Text: text.text,
+            Locale: text.locale
+        };
     }
     static extensionObjectFromWebApi(extentionObject) {
         try {
             if (typeof extentionObject === "object" &&
                 null !== extentionObject &&
                 typeof extentionObject.UaTypeId === "string") {
-                let typeId = (0, node_opcua_nodeid_1.coerceNodeId)(extentionObject.UaTypeId);
+                let typeId = (0, types_1.parseUaNodeId)(extentionObject.UaTypeId);
                 let payload = extentionObject;
                 delete payload.UaTypeId;
-                return new UaExtensionObject_1.UaExtensionObject(typeId, payload);
+                return new types_2.UaExtensionObject(typeId, payload);
             }
         }
         catch (e) { }
-        console.log("Parsing error");
-        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+    }
+    static extensionObjectToWebApi(extentionObject) {
+        return extentionObject.toJson();
     }
     static variantFromWebApi(variant) {
         let dataType = variant.UaType;
         let value = variant.Value;
-        if (undefined == dataType || null == dataType || node_opcua_variant_1.DataType.Null == dataType ||
+        let variantToReturn = new types_2.UaVariant();
+        if (undefined == dataType || null == dataType || types_1.UaVariantType.Null == dataType ||
             undefined == value || null == value)
-            return new node_opcua_variant_1.Variant();
+            return variantToReturn;
         let isArray = Array.isArray(value);
         try {
-            if (node_opcua_variant_1.DataType.Int32 == dataType ||
-                node_opcua_variant_1.DataType.UInt32 == dataType ||
-                node_opcua_variant_1.DataType.Float == dataType ||
-                node_opcua_variant_1.DataType.Double == dataType ||
-                node_opcua_variant_1.DataType.Int16 == dataType ||
-                node_opcua_variant_1.DataType.UInt16 == dataType ||
-                node_opcua_variant_1.DataType.SByte == dataType ||
-                node_opcua_variant_1.DataType.Byte == dataType) {
+            if (types_1.UaVariantType.Int32 == dataType ||
+                types_1.UaVariantType.UInt32 == dataType ||
+                types_1.UaVariantType.Int16 == dataType ||
+                types_1.UaVariantType.UInt16 == dataType ||
+                types_1.UaVariantType.SByte == dataType ||
+                types_1.UaVariantType.Byte == dataType ||
+                types_1.UaVariantType.Int64 == dataType ||
+                types_1.UaVariantType.UInt64 == dataType) {
                 if (!isArray) {
                     if (typeof value === "number") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value });
+                        return types_2.UaVariant.integer(value, dataType);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'number')) {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.integers(value, dataType);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.Int64 == dataType || node_opcua_variant_1.DataType.UInt64 == dataType) {
+            else if (types_1.UaVariantType.Double == dataType) {
                 if (!isArray) {
-                    return new node_opcua_variant_1.Variant({ dataType: dataType, value: value });
+                    if (typeof value === "number") {
+                        return types_2.UaVariant.double(value);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
                 }
                 else {
                     if (value.every(item => typeof item === 'number')) {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.doubles(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.Boolean == dataType) {
+            else if (types_1.UaVariantType.Float == dataType) {
+                if (!isArray) {
+                    if (typeof value === "number") {
+                        return types_2.UaVariant.float(value);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+                else {
+                    if (value.every(item => typeof item === 'number')) {
+                        return types_2.UaVariant.floats(value);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+            }
+            else if (types_1.UaVariantType.Boolean == dataType) {
                 if (!isArray) {
                     if (typeof value === "boolean") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value });
+                        return types_2.UaVariant.boolean(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'boolean')) {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.booleans(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.String == dataType || node_opcua_variant_1.DataType.Guid == dataType) {
+            else if (types_1.UaVariantType.String == dataType) {
                 if (!isArray) {
                     if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value });
+                        return types_2.UaVariant.string(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'string')) {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: value, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.strings(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.NodeId == dataType) {
+            else if (types_1.UaVariantType.NodeId == dataType) {
                 if (!isArray) {
                     if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: (0, node_opcua_nodeid_1.coerceNodeId)(value) });
+                        return types_2.UaVariant.nodeId((0, types_1.parseUaNodeId)(value));
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
-                    }
-                }
-                else {
-                    if (value.every(item => typeof item === 'string')) {
-                        let nodeIds = [];
-                        for (let item of value) {
-                            nodeIds.push((0, node_opcua_nodeid_1.coerceNodeId)(item));
-                        }
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: nodeIds, arrayType: node_opcua_variant_1.VariantArrayType.Array });
-                    }
-                    else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
-                    }
-                }
-            }
-            else if (node_opcua_variant_1.DataType.ExpandedNodeId == dataType) {
-                if (!isArray) {
-                    if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: (0, node_opcua_nodeid_1.coerceExpandedNodeId)(value) });
-                    }
-                    else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'string')) {
                         let nodeIds = [];
                         for (let item of value) {
-                            nodeIds.push((0, node_opcua_nodeid_1.coerceExpandedNodeId)(item));
+                            nodeIds.push((0, types_1.parseUaNodeId)(item));
                         }
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: nodeIds, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.nodeIds(nodeIds);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.DateTime == dataType) {
+            else if (types_1.UaVariantType.ExpandedNodeId == dataType) {
                 if (!isArray) {
                     if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: new Date(value) });
+                        return types_2.UaVariant.expandedNodeId((0, types_1.parseUaExpandedNodeId)(value));
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+                else {
+                    if (value.every(item => typeof item === 'string')) {
+                        let nodeIds = [];
+                        for (let item of value) {
+                            nodeIds.push((0, types_1.parseUaExpandedNodeId)(item));
+                        }
+                        return types_2.UaVariant.expandedNodeIds(nodeIds);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+            }
+            else if (types_1.UaVariantType.DateTime == dataType) {
+                if (!isArray) {
+                    if (typeof value === "string") {
+                        return types_2.UaVariant.dateTime(new Date(value));
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
@@ -171,65 +206,87 @@ class UaPayloadMapper {
                         for (let item of value) {
                             datetimes.push(new Date(item));
                         }
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: datetimes, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.dateTimes(datetimes);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.ByteString == dataType) {
+            else if (types_1.UaVariantType.ByteString == dataType) {
                 if (!isArray) {
                     if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: Buffer.from(value) });
+                        return types_2.UaVariant.byteString(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'string')) {
-                        let bytestrings = [];
+                        let byteStrings = [];
                         for (let item of value) {
-                            bytestrings.push(Buffer.from(item));
+                            byteStrings.push(item);
                         }
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: bytestrings, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.byteStrings(byteStrings);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.QualifiedName == dataType) {
+            else if (types_1.UaVariantType.QualifiedName == dataType) {
                 if (!isArray) {
                     if (typeof value === "string") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: new node_opcua_data_model_1.QualifiedName(value) });
+                        return types_2.UaVariant.qualifiedName(value);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
                     if (value.every(item => typeof item === 'string')) {
                         let qualifiedNames = [];
                         for (let item of value) {
-                            qualifiedNames.push(new node_opcua_data_model_1.QualifiedName(item));
+                            qualifiedNames.push(item);
                         }
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: qualifiedNames, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                        return types_2.UaVariant.qualifiedNames(qualifiedNames);
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
             }
-            else if (node_opcua_variant_1.DataType.StatusCode == dataType) {
+            else if (types_1.UaVariantType.Guid == dataType) {
+                if (!isArray) {
+                    if (typeof value === "string") {
+                        return types_2.UaVariant.guid(value);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+                else {
+                    if (value.every(item => typeof item === 'string')) {
+                        let guids = [];
+                        for (let item of value) {
+                            guids.push(item);
+                        }
+                        return types_2.UaVariant.guids(guids);
+                    }
+                    else {
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+                    }
+                }
+            }
+            else if (types_1.UaVariantType.StatusCode == dataType) {
                 if (!isArray) {
                     let statusCode = value;
                     if (typeof statusCode.Code === "number") {
-                        return new node_opcua_variant_1.Variant({ dataType: dataType, value: (0, node_opcua_status_code_1.getStatusCodeFromCode)(statusCode.Code) });
+                        return types_2.UaVariant.statusCode((0, types_1.makeUaStatusCode)(statusCode.Code));
                     }
                     else {
-                        throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                        throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                     }
                 }
                 else {
@@ -237,64 +294,135 @@ class UaPayloadMapper {
                     for (let item of value) {
                         let statusCode = item;
                         if (typeof statusCode.Code === "number") {
-                            statusCodes.push((0, node_opcua_status_code_1.getStatusCodeFromCode)(statusCode.Code));
+                            statusCodes.push((0, types_1.makeUaStatusCode)(statusCode.Code));
                         }
                         else {
-                            throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+                            throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
                         }
                     }
-                    return new node_opcua_variant_1.Variant({ dataType: dataType, value: statusCodes, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                    return types_2.UaVariant.statusCodes(statusCodes);
                 }
             }
-            else if (node_opcua_variant_1.DataType.LocalizedText == dataType) {
+            else if (types_1.UaVariantType.LocalizedText == dataType) {
                 if (!isArray) {
-                    let localizedText = value;
-                    return new node_opcua_variant_1.Variant({ dataType: dataType, value: UaPayloadMapper.localizedTextFromWebApi(localizedText) });
+                    return types_2.UaVariant.localizedText(UaPayloadMapper.localizedTextFromWebApi(value));
                 }
                 else {
                     let localizedTexts = [];
                     for (let item of value) {
-                        let localizedText = item;
-                        localizedTexts.push(UaPayloadMapper.localizedTextFromWebApi(localizedText));
+                        localizedTexts.push(UaPayloadMapper.localizedTextFromWebApi(item));
                     }
-                    return new node_opcua_variant_1.Variant({ dataType: dataType, value: localizedTexts, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                    return types_2.UaVariant.localizedTexts(localizedTexts);
                 }
             }
-            else if (node_opcua_variant_1.DataType.ExtensionObject == dataType) {
+            else if (types_1.UaVariantType.ExtensionObject == dataType) {
                 if (!isArray) {
-                    let variant = new node_opcua_variant_1.Variant({ dataType: dataType, value: UaPayloadMapper.extensionObjectFromWebApi(value) });
-                    console.log(variant.value);
-                    return variant;
+                    return types_2.UaVariant.extensionObject(UaPayloadMapper.extensionObjectFromWebApi(value));
                 }
                 else {
                     let extensionObjects = [];
                     for (let item of value) {
                         extensionObjects.push(UaPayloadMapper.extensionObjectFromWebApi(item));
                     }
-                    return new node_opcua_variant_1.Variant({ dataType: dataType, value: extensionObjects, arrayType: node_opcua_variant_1.VariantArrayType.Array });
+                    return types_2.UaVariant.extensionObjects(extensionObjects);
                 }
             }
             else {
-                return new node_opcua_variant_1.Variant();
+                return variantToReturn;
             }
         }
         catch (e) {
-            throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+            throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
+        }
+    }
+    static variantToWebApi(variant) {
+        let dataType = variant.type;
+        if (types_1.UaVariantType.NodeId == dataType) {
+            if (variant.isScalar()) {
+                return { Value: variant.value.toString(), UaType: dataType };
+            }
+            else {
+                let nodeIds = variant.value;
+                let value = [];
+                for (let item of nodeIds) {
+                    value.push(item.toString());
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else if (types_1.UaVariantType.ExpandedNodeId == dataType) {
+            if (variant.isScalar()) {
+                return { Value: variant.value.toString(), UaType: dataType };
+            }
+            else {
+                let nodeIds = variant.value;
+                let value = [];
+                for (let item of nodeIds) {
+                    value.push(item.toString());
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else if (types_1.UaVariantType.DateTime == dataType) {
+            if (variant.isScalar()) {
+                return { Value: variant.value.toISOString(), UaType: dataType };
+            }
+            else {
+                let dateTimes = variant.value;
+                let value = [];
+                for (let item of dateTimes) {
+                    value.push(item.toISOString());
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else if (types_1.UaVariantType.LocalizedText == dataType) {
+            if (variant.isScalar()) {
+                return { Value: UaPayloadMapper.localizedTextToWebApi(variant.value), UaType: dataType };
+            }
+            else {
+                let localizedTexts = variant.value;
+                let value = [];
+                for (let item of localizedTexts) {
+                    value.push(UaPayloadMapper.localizedTextToWebApi(item));
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else if (types_1.UaVariantType.StatusCode == dataType) {
+            if (variant.isScalar()) {
+                return { Value: UaPayloadMapper.statusCodeToWebApi(variant.value), UaType: dataType };
+            }
+            else {
+                let statusCodes = variant.value;
+                let value = [];
+                for (let item of statusCodes) {
+                    value.push(UaPayloadMapper.statusCodeToWebApi(item));
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else if (types_1.UaVariantType.ExtensionObject == dataType) {
+            if (variant.isScalar()) {
+                return { Value: UaPayloadMapper.extensionObjectToWebApi(variant.value), UaType: dataType };
+            }
+            else {
+                let extensionObjects = variant.value;
+                let value = [];
+                for (let item of extensionObjects) {
+                    value.push(UaPayloadMapper.extensionObjectToWebApi(item));
+                }
+                return { Value: value, UaType: dataType };
+            }
+        }
+        else {
+            return { Value: variant.value, UaType: dataType };
         }
     }
     static dataValueFromWebApi(dataValue) {
-        var _a;
         let variant = { Value: dataValue.Value, UaType: dataValue.UaType };
         let value = UaPayloadMapper.variantFromWebApi(variant);
-        let statusCode = node_opcua_status_code_1.StatusCodes.Good;
-        if ((_a = dataValue.StatusCode) === null || _a === void 0 ? void 0 : _a.Code)
-            statusCode = (0, node_opcua_status_code_1.getStatusCodeFromCode)(dataValue.StatusCode.Code);
-        let ret = new node_opcua_data_value_1.DataValue({
-            value: value,
-            statusCode: statusCode,
-            sourceTimestamp: dataValue.SourceTimestamp,
-            serverTimestamp: dataValue.ServerTimestamp
-        });
+        let ret = new types_2.UaDataValue(value, UaPayloadMapper.statusCodeFromWebApi(dataValue.StatusCode), dataValue.SourceTimestamp, dataValue.ServerTimestamp);
         return ret;
     }
     static referenceDescriptionFromWebApi(referenceDesc) {
@@ -304,13 +432,13 @@ class UaPayloadMapper {
             undefined == referenceDesc.IsForward ||
             undefined == referenceDesc.BrowseName ||
             undefined == referenceDesc.DisplayName)
-            throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+            throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
         try {
-            let nodeId = (0, node_opcua_nodeid_1.coerceExpandedNodeId)(referenceDesc.NodeId);
-            let referenceTypeId = (0, node_opcua_nodeid_1.coerceNodeId)(referenceDesc.ReferenceTypeId);
-            let typeDefinitionId = (referenceDesc.TypeDefinition) ? (0, node_opcua_nodeid_1.coerceExpandedNodeId)(referenceDesc.TypeDefinition) : undefined;
+            let nodeId = (0, types_1.parseUaExpandedNodeId)(referenceDesc.NodeId);
+            let referenceTypeId = (0, types_1.parseUaNodeId)(referenceDesc.ReferenceTypeId);
+            let typeDefinitionId = (referenceDesc.TypeDefinition) ? (0, types_1.parseUaExpandedNodeId)(referenceDesc.TypeDefinition) : undefined;
             let displayName = UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName);
-            return Object.assign(new types_1.UaReferenceDescriptor(), {
+            return {
                 nodeId: nodeId,
                 nodeClass: referenceDesc.NodeClass,
                 referenceTypeId: referenceTypeId,
@@ -318,10 +446,10 @@ class UaPayloadMapper {
                 browseName: referenceDesc.BrowseName,
                 displayName: displayName,
                 typeDefinition: typeDefinitionId
-            });
+            };
         }
         catch (e) {
-            throw new types_1.UaError(node_opcua_status_code_1.StatusCodes.BadDecodingError);
+            throw new types_1.UaError((0, types_1.makeUaStatusCode)(opcua_webapi_1.StatusCodes.BadDecodingError));
         }
     }
     static browseResultFromWebApi(browseResult) {
@@ -331,10 +459,10 @@ class UaPayloadMapper {
                 results.push(UaPayloadMapper.referenceDescriptionFromWebApi(item));
             }
         }
-        return Object.assign(new types_1.UaReferenceDescriptor(), {
+        return {
             results: results,
             continuationPoint: browseResult.ContinuationPoint
-        });
+        };
     }
 }
 exports.UaPayloadMapper = UaPayloadMapper;

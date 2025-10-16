@@ -1,22 +1,20 @@
 {
-  "name": "opcua-webclient-kits-typescript",
+  "name": "opcua-webclient-ts",
   "version": "1.0.0",
   "description": "Provides OPC UA WebClient wrapper based on opcua-webapi-typescript",
   "author": "DingYan",
+  "main": "./dist/cjs/index.js",
   "typings": "./dist/index.d.ts",
   "module": "./dist/index.js",
-  "sideEffects": false,
+  "files": ["dist/**/*"],
   "scripts": {
-    "build": "tsc",
-    "prepare": "npm run build",
-    "test": "npx ts-node src/app.ts"
+    "build": "tsc && tsc -p tsconfig.cjs.json",
+    "prepare": "npm run build"
   },
   "dependencies": {
-    "opcua-webapi": "^1.504.1",
-    "zod": "^3.25.67"
+    "opcua-webapi": "^1.504.1"
   },
   "devDependencies": {
-    "ts-loader": "^9.5.0",
     "typescript": "^5.0"
   }
 }

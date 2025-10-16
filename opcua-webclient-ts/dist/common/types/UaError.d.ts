@@ -1,6 +1,6 @@
-import { StatusCode } from "node-opcua-status-code";
+import { UaStatusCode } from ".";
 export declare class UaError extends Error {
     private readonly _statusCode;
-    constructor(statusCode: StatusCode);
-    get statusCode(): StatusCode;
+    constructor(statusCode: UaStatusCode);
+    get statusCode(): UaStatusCode;
 }

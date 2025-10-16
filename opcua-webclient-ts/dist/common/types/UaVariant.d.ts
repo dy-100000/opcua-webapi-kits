@@ -1,30 +1,43 @@
-import { StatusCode } from "node-opcua-status-code";
-import { ExpandedNodeId } from "node-opcua-nodeid";
-import { UaGuid } from "./UaGuid";
-import { UaNodeId } from "./UaNodeId";
+import { UaStatusCode, UaNodeId, UaLocalizedText, UaExpandedNodeId, UaExtensionObject } from ".";
 export declare class UaVariant {
     private _value;
     private _type;
     private _arrayType;
-    constructor();
-    value(): any;
-    type(): UaVariantType;
-    arrayType(): UaVariantArrayType;
+    get value(): any;
+    get type(): UaVariantType;
+    get arrayType(): UaArrayType;
+    isScalar(): boolean;
+    isArray(): boolean;
     isNull(): boolean;
-    setNull(): void;
-    setBoolean(value: boolean): void;
-    setInt(value: number, type?: UaVariantType): void;
-    setFloat(value: number): void;
-    setDouble(value: number): void;
-    setString(value: string): void;
-    setDateTime(value: Date): void;
-    setGuid(value: UaGuid): void;
-    setByteString(value: string): void;
-    setNodeId(value: UaNodeId): void;
-    setExpandedNodeId(value: ExpandedNodeId): void;
-    setStatusCode(value: StatusCode): void;
-    setQualifiedName(value: string): void;
-    setLocalizedText(text: string, locale?: string): void;
+    static null(): UaVariant;
+    static boolean(value: boolean): UaVariant;
+    static integer(value: number, type?: UaVariantType): UaVariant;
+    static float(value: number): UaVariant;
+    static double(value: number): UaVariant;
+    static string(value: string): UaVariant;
+    static dateTime(value: Date): UaVariant;
+    static guid(value: string): UaVariant;
+    static byteString(value: string): UaVariant;
+    static nodeId(value: UaNodeId): UaVariant;
+    static expandedNodeId(value: UaExpandedNodeId): UaVariant;
+    static statusCode(value: UaStatusCode): UaVariant;
+    static qualifiedName(value: string): UaVariant;
+    static localizedText(value: UaLocalizedText): UaVariant;
+    static extensionObject(value: UaExtensionObject): UaVariant;
+    static booleans(value: Array<boolean>): UaVariant;
+    static integers(value: Array<number>, type?: UaVariantType): UaVariant;
+    static floats(value: Array<number>): UaVariant;
+    static doubles(value: Array<number>): UaVariant;
+    static strings(value: Array<string>): UaVariant;
+    static dateTimes(value: Array<Date>): UaVariant;
+    static guids(value: Array<string>): UaVariant;
+    static byteStrings(value: Array<string>): UaVariant;
+    static nodeIds(value: Array<UaNodeId>): UaVariant;
+    static expandedNodeIds(value: Array<UaExpandedNodeId>): UaVariant;
+    static statusCodes(value: Array<UaStatusCode>): UaVariant;
+    static qualifiedNames(value: Array<string>): UaVariant;
+    static localizedTexts(value: Array<UaLocalizedText>): UaVariant;
+    static extensionObjects(value: Array<UaExtensionObject>): UaVariant;
 }
 export declare enum UaVariantType {
     Null = 0,
@@ -51,7 +64,7 @@ export declare enum UaVariantType {
     LocalizedText = 21,
     ExtensionObject = 22
 }
-export declare enum UaVariantArrayType {
+export declare enum UaArrayType {
     Scalar = 0,
     Array = 1,
     Matrix = 2

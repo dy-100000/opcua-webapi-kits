@@ -34,7 +34,7 @@ export class UaStatusCode {
 
     public toString(): string 
     {        
-        return this.name + " (0x" + this.value.toString(16).padStart(8, "0") + ")";
+        return this.name + " (0x" + this.value.toString(16).toUpperCase() + ")";
     }
 
     public checkBit(mask: number): boolean {

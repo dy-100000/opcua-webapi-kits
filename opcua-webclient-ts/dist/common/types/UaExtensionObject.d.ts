@@ -1,11 +1,10 @@
-import { ExtensionObject } from "node-opcua-extension-object";
-import { NodeId } from "node-opcua-nodeid";
-export declare class UaExtensionObject extends ExtensionObject {
+import { UaNodeId } from ".";
+export declare class UaExtensionObject {
     private _dataTypeId;
     private _payload;
-    constructor(dataTypeId: NodeId, payload: any);
+    constructor(dataTypeId: UaNodeId, payload: any);
     isValid(): boolean;
     get payload(): any;
-    get dataTypeId(): NodeId;
+    get dataTypeId(): UaNodeId;
     toJson(): any;
 }

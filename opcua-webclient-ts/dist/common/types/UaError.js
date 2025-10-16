@@ -6,7 +6,7 @@ class UaError extends Error {
         super();
         this._statusCode = statusCode;
         this.name = statusCode.name;
-        this.message = statusCode.description;
+        this.message = statusCode.name;
     }
     get statusCode() {
         return this._statusCode;

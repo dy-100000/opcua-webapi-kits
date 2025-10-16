@@ -1,40 +1,16 @@
-/**
- * @module node-opcua-nodeid
- */
-import { Guid } from "node-opcua-guid";
 import { UaNodeId, UaNodeIdType } from ".";
-/**
- * An ExpandedNodeId extends the NodeId structure.
- *
- * An ExpandedNodeId extends the NodeId structure by allowing the NamespaceUri to be
- * explicitly specified instead of using the NamespaceIndex. The NamespaceUri is optional. If it
- * is specified then the NamespaceIndex inside the NodeId shall be ignored.
- *
- * The ExpandedNodeId is encoded by first encoding a NodeId as described in Clause 5 .2.2.9
- * and then encoding NamespaceUri as a String.
- *
- * An instance of an ExpandedNodeId may still use the NamespaceIndex instead of the
- * NamespaceUri. In this case, the NamespaceUri is not encoded in the stream. The presence of
- * the NamespaceUri in the stream is indicated by setting the NamespaceUri flag in the encoding
- * format byte for the NodeId.
- *
- * If the NamespaceUri is present then the encoder shall encode the NamespaceIndex as 0 in
- * the stream when the NodeId portion is encoded. The unused NamespaceIndex is included in
- * the stream for consistency,
- *
- * An ExpandedNodeId may also have a ServerIndex which is encoded as a UInt32 after the
- * NamespaceUri. The ServerIndex flag in the NodeId encoding byte indicates whether the
- * ServerIndex is present in the stream. The ServerIndex is omitted if it is equal to zero.
- *
- *
- *
- */
-export declare class ExpandedNodeId extends UaNodeId {
-    static nullExpandedNodeId: ExpandedNodeId;
-    static fromNodeId(nodeId: UaNodeId, namespaceUri?: string, serverIndex?: number): ExpandedNodeId;
-    namespaceUri: null | string;
-    serverIndex: number;
-    constructor(identifierType?: UaNodeIdType | null, value?: number | string | Guid, namespace?: number, namespaceUri?: null | string, serverIndex?: number);
+export declare class UaExpandedNodeId {
+    static nullExpandedNodeId: UaExpandedNodeId;
+    private _nodeId;
+    private _namespaceUri;
+    private _serverIndex;
+    constructor(value: number | string, namespace?: number, identifierType?: UaNodeIdType | null, namespaceUri?: null | string, serverIndex?: number);
+    get namespaceUri(): string | null;
+    get serverIndex(): number;
+    isEmpty(): boolean;
+    equal(other: UaExpandedNodeId): boolean;
+    isLocalNodeId(): boolean;
+    getNodeId(namespaceUris?: Array<string>): UaNodeId | null;
     toString(): string;
 }
-export declare function coerceExpandedNodeId(value: unknown): ExpandedNodeId;
+export declare function parseUaExpandedNodeId(value: string): UaExpandedNodeId;

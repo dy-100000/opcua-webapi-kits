@@ -1,1 +1,2 @@
-export * from "./OpcUaWebClient";
+export * from "./UaWebClient";
+export * from "./UaClientConfigure";

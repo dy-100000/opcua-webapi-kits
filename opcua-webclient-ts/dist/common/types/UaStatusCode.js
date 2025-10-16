@@ -1,21 +1,28 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.extraStatusCodeBits = exports.StatusCode = void 0;
-class StatusCode {
-    static makeStatusCode(code) {
-        return new StatusCode(code);
-    }
+exports.extraStatusCodeBits = exports.UaStatusCode = void 0;
+exports.makeUaStatusCode = makeUaStatusCode;
+const opcua_webapi_1 = require("opcua-webapi");
+class UaStatusCode {
     constructor(code) {
-        this._code = (code) ? 0 : code;
+        this._code = (code) ? code : 0;
     }
     get value() {
         return this._code;
     }
     get name() {
-        return "Not implemented";
+        if (null == UaStatusCode._codesDictionary) {
+            UaStatusCode._codesDictionary = new Map;
+            for (const key in opcua_webapi_1.StatusCodes) {
+                const value = opcua_webapi_1.StatusCodes[key];
+                UaStatusCode._codesDictionary.set(value, key);
+            }
+        }
+        let name = UaStatusCode._codesDictionary.get(this._code);
+        return (name) ? name : "";
     }
     toString() {
-        return this.name + " (0x" + this.value.toString(16).padStart(8, "0") + ")";
+        return this.name + " (0x" + this.value.toString(16).toUpperCase() + ")";
     }
     checkBit(mask) {
         return (this.value & mask) === mask;
@@ -38,6 +45,9 @@ class StatusCode {
     isGood() {
         return this.value < 0x10000000;
     }
+    isNotGood() {
+        return !this.isGood();
+    }
     isBad() {
         return this.value >= 0x80000000;
     }
@@ -45,7 +55,8 @@ class StatusCode {
         return (this.value < 0x80000000 && this.value >= 0x10000000);
     }
 }
-exports.StatusCode = StatusCode;
+exports.UaStatusCode = UaStatusCode;
+UaStatusCode._codesDictionary = null;
 exports.extraStatusCodeBits = {
     StructureChanged: 0x1 << 15,
     SemanticChanged: 0x1 << 14,
@@ -60,3 +71,6 @@ exports.extraStatusCodeBits = {
     HistorianExtraData: 0x1 << 3,
     HistorianMultiValue: 0x1 << 4
 };
+function makeUaStatusCode(code) {
+    return new UaStatusCode(code);
+}

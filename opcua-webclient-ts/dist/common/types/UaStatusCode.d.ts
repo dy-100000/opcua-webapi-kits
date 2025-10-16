@@ -1,6 +1,6 @@
-export declare class StatusCode {
+export declare class UaStatusCode {
+    private static _codesDictionary;
     private _code;
-    static makeStatusCode(code?: number): StatusCode;
     constructor(code?: number);
     get value(): number;
     get name(): string;
@@ -12,11 +12,13 @@ export declare class StatusCode {
     get hasSemanticChangedBit(): boolean;
     /** returns true if the structureChange bit is set */
     get hasStructureChangedBit(): boolean;
-    equals(other: StatusCode): boolean;
+    equals(other: UaStatusCode): boolean;
     isGood(): boolean;
+    isNotGood(): boolean;
     isBad(): boolean;
     isUncertain(): boolean;
 }
 export declare const extraStatusCodeBits: {
     [key: string]: number;
 };
+export declare function makeUaStatusCode(code?: number): UaStatusCode;
