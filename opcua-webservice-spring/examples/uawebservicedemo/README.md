@@ -49,29 +49,29 @@ OPC UA模型结构
 
 经过OPC UA WebService的语义转换后，MySQL的数据将以OPC UA的层级方式进行展示
 
-Objects                            // 根目录
+Objects                             ** 根目录
   
-  Skills                           // 所有技能的目录，通过查询Skill表获取    
+  Skills                            ** 所有技能的目录，通过查询Skill表获取    
     
-    高级前端开发                    // Skill表中各行Skill的信息
+    高级前端开发                     ** Skill表中各行Skill的信息
 
   
-  Departments                      // 一级部门目录
+  Departments                       ** 一级部门目录
      
     研发中心 
        
-      部门                         // 下一级部门目录，通过查询Department表的父子关系获取信息
+      部门                           ** 下一级部门目录，通过查询Department表的父子关系获取信息
          
         开发部 
            
-          项目                     // 展示部门的项目，通过查询DepartmentProject表获取信息
+          项目                        ** 展示部门的项目，通过查询DepartmentProject表获取信息
           
-            DigitalTwin            // 对用Project表中每行Project的信息
+            DigitalTwin               ** 对用Project表中每行Project的信息
            
-        员工                        // 部门的员工
+        员工                          ** 部门的员工
              
             张三
             
-              基本信息              // 员工基本信息，通过查询EmployeeInfo获取信息
+              基本信息                 ** 员工基本信息，通过查询EmployeeInfo获取信息
                  
-                   技能             // 员工技能信息，通过查询EmployeeSkill  
+                   技能                ** 员工技能信息，通过查询EmployeeSkill  
