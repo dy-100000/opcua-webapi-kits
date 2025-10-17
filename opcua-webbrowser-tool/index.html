@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <link rel="icon" href="/favicon.ico"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>web</title>
+    <style>
+        .github-corner:hover .octo-arm {
+            animation: octocat-wave 560ms ease-in-out
+        }
+
+        @keyframes octocat-wave {
+            0%, 100% {
+                transform: rotate(0)
+            }
+            20%, 60% {
+                transform: rotate(-25deg)
+            }
+            40%, 80% {
+                transform: rotate(10deg)
+            }
+        }
+
+        @media (max-width: 500px) {
+            .github-corner:hover .octo-arm {
+                animation: none
+            }
+
+            .github-corner .octo-arm {
+                animation: octocat-wave 560ms ease-in-out
+            }
+        }
+    </style>
+    <!-- Buffer polyfill for node-opcua -->
+    <script>
+        // Simple Buffer polyfill for browser
+        if (typeof window !== 'undefined' && !window.Buffer) {
+            class BufferPolyfill extends Uint8Array {
+                constructor(input, encoding, offset) {
+                    if (typeof input === 'string') {
+                        const encoder = new TextEncoder();
+                        const bytes = encoder.encode(input);
+                        super(bytes);
+                    } else if (input instanceof ArrayBuffer) {
+                        super(input);
+                    } else if (Array.isArray(input)) {
+                        super(input);
+                    } else if (typeof input === 'number') {
+                        super(input);
+                    } else {
+                        super(0);
+                    }
+                }
+
+                static from(input, encoding) {
+                    return new BufferPolyfill(input, encoding);
+                }
+
+                static alloc(size) {
+                    return new BufferPolyfill(size);
+                }
+
+                toString(encoding) {
+                    const decoder = new TextDecoder(encoding || 'utf8');
+                    return decoder.decode(this);
+                }
+            }
+
+            window.Buffer = BufferPolyfill;
+            globalThis.Buffer = BufferPolyfill;
+        }
+
+        // Process polyfill
+        if (typeof window !== 'undefined' && !window.process) {
+            window.process = {
+                env: {},
+                browser: true,
+                version: '',
+                versions: {},
+                platform: 'browser',
+                nextTick: (fn) => setTimeout(fn, 0),
+            };
+            globalThis.process = window.process;
+        }
+
+        // Global polyfill
+        if (typeof window !== 'undefined' && !window.global) {
+            window.global = window;
+            globalThis.global = globalThis;
+        }
+    </script>
+</head>
+<body>
+<div id="app"></div>
+</a>
+
+<script type="module" src="/src/main.ts"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vue"></script> -->
+<!--<script type="module" src="/public/iconfont.js"></script>-->
+</body>
+</html>

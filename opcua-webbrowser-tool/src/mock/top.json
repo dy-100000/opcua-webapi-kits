@@ -1,0 +1,46 @@
+{
+  "ResponseHeader": {
+      "Timestamp": "2025-04-28T08:02:13.1952131Z",
+      "RequestHandle": 5
+  },
+  "Results": [
+      {
+          "References": 
+          [
+              {
+                  "ReferenceTypeId": "i=35",
+                  "IsForward": true,
+                  "NodeId": "i=86",
+                  "BrowseName": "Types",
+                  "DisplayName": {
+                      "Text": "Types"
+                  },
+                  "NodeClass": 1,
+                  "TypeDefinition": "i=61"
+              },
+              {
+                  "ReferenceTypeId": "i=36",
+                  "IsForward": true,
+                  "NodeId": "i=87",
+                  "BrowseName": "Views",
+                  "DisplayName": {
+                      "Text": "Views"
+                  },
+                  "NodeClass": 1,
+                  "TypeDefinition": "i=61"
+              },
+              {
+                  "ReferenceTypeId": "i=37",
+                  "IsForward": true,
+                  "NodeId": "i=85",
+                  "BrowseName": "Objects",
+                  "DisplayName": {
+                      "Text": "Objects"
+                  },
+                  "NodeClass": 1,
+                  "TypeDefinition": "i=61"
+              }
+          ]
+      }
+  ]
+}

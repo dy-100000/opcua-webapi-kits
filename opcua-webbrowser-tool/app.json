@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.wuzhbn.bpmnvueaciviti"
+  },
+  "ios": {
+    "bundleIdentifier": "com.wuzhbn.bpmnvueaciviti"
+  }
+}
