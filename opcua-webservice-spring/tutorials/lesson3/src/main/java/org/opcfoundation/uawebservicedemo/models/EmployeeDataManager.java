@@ -8,8 +8,6 @@ import org.opcfoundation.uawebservicedemo.models.employee.EmployeeDirectoryType;
 import org.opcfoundation.uawebservicedemo.models.employee.EmployeeInfoType;
 import org.opcfoundation.uawebservicedemo.models.employee.EmployeeType;
 import org.opcfoundation.uawebservicedemo.models.employee.enumeration.SexEnumType;
-import org.opcfoundation.uawebservicedemo.models.project.ProjectDirectoryType;
-import org.opcfoundation.uawebservicedemo.models.project.ProjectType;
 import org.opcfoundation.uawebservicedemo.models.skill.SkillDirectoryType;
 import org.opcfoundation.uawebservicedemo.models.skill.SkillType;
 import org.opcfoundation.uawebservicedemo.models.skill.enumeration.SkillCategoryEnumType;
@@ -17,9 +15,6 @@ import org.opcfoundation.uawebservicedemo.models.skill.enumeration.SkillLevelEnu
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerWebService;
 
 public class EmployeeDataManager extends NodeManagerWebService {
-    // Project definitions
-    public ProjectType projectType;
-    public ProjectDirectoryType projectDirectoryType;
 
     // Department definitions
     public DepartmentType departmentType;
@@ -73,19 +68,12 @@ public class EmployeeDataManager extends NodeManagerWebService {
         employeeType = new EmployeeType(employeeInfoType, skillDirectoryType,employeeCompetenceType,this);
         addObjectType(employeeType);
 
-        projectDirectoryType = new ProjectDirectoryType(this);
-        addObjectType(projectDirectoryType);
-
-        projectType = new ProjectType(this);
-        addObjectType(projectType);
-
         departmentDirectoryType = new DepartmentDirectoryType(this);
         addObjectType(departmentDirectoryType);
 
         departmentType = new DepartmentType(
                 departmentDirectoryType,
                 employeeDirectoryType,
-                projectDirectoryType,
                 this);
         addObjectType(departmentType);
 

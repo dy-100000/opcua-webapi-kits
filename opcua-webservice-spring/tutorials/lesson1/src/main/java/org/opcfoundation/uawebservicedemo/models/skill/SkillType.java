@@ -33,6 +33,7 @@ public class SkillType extends UaDataObjectType {
             SkillCategoryEnumType skillCategoryEnumType,
             EmployeeDataManager nodeManager) {
         super("SkillType", new LocalizedText("技能类定义"), null,nodeManager);
+        setDescription(new LocalizedText("To present the data of employee skill"));
 
         // Add start time data field
         level = addVariable(

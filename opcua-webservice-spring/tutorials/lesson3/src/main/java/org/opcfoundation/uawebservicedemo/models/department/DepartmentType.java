@@ -8,7 +8,6 @@ import org.opcfoundation.uawebservicedemo.database.entity.Department;
 import org.opcfoundation.uawebservicedemo.database.mapper.DepartmentMapper;
 import org.opcfoundation.uawebservicedemo.models.employee.EmployeeDirectoryType;
 import org.opcfoundation.uawebservicedemo.models.EmployeeDataManager;
-import org.opcfoundation.uawebservicedemo.models.project.ProjectDirectoryType;
 import org.opcfoundation.webserver.addressspace.models.UaMasterObjectType;
 import org.opcfoundation.webserver.types.message.ReadObjectAttributeRequest;
 import org.opcfoundation.webserver.types.message.ReadObjectAttributeResponse;
@@ -22,7 +21,6 @@ public class DepartmentType extends UaMasterObjectType {
     public DepartmentType(
             DepartmentDirectoryType departmentDirectoryType,
             EmployeeDirectoryType employeeDirectoryType,
-            ProjectDirectoryType projectDirectoryType,
             EmployeeDataManager nodeManager)
     {
         super("DepartmentType", new LocalizedText("部门类定义"), null,nodeManager);
@@ -42,14 +40,6 @@ public class DepartmentType extends UaMasterObjectType {
                 new LocalizedText("员工"),
                 new LocalizedText("归属该部门管理的员工"),
                 employeeDirectoryType);
-
-        // Add project directory to get project of department
-        addSubmodel(
-                "Projects",
-                true,
-                new LocalizedText("项目"),
-                new LocalizedText("归属该部门的项目"),
-                projectDirectoryType);
     }
 
     // Return department general information such as name, description
