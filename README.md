@@ -11,7 +11,5 @@
 4.opcua-webservice-node：功能与用法和 opcua-webservice-spring 一致，目前处于待开发阶段，后续将逐步完善。
 
 B站教学网址：
-1.https://www.bilibili.com/video/BV1h1syzoEFU/?vd_source=2fbb7c972a581fcfa77170ff7460040d
-2.https://www.bilibili.com/video/BV1g1syzoEoM/?vd_source=2fbb7c972a581fcfa77170ff7460040d
-
-
+1.https://www.bilibili.com/video/BV1h1syzoEFU/
+2.https://www.bilibili.com/video/BV1g1syzoEoM/
