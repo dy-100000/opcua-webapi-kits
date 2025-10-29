@@ -4,13 +4,14 @@ import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.opcfoundation.webserver.addressspace.nodes.UaInstanceNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaReferenceType;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.types.UaChildDescriptor;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.UaChildVariableDescriptor;
 import org.opcfoundation.webserver.types.message.*;
 
@@ -45,19 +46,23 @@ public abstract class UaVariableDirectoryType extends UaSubmodelType {
     }
 
     @Override
-    public final CompletableFuture<BrowseChildResponse> onBrowseObjectChildren(BrowseChildrenRequest request)
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
         boolean isReferenceAllowed = false;
 
         UaNode referenceType = nodeManager.getNode(NodeIds.HasComponent);
+
+        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
         if (null != referenceType && referenceType.nodeClass() == NodeClass.ReferenceType)
         {
-            isReferenceAllowed = ((UaReferenceType)referenceType).isSubtypeOf(request.getReferenceId());
+            isReferenceAllowed = ((UaReferenceType)referenceType).isSubtypeOf(referenceTypeId);
         }
 
         if (!isReferenceAllowed ||
-                (request.getNodeClassMask() & NodeClass.Variable.getValue()) == 0)
-            return CompletableFuture.completedFuture(new BrowseChildResponse(new ArrayList<>(), false));
+                (nodeClassMask & NodeClass.Variable.getValue()) == 0)
+            return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
         GetVariableDirectoryChildRequest getChildRequest = new GetVariableDirectoryChildRequest(
                 request.getObjectId(),
@@ -103,24 +108,25 @@ public abstract class UaVariableDirectoryType extends UaSubmodelType {
         return setVariableValues(request);
     }
 
-    private BrowseChildResponse processBrowseChildResponse(GetVariableDirectoryChildResponse response)
+    private BrowseObjectResponse processBrowseChildResponse(GetVariableDirectoryChildResponse response)
     {
-        List<UaChildDescriptor> childDescriptors = new ArrayList<>();
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
 
         for (UaChildVariableDescriptor item: response.getChildren())
         {
-            UaChildDescriptor descriptor = new UaChildDescriptor(
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
                     item.getId(),
                     NodeClass.Variable,
                     item.getId(),
                     item.getDisplayName(),
                     item.getTypeId(),
-                    NodeIds.HasComponent);
+                    NodeIds.HasComponent,
+                    false);
 
             childDescriptors.add(descriptor);
         }
 
-        return new BrowseChildResponse(childDescriptors, response.containsMoreData());
+        return new BrowseObjectResponse(childDescriptors, response.containsMoreData());
     }
 
     private ReadChildAttributeResponse processReadVariableAttributesResponse(ReadVariableAttributeResponse response)

@@ -1,40 +1,29 @@
 package org.opcfoundation.webserver.types.message;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
+import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
 import org.opcfoundation.webserver.types.UaObjectId;
 
-public class BrowseChildrenRequest {
+public class BrowseObjectRequest {
     private final UaObjectId objectId;
-    private final NodeId referenceId;
-    private final Integer nodeClassMask;
     private final int limit;
     private final int offset;
+    private final BrowseDescription browseDescription;
 
-    public BrowseChildrenRequest(
+    public BrowseObjectRequest(
             UaObjectId objectId,
-            NodeId referenceId,
-            Integer nodeClassMask,
             int limit,
-            int offset)
+            int offset,
+            BrowseDescription browseDescription)
     {
         this.objectId = objectId;
-        this.referenceId = referenceId;
-        this.nodeClassMask = nodeClassMask;
         this.limit = limit;
         this.offset = offset;
+        this.browseDescription = browseDescription;
     }
 
     public UaObjectId getObjectId() {
         return objectId;
-    }
-
-    public NodeId getReferenceId() {
-        return referenceId;
-    }
-
-    public Integer getNodeClassMask() {
-        return nodeClassMask;
     }
 
     public int getLimit() {
@@ -44,4 +33,6 @@ public class BrowseChildrenRequest {
     public int getOffset() {
         return offset;
     }
+
+    public BrowseDescription getBrowseDescription() { return browseDescription; }
 }

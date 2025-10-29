@@ -36,6 +36,10 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
         this.nodeManager = nodeManager;
     }
 
+    public boolean isGetParentSupported() { return false; }
+
+    public boolean isGetLinkSupported() { return false; }
+
     protected UaObject addObjectNode(
             String memberId,
             LocalizedText displayName,

@@ -25,4 +25,10 @@
         </if>
     </select>
 
+    <select id="getDepartmentByEmployee" resultMap="DepartmentResult">
+        SELECT d.ID, d.Name FROM employeedepartment ed
+        INNER JOIN Department d ON ed.EmployeeId = d.ID
+        WHERE ed.EmployeeId = #{employeeId}
+    </select>
+
 </mapper>

@@ -4,12 +4,14 @@ import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
-import org.opcfoundation.webserver.types.UaChildDescriptor;
+import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.message.*;
 
 import java.util.ArrayList;
@@ -54,6 +56,13 @@ public abstract class UaMasterObjectType extends UaObjectType {
         });
     }
 
+    public CompletableFuture<GetParentObjectResponse> getParent(GetParentObjectRequest request)
+    {
+        return CompletableFuture.supplyAsync(() -> {
+            return new GetParentObjectResponse();
+        });
+    }
+
     // If developer need to return member object id different with current object, this method can be overridden
     public CompletableFuture<GetChildObjectIdResponse> getChildId(GetChildObjectIdRequest request)
     {
@@ -73,7 +82,7 @@ public abstract class UaMasterObjectType extends UaObjectType {
     }
 
     @Override
-    public final CompletableFuture<BrowseChildResponse> onBrowseObjectChildren(BrowseChildrenRequest request)
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
         UaNode hasComponentType = nodeManager.getNode(NodeIds.HasComponent);
         UaNode hasPropertyType = nodeManager.getNode(NodeIds.HasProperty);
@@ -87,15 +96,18 @@ public abstract class UaMasterObjectType extends UaObjectType {
         List<UaInstanceNode> members = getMembers();
         final List<UaInstanceNode> membersToReturn = new ArrayList<>();
 
+        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
         for (UaInstanceNode item: members)
         {
-            if ((item.nodeClass().getValue() & request.getNodeClassMask()) == 0) continue;
+            if ((item.nodeClass().getValue() & nodeClassMask) == 0) continue;
 
             if (item.nodeClass() == NodeClass.Object || item.nodeClass() == NodeClass.Method)
             {
-                if (!((UaReferenceType)hasComponentType).isSubtypeOf(request.getReferenceId())) continue;
+                if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
             } else if (item.nodeClass() == NodeClass.Variable) {
-                if (!((UaReferenceType)hasPropertyType).isSubtypeOf(request.getReferenceId())) continue;
+                if (!((UaReferenceType)hasPropertyType).isSubtypeOf(referenceTypeId)) continue;
             }
 
             membersToReturn.add(item);
@@ -106,17 +118,33 @@ public abstract class UaMasterObjectType extends UaObjectType {
     }
 
     @Override
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectParent(BrowseObjectRequest request)
+    {
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
+        if (!referenceTypeId.equals(NodeIds.HierarchicalReferences) &&
+                !referenceTypeId.equals(NodeIds.References) &&
+                !referenceTypeId.equals(NodeIds.Organizes))
+        {
+            return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
+        }
+
+        GetParentObjectRequest getParentObjectRequest = new GetParentObjectRequest(request.getObjectId());
+        return getParent(getParentObjectRequest).thenApply(this::processBrowseParentResponse);
+    }
+
+    @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request)
     {
         return getObjectAttribute(request);
     }
 
-    private BrowseChildResponse processBrowseChildResponse(
+    private BrowseObjectResponse processBrowseChildResponse(
             String masterObjectId,
             List<UaInstanceNode> members,
             GetChildObjectIdResponse response)
     {
-        List<UaChildDescriptor> childrenToReturn = new ArrayList<>();
+        List<UaReferenceDescriptor> childrenToReturn = new ArrayList<>();
         Map<String, String> children = response.getChildrenIdsByName();
 
         for (UaInstanceNode item : members)
@@ -131,15 +159,34 @@ public abstract class UaMasterObjectType extends UaObjectType {
                     childId = masterObjectId;
                 }
 
-                childrenToReturn.add(new UaChildDescriptor(childId, item, NodeIds.HasComponent));
+                childrenToReturn.add(new UaReferenceDescriptor(childId, item, NodeIds.HasComponent, true));
             } else {
-                childrenToReturn.add(new UaChildDescriptor(
+                childrenToReturn.add(new UaReferenceDescriptor(
                         masterObjectId,
                         item,
-                        (item.nodeClass() == NodeClass.Variable) ? NodeIds.HasProperty : NodeIds.HasComponent));
+                        (item.nodeClass() == NodeClass.Variable) ? NodeIds.HasProperty : NodeIds.HasComponent,
+                        true));
             }
         }
 
-        return new BrowseChildResponse(childrenToReturn, false);
+        return new BrowseObjectResponse(childrenToReturn, false);
+    }
+
+    private BrowseObjectResponse processBrowseParentResponse(GetParentObjectResponse response)
+    {
+        List<UaReferenceDescriptor> childToReturn = new ArrayList<>();
+
+        if (response.isEmpty()) return new BrowseObjectResponse(childToReturn, false);
+
+        childToReturn.add(new UaReferenceDescriptor(
+                response.getId(),
+                NodeClass.Object,
+                response.getId(),
+                response.getDisplayName(),
+                response.getTypeId(),
+                NodeIds.Organizes,
+                false));
+
+        return new BrowseObjectResponse(childToReturn, false);
     }
 }

@@ -13,7 +13,7 @@ import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.types.UaChildDescriptor;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.UaChildId;
 import org.opcfoundation.webserver.types.message.*;
 
@@ -107,7 +107,7 @@ public abstract class UaDataObjectType extends UaSubmodelType {
     }
 
     @Override
-    public final CompletableFuture<BrowseChildResponse> onBrowseObjectChildren(BrowseChildrenRequest request)
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
         UaNode hasComponentType = nodeManager.getNode(NodeIds.HasComponent);
         UaNode hasPropertyType = nodeManager.getNode(NodeIds.HasProperty);
@@ -120,22 +120,24 @@ public abstract class UaDataObjectType extends UaSubmodelType {
 
         List<UaInstanceNode> members = getMembers();
         final List<UaInstanceNode> membersToReturn = new ArrayList<>();
+        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
 
         for (UaInstanceNode item: members)
         {
-            if ((item.nodeClass().getValue() & request.getNodeClassMask()) == 0) continue;
+            if ((item.nodeClass().getValue() & nodeClassMask) == 0) continue;
 
             if (item.nodeClass() == NodeClass.Object || item.nodeClass() == NodeClass.Method)
             {
-                if (!((UaReferenceType)hasComponentType).isSubtypeOf(request.getReferenceId())) continue;
+                if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
             } else if (item.nodeClass() == NodeClass.Variable) {
                 UaVariable variableMember = (UaVariable)item;
 
                 if (variableMember.typeDefinition().nodeId().equals(NodeIds.PropertyType))
                 {
-                    if (!((UaReferenceType)hasPropertyType).isSubtypeOf(request.getReferenceId())) continue;
+                    if (!((UaReferenceType)hasPropertyType).isSubtypeOf(referenceTypeId)) continue;
                 } else {
-                    if (!((UaReferenceType)hasComponentType).isSubtypeOf(request.getReferenceId())) continue;
+                    if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
                 }
             }
 
@@ -230,11 +232,11 @@ public abstract class UaDataObjectType extends UaSubmodelType {
         return methodCall(request);
     }
 
-    private BrowseChildResponse processBrowseChildResponse(
+    private BrowseObjectResponse processBrowseChildResponse(
             List<UaInstanceNode> members,
             Set<String> absentMembers)
     {
-        List<UaChildDescriptor> childDescriptors = new ArrayList<>();
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
 
         for (UaInstanceNode item: members)
         {
@@ -244,14 +246,15 @@ public abstract class UaDataObjectType extends UaSubmodelType {
             NodeId referenceType = (item.nodeClass() == NodeClass.Variable &&
                     ((UaVariable) item).typeDefinition().nodeId().equals(NodeIds.PropertyType)) ? NodeIds.HasProperty : NodeIds.HasComponent;
 
-            UaChildDescriptor descriptor = new UaChildDescriptor(
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
                     item.browseName(),
                     item,
-                    referenceType);
+                    referenceType,
+                    true);
 
             childDescriptors.add(descriptor);
         }
 
-        return new BrowseChildResponse(childDescriptors, false);
+        return new BrowseObjectResponse(childDescriptors, false);
     }
 }

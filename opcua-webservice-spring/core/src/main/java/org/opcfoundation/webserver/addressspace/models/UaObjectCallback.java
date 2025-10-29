@@ -8,7 +8,22 @@ import java.util.concurrent.CompletableFuture;
 
 public interface UaObjectCallback {
     // Browse object child
-    default CompletableFuture<BrowseChildResponse> onBrowseObjectChildren(BrowseChildrenRequest request)
+    default CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
+    {
+        return CompletableFuture.supplyAsync(()-> {
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
+
+    default CompletableFuture<BrowseObjectResponse> onBrowseObjectParent(BrowseObjectRequest request)
+    {
+        return CompletableFuture.supplyAsync(()-> {
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
+
+    // Browse object forward links
+    default CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {
             throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);

@@ -37,7 +37,6 @@ public class NodeManagerTransactionBuilder {
     public UaBrowseTransaction getBrowseTransaction(
             ServiceContext context,
             BrowseDescription nodeToBrowse,
-            boolean isBrowseNext,
             UaBrowseAdditionalInfo additionalInfo,
             int handleId)
     {
@@ -75,51 +74,14 @@ public class NodeManagerTransactionBuilder {
 
             UaObject instanceDeclaration = nodeManager.findInstanceDeclaration(identifier.getObjectId());
 
-            UaBrowseAdditionalInfo additionalBrowseInfo;
-
-            if (!isBrowseNext)
-            {
-                additionalBrowseInfo = additionalInfo.updateTasks(nodeToBrowse);
-                // Purge tasks
-                additionalBrowseInfo = additionalBrowseInfo.browseParentComplete();
-                additionalBrowseInfo = additionalBrowseInfo.browseLinkComplete();
-                additionalBrowseInfo = additionalBrowseInfo.browseInverseLinkComplete();
-            } else {
-                additionalBrowseInfo = additionalInfo;
-            }
-
-            if (additionalBrowseInfo.isAllTaskComplete()) return transactionNothingToDo;
-
-            // Process browse request
-            if (additionalBrowseInfo.isBrowseChildRequired())
-            {
-                return new UaBrowseChildTransaction(
-                        context,
-                        nodeToBrowse,
-                        additionalBrowseInfo,
-                        handleId,
-                        objectType,
-                        new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
-                        nodeManager);
-            }
-
-            if (additionalBrowseInfo.isBrowseTypeDefinitionRequired())
-            {
-                UaBrowseTransaction transaction = new UaBrowseTransaction(
-                        context,
-                        nodeToBrowse,
-                        additionalInfo,
-                        handleId);
-
-                transaction.addTypeDefinitionReference(
-                        objectType.nodeId(),
-                        objectType.browseName(),
-                        objectType.displayName());
-
-                additionalBrowseInfo.browseTypeDefinitionComplete();
-
-                return transaction;
-            }
+            return new UaBrowseObjectTransaction(
+                    context,
+                    nodeToBrowse,
+                    additionalInfo,
+                    handleId,
+                    objectType,
+                    new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
+                    nodeManager);
         } else {
             return new UaBrowseMemberTransaction(context,
                     nodeToBrowse,
@@ -128,8 +90,6 @@ public class NodeManagerTransactionBuilder {
                     identifier,
                     nodeManager);
         }
-
-        return transactionNothingToDo;
     }
 
     public List<UaReadTransaction> getReadTransactions(

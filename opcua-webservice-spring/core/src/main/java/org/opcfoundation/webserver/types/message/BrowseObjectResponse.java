@@ -1,22 +1,22 @@
 package org.opcfoundation.webserver.types.message;
 
-import org.opcfoundation.webserver.types.UaChildDescriptor;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 
 import java.util.List;
 
-public class BrowseChildResponse {
-    private List<UaChildDescriptor> children;
+public class BrowseObjectResponse {
+    private List<UaReferenceDescriptor> children;
     private boolean containsMoreData;
 
-    public BrowseChildResponse(
-            List<UaChildDescriptor> children,
+    public BrowseObjectResponse(
+            List<UaReferenceDescriptor> children,
             boolean containsMoreData)
     {
         this.children = children;
         this.containsMoreData = containsMoreData;
     }
 
-    public List<UaChildDescriptor> getChildren() {
+    public List<UaReferenceDescriptor> getChildren() {
         return children;
     }
 

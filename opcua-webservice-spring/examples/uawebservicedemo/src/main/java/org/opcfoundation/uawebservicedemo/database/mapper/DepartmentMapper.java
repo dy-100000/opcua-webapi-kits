@@ -1,6 +1,7 @@
 package org.opcfoundation.uawebservicedemo.database.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.opcfoundation.uawebservicedemo.database.entity.Department;
+import org.opcfoundation.uawebservicedemo.database.entity.Employee;
 
 import java.util.List;
 
@@ -9,4 +10,6 @@ public interface DepartmentMapper {
     Department getDepartment(Integer id);
 
     List<Department> getChildDepartment(Integer id);
+
+    Department getDepartmentByEmployee(Integer employeeId);
 }

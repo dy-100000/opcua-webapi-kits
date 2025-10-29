@@ -10,18 +10,18 @@ import org.opcfoundation.webserver.addressspace.models.UaObjectType;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.service.transactions.UaBrowseTransaction;
 import org.opcfoundation.webserver.types.*;
-import org.opcfoundation.webserver.types.message.BrowseChildrenRequest;
-import org.opcfoundation.webserver.types.message.BrowseChildResponse;
+import org.opcfoundation.webserver.types.message.BrowseObjectRequest;
+import org.opcfoundation.webserver.types.message.BrowseObjectResponse;
 import org.opcfoundation.webapi.service.types.ServiceContext;
 
 import java.util.concurrent.CompletableFuture;
 
-public class UaBrowseChildTransaction extends UaBrowseTransaction {
+public class UaBrowseObjectTransaction extends UaBrowseTransaction {
     private final UaObjectType objectType;
     private final UaObjectId objectId;
     private final NodeManager nodeManager;
 
-    public UaBrowseChildTransaction(
+    public UaBrowseObjectTransaction(
             ServiceContext serviceContext,
             BrowseDescription nodeToBrowse,
             UaBrowseAdditionalInfo additionalInfo,
@@ -38,27 +38,74 @@ public class UaBrowseChildTransaction extends UaBrowseTransaction {
 
     public CompletableFuture<Void> execute() {
         try {
-            BrowseChildrenRequest request = new BrowseChildrenRequest(
-                    objectId,
-                    getItem().getReferenceTypeId(),
-                    getItem().getNodeClassMask().intValue(),
-                    additionalInfo.getMaxReferencesPerNode(),
-                    additionalInfo.getReferenceOffset());
+            // Add type definition
+            if (additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_DEFINITION_TASK))
+            {
+                addTypeDefinitionReference(
+                        objectType.nodeId(),
+                        objectType.browseName(),
+                        objectType.displayName());
 
-            return objectType.onBrowseObjectChildren(request).
-                    thenApply(this::browseObjectChildResult).
-                    exceptionally(ex -> buildErrorResponse(ex.getCause()));
+                additionalInfo = additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_DEFINITION_TASK);
+            }
+
+            if (!objectType.isGetParentSupported())
+            {
+                additionalInfo = additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_PARENT_TASK);
+            }
+
+            if (!objectType.isGetLinkSupported())
+            {
+                additionalInfo = additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_LINK_TASK);
+            }
+
+            if (additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_TASK)) {
+                BrowseObjectRequest request = new BrowseObjectRequest(
+                        objectId,
+                        additionalInfo.getMaxReferencesPerNode(),
+                        additionalInfo.getReferenceOffset(),
+                        getItem());
+
+                return objectType.onBrowseObjectChildren(request).
+                        thenApply(response-> browseObjectChildResult(response, UaBrowseAdditionalInfo.GET_CHILD_TASK)).
+                        exceptionally(ex -> buildErrorResponse(ex.getCause()));
+            }
+
+            if (additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_PARENT_TASK)) {
+                BrowseObjectRequest request = new BrowseObjectRequest(
+                        objectId,
+                        additionalInfo.getMaxReferencesPerNode(),
+                        additionalInfo.getReferenceOffset(),
+                        getItem());
+
+                return objectType.onBrowseObjectParent(request).
+                        thenApply(response-> browseObjectChildResult(response, UaBrowseAdditionalInfo.GET_PARENT_TASK)).
+                        exceptionally(ex -> buildErrorResponse(ex.getCause()));
+            }
+
+            if (additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_LINK_TASK)) {
+                BrowseObjectRequest request = new BrowseObjectRequest(
+                        objectId,
+                        additionalInfo.getMaxReferencesPerNode(),
+                        additionalInfo.getReferenceOffset(),
+                        getItem());
+
+                return objectType.onBrowseObjectLinks(request).
+                        thenApply(response-> browseObjectChildResult(response, UaBrowseAdditionalInfo.GET_LINK_TASK)).
+                        exceptionally(ex -> buildErrorResponse(ex.getCause()));
+            }
         } catch (Exception e) {
             buildErrorResponse(e);
-            return CompletableFuture.completedFuture(null);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
-    private Void browseObjectChildResult(BrowseChildResponse response)
+    private Void browseObjectChildResult(BrowseObjectResponse response, int taskMask)
     {
-        for (UaChildDescriptor item: response.getChildren())
+        for (UaReferenceDescriptor item: response.getChildren())
         {
-            if (item.getChildId().isEmpty()) continue;
+            if (item.getId().isEmpty()) continue;
 
             if (item.getNodeClass() != NodeClass.Object &&
                     item.getNodeClass() != NodeClass.Variable &&
@@ -70,7 +117,7 @@ public class UaBrowseChildTransaction extends UaBrowseTransaction {
             {
                 UaObjectIdentifier objectIdentifier = new UaObjectIdentifier(
                         item.getTypeDefinitionId().toParseableString(),
-                        item.getChildId(),
+                        item.getId(),
                         (item.getInstanceDeclarationId().isNull()) ? null : item.getInstanceDeclarationId().toParseableString());
 
                 newIdentifier = new UaInstanceIdentifier(
@@ -96,7 +143,7 @@ public class UaBrowseChildTransaction extends UaBrowseTransaction {
                 }
 
                 UaMemberIdentifier memberIdentifier = new UaMemberIdentifier(
-                        item.getChildId(),
+                        item.getId(),
                         null,
                         variableTypeId);
 
@@ -109,7 +156,7 @@ public class UaBrowseChildTransaction extends UaBrowseTransaction {
 
             references.add(new ReferenceDescription(
                     item.getReferenceTypeId(),
-                    true,
+                    item.isForward(),
                     new NodeId(nodeManager.nsIndex(), newIdentifier.toByteString()).expanded(),
                     new QualifiedName(0,item.getBrowseName()),
                     item.getDisplayName(),
@@ -117,28 +164,16 @@ public class UaBrowseChildTransaction extends UaBrowseTransaction {
                     item.getTypeDefinitionId().expanded()));
         }
 
-        UaBrowseAdditionalInfo newAdditionalInfo;
-
         if (response.containsMoreData() && !references.isEmpty())
         {
-            newAdditionalInfo = additionalInfo.updateOffset(references.size());
+            additionalInfo = additionalInfo.updateOffset(references.size());
         } else {
-            newAdditionalInfo = additionalInfo.browseChildComplete();
+            additionalInfo = additionalInfo.taskComplete(taskMask);
         }
 
-        if (newAdditionalInfo.isBrowseTypeDefinitionRequired())
+        if (!additionalInfo.isAllTaskComplete())
         {
-            addTypeDefinitionReference(
-                    objectType.nodeId(),
-                    objectType.browseName(),
-                    objectType.displayName());
-
-            newAdditionalInfo = newAdditionalInfo.browseTypeDefinitionComplete();
-        }
-
-        if (!newAdditionalInfo.isAllTaskComplete())
-        {
-            continuationPoint = new UaBrowseContinuationPoint(getItem(), newAdditionalInfo).toByteString();
+            continuationPoint = new UaBrowseContinuationPoint(getItem(), additionalInfo).toByteString();
         }
 
         return null;

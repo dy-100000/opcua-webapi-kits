@@ -2,11 +2,12 @@ package org.opcfoundation.webserver.addressspace.models;
 
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
-import org.opcfoundation.webserver.types.UaChildDescriptor;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.UaChildObjectDescriptor;
 import org.opcfoundation.webserver.types.message.*;
 
@@ -27,19 +28,23 @@ public abstract class UaObjectDirectoryType extends UaSubmodelType {
     public abstract CompletableFuture<GetObjectDirectoryChildResponse> getChildren(GetObjectDirectoryChildRequest request);
 
     @Override
-    public final CompletableFuture<BrowseChildResponse> onBrowseObjectChildren(BrowseChildrenRequest request)
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
         boolean isReferenceAllowed = false;
 
-        UaNode referenceType = nodeManager.getNode(NodeIds.HasComponent);
+        UaNode referenceType = nodeManager.getNode(NodeIds.Organizes);
+
+        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
         if (null != referenceType && referenceType.nodeClass() == NodeClass.ReferenceType)
         {
-            isReferenceAllowed = ((UaReferenceType)referenceType).isSubtypeOf(request.getReferenceId());
+            isReferenceAllowed = ((UaReferenceType)referenceType).isSubtypeOf(referenceTypeId);
         }
 
         if (!isReferenceAllowed ||
-                (request.getNodeClassMask() & NodeClass.Object.getValue()) == 0)
-            return CompletableFuture.completedFuture(new BrowseChildResponse(new ArrayList<>(), false));
+                (nodeClassMask & NodeClass.Object.getValue()) == 0)
+            return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
         GetObjectDirectoryChildRequest getChildRequest = new GetObjectDirectoryChildRequest(
                 request.getObjectId(),
@@ -50,23 +55,24 @@ public abstract class UaObjectDirectoryType extends UaSubmodelType {
                 thenApply(this::processBrowseChildResponse);
     }
 
-    private BrowseChildResponse processBrowseChildResponse(GetObjectDirectoryChildResponse response)
+    private BrowseObjectResponse processBrowseChildResponse(GetObjectDirectoryChildResponse response)
     {
-        List<UaChildDescriptor> childDescriptors = new ArrayList<>();
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
 
         for (UaChildObjectDescriptor item: response.getChildren())
         {
-            UaChildDescriptor descriptor = new UaChildDescriptor(
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
                     item.getId(),
                     NodeClass.Object,
                     item.getId(),
                     item.getDisplayName(),
                     item.getTypeId(),
-                    NodeIds.HasComponent);
+                    NodeIds.Organizes,
+                    true);
 
             childDescriptors.add(descriptor);
         }
 
-        return new BrowseChildResponse(childDescriptors, response.containsMoreData());
+        return new BrowseObjectResponse(childDescriptors, response.containsMoreData());
     }
 }

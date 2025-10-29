@@ -17,7 +17,7 @@ import java.util.concurrent.CompletableFuture;
 
 public class UaBrowseTransaction extends UaTransaction<BrowseDescription, BrowseResult> {
     protected final BrowseDescription nodeToBrowse;
-    protected final UaBrowseAdditionalInfo additionalInfo;
+    protected UaBrowseAdditionalInfo additionalInfo;
 
     protected StatusCode statusCode;
     protected ByteString continuationPoint;

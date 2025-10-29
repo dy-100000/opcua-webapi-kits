@@ -135,7 +135,6 @@ public class NodeManagerWebService extends NodeManager {
         return new NodeManagerTransactionBuilder(this).getBrowseTransaction(
                 context,
                 nodeToBrowse,
-                false,
                 additionalInfo,
                 handleId);
     }

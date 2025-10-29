@@ -82,8 +82,6 @@ public abstract class UaWebServer extends UaWebServerBase {
     public CompletableFuture<List<BrowseResult>> browse(BrowseContext context) throws UaRuntimeException
     {
         UaTransactionManager<BrowseDescription, BrowseResult> transactionManager = new UaTransactionManager<>();
-        UaBrowseAdditionalInfo additionalInfo = new UaBrowseAdditionalInfo(
-                context.getRequestedMaxReferencesPerNode().intValue(),0,0);
 
         int currentIndex = 0;
         for (BrowseDescription item: context.getNodesToBrowse())
@@ -92,11 +90,16 @@ public abstract class UaWebServer extends UaWebServerBase {
                     item.getNodeId().getNamespaceIndex().intValue());
 
             UaBrowseTransaction transaction;
+
+            UaBrowseAdditionalInfo additionalInfo = new UaBrowseAdditionalInfo(
+                    context.getRequestedMaxReferencesPerNode().intValue(),0,0);
+
+            additionalInfo = additionalInfo.updateTasks(item);
+
             if (null != nodeManager)
             {
                 transaction = nodeManager.getBrowseTransaction(
                         context, item, additionalInfo, currentIndex);
-
             } else {
                 transaction = new UaBrowseTransaction(context,item,additionalInfo,currentIndex);
                 transaction.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));

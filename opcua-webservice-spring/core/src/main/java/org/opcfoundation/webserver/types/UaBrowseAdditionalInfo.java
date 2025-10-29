@@ -10,6 +10,11 @@ public class UaBrowseAdditionalInfo {
     private final int referenceOffset;
     private final int taskCheckListMasks;
 
+    public static final int GET_PARENT_TASK = 1;
+    public static final int GET_CHILD_TASK = 2;
+    public static final int GET_DEFINITION_TASK = 4;
+    public static final int GET_LINK_TASK = 8;
+
     public UaBrowseAdditionalInfo(
             int maxReferencesPerNode,
             int referenceOffset,
@@ -53,13 +58,13 @@ public class UaBrowseAdditionalInfo {
                         description.getBrowseDirection() == BrowseDirection.Both)
                 {
                     if ((description.getNodeClassMask().longValue() & NodeClass.Object.getValue()) != 0) {
-                        browseInfoMask = browseInfoMask | 1; // Get parent
+                        browseInfoMask = browseInfoMask | GET_PARENT_TASK; // Get parent
                     }
                 }
 
                 if (description.getBrowseDirection() == BrowseDirection.Forward ||
                         description.getBrowseDirection() == BrowseDirection.Both) {
-                    browseInfoMask = browseInfoMask | 2; // Get Child
+                    browseInfoMask = browseInfoMask | GET_CHILD_TASK; // Get Child
                 }
             }
 
@@ -68,21 +73,12 @@ public class UaBrowseAdditionalInfo {
             {
                 if ((description.getNodeClassMask().longValue() & NodeClass.ObjectType.getValue()) != 0)
                 {
-                    browseInfoMask = browseInfoMask | 16; // Get type definition
+                    browseInfoMask = browseInfoMask | GET_DEFINITION_TASK; // Get type definition
                 }
 
                 if ((description.getNodeClassMask().longValue() & NodeClass.Object.getValue()) != 0)
                 {
-                    if (description.getBrowseDirection() == BrowseDirection.Forward ||
-                            description.getBrowseDirection() == BrowseDirection.Both)
-                    {
-                        browseInfoMask = browseInfoMask | 32; // Get forward links
-                    }
-
-                    if (description.getBrowseDirection() == BrowseDirection.Inverse)
-                    {
-                        browseInfoMask = browseInfoMask | 64; // Get forward links
-                    }
+                    browseInfoMask = browseInfoMask | GET_LINK_TASK; // Get links
                 }
             }
         } else {
@@ -93,13 +89,13 @@ public class UaBrowseAdditionalInfo {
                             description.getReferenceTypeId().equals(NodeIds.HasComponent) ||
                             description.getReferenceTypeId().equals(NodeIds.HasProperty))
                 {
-                    browseInfoMask = browseInfoMask | 2; // Get Child
+                    browseInfoMask = browseInfoMask | GET_CHILD_TASK; // Get Child
                 }
 
                 if ((description.getNodeClassMask().longValue() & NodeClass.ObjectType.getValue()) != 0 &&
                         description.getReferenceTypeId().equals(NodeIds.HasTypeDefinition))
                 {
-                    browseInfoMask = browseInfoMask | 16; // Get type definition
+                    browseInfoMask = browseInfoMask | GET_DEFINITION_TASK; // Get type definition
                 }
             }
         }
@@ -107,69 +103,17 @@ public class UaBrowseAdditionalInfo {
         return new UaBrowseAdditionalInfo(maxReferencesPerNode, referenceOffset, browseInfoMask);
     }
 
-    public boolean isBrowseParentRequired()
+    public boolean isTaskRequired(int taskMask)
     {
-        return (taskCheckListMasks & 1) != 0;
+        return (taskCheckListMasks & taskMask) != 0;
     }
 
-    public UaBrowseAdditionalInfo browseParentComplete()
+    public UaBrowseAdditionalInfo taskComplete(int taskMask)
     {
         return new UaBrowseAdditionalInfo(
                 maxReferencesPerNode,
                 referenceOffset,
-                isBrowseParentRequired() ? taskCheckListMasks^1 : taskCheckListMasks);
-    }
-
-    public boolean isBrowseChildRequired()
-    {
-        return (taskCheckListMasks & 2) != 0;
-    }
-
-    public UaBrowseAdditionalInfo browseChildComplete()
-    {
-        return new UaBrowseAdditionalInfo(
-                maxReferencesPerNode,
-                referenceOffset,
-                isBrowseChildRequired() ? taskCheckListMasks^2 : taskCheckListMasks);
-    }
-
-    public boolean isBrowseTypeDefinitionRequired()
-    {
-        return (taskCheckListMasks & 16) != 0;
-    }
-
-    public UaBrowseAdditionalInfo browseTypeDefinitionComplete()
-    {
-        return new UaBrowseAdditionalInfo(
-                maxReferencesPerNode,
-                referenceOffset,
-                isBrowseTypeDefinitionRequired() ? taskCheckListMasks^16 : taskCheckListMasks);
-    }
-
-    public boolean isBrowseLinkRequired()
-    {
-        return (taskCheckListMasks & 32) != 0;
-    }
-
-    public UaBrowseAdditionalInfo browseLinkComplete()
-    {
-        return new UaBrowseAdditionalInfo(
-                maxReferencesPerNode,
-                referenceOffset,
-                isBrowseLinkRequired() ? taskCheckListMasks^32 : taskCheckListMasks);
-    }
-
-    public boolean isBrowseInverseLinkRequired()
-    {
-        return (taskCheckListMasks & 64) != 0;
-    }
-
-    public UaBrowseAdditionalInfo browseInverseLinkComplete()
-    {
-        return new UaBrowseAdditionalInfo(
-                maxReferencesPerNode,
-                referenceOffset,
-                isBrowseInverseLinkRequired() ? taskCheckListMasks^64 : taskCheckListMasks);
+                isTaskRequired(taskMask) ? taskCheckListMasks^taskMask : taskCheckListMasks);
     }
 
     public boolean isAllTaskComplete()
