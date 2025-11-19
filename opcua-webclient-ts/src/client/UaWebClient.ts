@@ -55,7 +55,34 @@ export class UaWebClient
         return UaPayloadMapper.browseResultFromWebApi(results[0]);
     }
 
-    async browseNextChild(continuationPoint: string)
+    async browseReference(
+        nodeId: UaNodeId,                 
+        nodeClass?: number,        
+        direction? : BrowseDirection,
+        referenceTypeId? : UaNodeId,
+        maxReferences? : number) : Promise<UaBrowseResult>
+    {
+        let nodesToBrowse : BrowseDescription = {
+            NodeId: nodeId.toString(),
+            BrowseDirection: (direction) ? direction : BrowseDirection.Forward,
+            ReferenceTypeId: (referenceTypeId) ? referenceTypeId.toString() : ReferenceTypeIds.NonHierarchicalReferences,
+            IncludeSubtypes: true,
+            NodeClassMask: 
+                (nodeClass) ? nodeClass : Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method),
+            ResultMask: 63
+        };
+
+        let results = await this.browse([ nodesToBrowse ], maxReferences);
+
+        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
+
+        let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
+        if (statusCode.isNotGood()) throw new UaError(statusCode);
+
+        return UaPayloadMapper.browseResultFromWebApi(results[0]);
+    }
+
+    async browseNextByCP(continuationPoint: string) : Promise<UaBrowseResult>
     {
         let results = await this.browseNext([continuationPoint], false);
 

@@ -1,4 +1,5 @@
 export * from "./Identifiers"
 export * from "./UaNode"
 export * from "./UaDataType"
+export * from "./UaReferenceType"
 export * from "./UaAttributes"

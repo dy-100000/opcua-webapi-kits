@@ -93,7 +93,8 @@ export class UaDataTypeDictionary
 
                 let dataType = new UaDataType(
                     dataTypeId, 
-                    item.BrowseName, UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
+                    item.BrowseName, 
+                    UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
                     isAbstract);              
                 
                 this._dataTypes.set(dataTypeId, dataType);

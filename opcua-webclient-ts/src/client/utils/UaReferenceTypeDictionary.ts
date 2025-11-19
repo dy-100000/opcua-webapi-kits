@@ -1,0 +1,106 @@
+import { BrowseDescription, BrowseDirection, NodeClass, ReferenceTypeIds } from "opcua-webapi";
+import { parseUaNodeIdOrNull, UaReferenceType, UaLocalizedText, UaNodeId, UaPayloadMapper } from "../../common"
+import { UaWebClient } from "../UaWebClient"
+
+export class UaReferenceTypeDictionary
+{
+    private _referenceTypes : Map<UaNodeId, UaReferenceType>;
+    private _remainingNodesToBrowse : Array<UaNodeId>;
+
+    constructor()     
+    {
+        this._referenceTypes = new Map;
+    
+        let referencesId = new UaNodeId(ReferenceTypeIds.References);
+        this._referenceTypes.set(
+                referencesId, 
+                new UaReferenceType(
+                    referencesId, 
+                    "References", 
+                    new UaLocalizedText("References"), 
+                    true,
+                    new UaLocalizedText(),
+                    true 
+                ));
+    
+        this._remainingNodesToBrowse = [ new UaNodeId(ReferenceTypeIds.References) ];
+    }
+    
+    public async read(client : UaWebClient)
+    {
+        await this.__browseReferenceTypes(client);
+    }
+
+    public getReferenceType(nodeId: UaNodeId) : UaReferenceType | null
+    {
+        let referenceType = this._referenceTypes.get(nodeId);
+        return (referenceType) ? referenceType : null;
+    }
+
+    public getReferenceTypeIds() : Array<UaNodeId>
+    {
+        return [...this._referenceTypes.keys()];
+    }
+
+    private async __browseReferenceTypes(client : UaWebClient)
+    {
+        if (0 == this._remainingNodesToBrowse.length) return;
+
+        let nodeIds = this._remainingNodesToBrowse.splice(0,15);
+
+        let nodesToBrowse: Array<BrowseDescription> = [];
+
+        for (let item of nodeIds)
+        {
+            nodesToBrowse.push(
+                {
+                    NodeId: item.toString(),
+                    BrowseDirection: BrowseDirection.Forward,
+                    ReferenceTypeId: ReferenceTypeIds.HasSubtype,
+                    IncludeSubtypes: false,
+                    NodeClassMask: NodeClass.ReferenceType,
+                    ResultMask: 31
+                }
+            );
+        }
+
+        let results = await client.browse(nodesToBrowse);
+
+        for (let i=0; i<nodeIds.length; ++i)
+        {
+            let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
+            if (statusCode.isNotGood() || !results[i].References) continue;
+
+            let parentType = this._referenceTypes.get(nodeIds[i]);
+
+            for (let item of results[i].References)
+            {
+                let referencesTypeId = parseUaNodeIdOrNull(item.NodeId);
+                if (!referencesTypeId || NodeClass.ReferenceType != item.NodeClass ||
+                    !item.BrowseName || !item.DisplayName) continue;
+
+                let referenceType = new UaReferenceType(
+                    referencesTypeId, 
+                    item.BrowseName, 
+                    UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
+                    false,
+                    new UaLocalizedText(),
+                    false);              
+                
+                this._referenceTypes.set(referencesTypeId, referenceType);
+                this._remainingNodesToBrowse.push(referencesTypeId);
+                if (parentType) referenceType.setParentType(parentType);
+            }
+        }
+
+        if (this._remainingNodesToBrowse.length != 0)
+        {
+            await this.__delay(20);
+            await this.__browseReferenceTypes(client);
+        }
+    }
+
+    private async __delay(ms: number): Promise<void> {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }    
+}
