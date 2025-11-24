@@ -16,6 +16,8 @@ public class ReadVariableValueResponse {
         results = new HashMap<>();
     }
 
+    public ReadVariableValueResponse(Map<UaChildId, DataValue> results) { this.results = results; }
+
     public void setValue(String path, Variant value)
     {
         results.put(new UaChildId(path), new DataValue(value, StatusCode.GOOD, null, null));

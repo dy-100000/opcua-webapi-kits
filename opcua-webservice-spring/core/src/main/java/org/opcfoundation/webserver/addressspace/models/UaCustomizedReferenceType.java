@@ -3,9 +3,11 @@ package org.opcfoundation.webserver.addressspace.models;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerWebService;
 import org.opcfoundation.webserver.addressspace.nodes.UaReferenceType;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
 
+@Deprecated
 public class UaCustomizedReferenceType extends UaReferenceType {
     UaCustomizedReferenceType(
             String referenceTypeId,

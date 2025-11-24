@@ -4,15 +4,14 @@ import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
-import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
 import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.UaChildId;
 import org.opcfoundation.webserver.types.message.*;
@@ -20,6 +19,7 @@ import org.opcfoundation.webserver.types.message.*;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
+@Deprecated
 public abstract class UaDataObjectType extends UaSubmodelType {
     public UaDataObjectType(String objectTypeId,
                             LocalizedText displayName,
@@ -46,12 +46,6 @@ public abstract class UaDataObjectType extends UaSubmodelType {
         return CompletableFuture.supplyAsync(()-> {
             throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
         });
-    }
-
-    // If developer want to ignore optional members, this method can be overridden
-    public CompletableFuture<GetOptionalMemberResponse> getAbsentMembers(GetOptionalMemberRequest request)
-    {
-        return CompletableFuture.completedFuture(new GetOptionalMemberResponse(new HashSet<>()));
     }
 
     // If developer need to process method call request, this method can be overridden
@@ -109,52 +103,86 @@ public abstract class UaDataObjectType extends UaSubmodelType {
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
-        UaNode hasComponentType = nodeManager.getNode(NodeIds.HasComponent);
-        UaNode hasPropertyType = nodeManager.getNode(NodeIds.HasProperty);
-
-        if (null == hasComponentType || hasComponentType.nodeClass() != NodeClass.ReferenceType ||
-                null == hasPropertyType || hasPropertyType.nodeClass() != NodeClass.ReferenceType)
-        {
-            throw new UaRuntimeException(StatusCodes.Bad_InternalError);
-        }
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
 
         List<UaInstanceNode> members = getMembers();
         final List<UaInstanceNode> membersToReturn = new ArrayList<>();
-        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
-        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
 
         for (UaInstanceNode item: members)
         {
-            if ((item.nodeClass().getValue() & nodeClassMask) == 0) continue;
-
-            if (item.nodeClass() == NodeClass.Object || item.nodeClass() == NodeClass.Method)
+            if (item.nodeClass() == NodeClass.Object)
             {
-                if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
-            } else if (item.nodeClass() == NodeClass.Variable) {
-                UaVariable variableMember = (UaVariable)item;
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) continue;
+            }
 
-                if (variableMember.typeDefinition().nodeId().equals(NodeIds.PropertyType))
+            if (item.nodeClass() == NodeClass.Method)
+            {
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK)) continue;
+            }
+
+            if (item.nodeClass() == NodeClass.Variable)
+            {
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK)) continue;
+
+                NodeId variableTypeId = ((UaVariable) item).typeDefinition().nodeId();
+                if (referenceTypeId.equals(NodeIds.HasProperty))
                 {
-                    if (!((UaReferenceType)hasPropertyType).isSubtypeOf(referenceTypeId)) continue;
-                } else {
-                    if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
+                    if (!variableTypeId.equals(NodeIds.PropertyType)) continue;
+                } else if (referenceTypeId.equals(NodeIds.HasComponent)) {
+                    if (variableTypeId.equals(NodeIds.PropertyType)) continue;
                 }
             }
 
             membersToReturn.add(item);
         }
 
-        GetOptionalMemberRequest optionalMemberRequest = new GetOptionalMemberRequest(request.getObjectId());
+        if (membersToReturn.isEmpty()) return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
-        return getAbsentMembers(optionalMemberRequest).
-                thenApply(response -> processBrowseChildResponse(membersToReturn, response.getAbsentMembers()));
+        BrowseObjectResponse response = processBrowseChildResponse(membersToReturn, new HashSet<>());
+        return CompletableFuture.completedFuture(response);
     }
 
     @Override
-    public final CompletableFuture<ReadChildAttributeResponse> onReadChildAttributes(ReadChildAttributeRequest request)
+    public final CompletableFuture<BrowseMemberResponse> onBrowseMemberChildren(BrowseMemberRequest request)
+    {
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
+        UaInstanceNode member = getMember(request.getChildId());
+        if (null == member || NodeClass.Object == member.nodeClass()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
+
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
+        List<UaInstanceNode> members = member.getMembers();
+
+        for (UaInstanceNode item: members)
+        {
+            if (item.nodeClass() != NodeClass.Variable) continue;
+
+            NodeId variableTypeId = ((UaVariable)item).typeDefinition().nodeId();
+
+            if (referenceTypeId.equals(NodeIds.HasProperty))
+            {
+                if (!variableTypeId.equals(NodeIds.PropertyType)) continue;
+            } else if (referenceTypeId.equals(NodeIds.HasComponent)) {
+                if (variableTypeId.equals(NodeIds.PropertyType)) continue;
+            }
+
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
+                    item.browseName(),
+                    item,
+                    variableTypeId.equals(NodeIds.PropertyType) ? NodeIds.HasProperty : NodeIds.HasComponent,
+                    true);
+
+            childDescriptors.add(descriptor);
+        }
+
+        return CompletableFuture.completedFuture(new BrowseMemberResponse(childDescriptors));
+    }
+
+    @Override
+    public final CompletableFuture<ReadMemberAttributeResponse> onReadMemberAttributes(ReadMemberAttributeRequest request)
     {
         return CompletableFuture.supplyAsync(() -> {
-            UaNode memberNode = getMember(request.getChildId().getPathId());
+            UaInstanceNode memberNode = getMember(request.getChildId().getPathId());
 
             if (null != memberNode && null != request.getChildId().getSubElementId())
             {
@@ -162,36 +190,15 @@ public abstract class UaDataObjectType extends UaSubmodelType {
             }
 
             if (null == memberNode) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
-
-            if (memberNode.nodeClass() == NodeClass.Variable)
-            {
-                UaVariable variableMember = (UaVariable)memberNode;
-
-                return new ReadChildAttributeResponse(
-                        NodeClass.Variable,
-                        memberNode.displayName(),
-                        memberNode.description(),
-                        variableMember.dataType(),
-                        variableMember.valueRank(),
-                        variableMember.accessLevel(),
-                        variableMember.historizing());
-            } else {
-                return new ReadChildAttributeResponse(
-                        memberNode.nodeClass(),
-                        memberNode.displayName(),
-                        memberNode.description(),
-                        null,
-                        null,
-                        null,
-                        null);
-            }
+            return new ReadMemberAttributeResponse(memberNode);
         });
     }
 
     @Override
     public final CompletableFuture<ReadVariableValueResponse> onReadVariablesValue(ReadVariableValueRequest request)
     {
-        return getVariableValues(request);
+        return getVariableValues(request).thenApply(
+                readVariableValueResponse -> processReadVariableValueResponse(request.getVariableIds(), readVariableValueResponse));
     }
 
     @Override
@@ -256,5 +263,31 @@ public abstract class UaDataObjectType extends UaSubmodelType {
         }
 
         return new BrowseObjectResponse(childDescriptors, false);
+    }
+
+    private ReadVariableValueResponse processReadVariableValueResponse(
+            Set<UaChildId> membersToRead,
+            ReadVariableValueResponse response)
+    {
+        ReadVariableValueResponse readVariableValueResponse = new ReadVariableValueResponse(response.getResults());
+
+        Map<UaChildId, DataValue> results = response.getResults();
+
+        for (UaChildId item: membersToRead)
+        {
+            if (null == item.getSubElementName() || results.containsKey(item)) continue;
+
+            UaInstanceNode node = getMember(item.getId());
+            if (null == node) continue;
+
+            UaInstanceNode subElementNode = node.getMember(item.getSubElementName());
+            if (null == subElementNode || NodeClass.Variable != subElementNode.nodeClass()) continue;
+
+            results.put(
+                    item,
+                    new DataValue(((UaVariable)subElementNode).value(), StatusCode.GOOD, null, null));
+        }
+
+        return readVariableValueResponse;
     }
 }

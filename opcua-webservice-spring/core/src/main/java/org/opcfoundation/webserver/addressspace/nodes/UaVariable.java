@@ -5,8 +5,11 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
+
+import java.util.Map;
 
 public class UaVariable extends UaInstanceNode {
     private final UaVariableType typeDefinition;
@@ -81,6 +84,32 @@ public class UaVariable extends UaInstanceNode {
     public void addMember(UaVariable member)
     {
         addMemberNode(member);
+    }
+
+    public void setMembers(Map<String, Variant> variableValues)
+    {
+        for (Map.Entry<String, Variant> item: variableValues.entrySet())
+        {
+            UaInstanceNode member = typeDefinition.getMember(item.getKey());
+            if (null == member || NodeClass.Variable != member.nodeClass()) continue;
+
+            String nodeIdValue = nodeId().getIdentifier().toString();
+            nodeIdValue += "-";
+            nodeIdValue += item.getKey();
+
+            UaVariable memberVariable = (UaVariable)member;
+
+            UaVariable variable = new UaVariable(
+                    new NodeId(nodeId().getNamespaceIndex(), nodeIdValue),
+                    memberVariable.browseName(),
+                    memberVariable.displayName(),
+                    memberVariable.dataType(),
+                    memberVariable.valueRank(),
+                    memberVariable.accessLevel(),
+                    memberVariable.typeDefinition());
+
+            addMember(variable);
+        }
     }
 
     @Override

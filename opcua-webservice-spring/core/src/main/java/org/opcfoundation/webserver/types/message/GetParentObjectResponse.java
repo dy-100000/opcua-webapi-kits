@@ -2,8 +2,9 @@ package org.opcfoundation.webserver.types.message;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.opcfoundation.webserver.addressspace.models.UaMasterObjectType;
+import org.opcfoundation.webserver.addressspace.models.UaObjectType;
 
+@Deprecated
 public class GetParentObjectResponse {
     private final String id;
     private final LocalizedText displayName;
@@ -29,7 +30,7 @@ public class GetParentObjectResponse {
     public GetParentObjectResponse(
             String id,
             LocalizedText displayName,
-            UaMasterObjectType objectType)
+            UaObjectType objectType)
     {
         this.id = id;
         this.displayName = (displayName.isNull()) ? new LocalizedText(id) : displayName;

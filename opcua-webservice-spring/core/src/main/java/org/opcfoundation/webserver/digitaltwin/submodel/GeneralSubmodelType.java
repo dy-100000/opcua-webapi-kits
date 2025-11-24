@@ -1,0 +1,349 @@
+package org.opcfoundation.webserver.digitaltwin.submodel;
+
+import org.eclipse.milo.opcua.sdk.core.AccessLevel;
+import org.eclipse.milo.opcua.stack.core.NodeIds;
+import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
+import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
+import org.jspecify.annotations.Nullable;
+import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
+import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
+import org.opcfoundation.webserver.addressspace.nodes.*;
+import org.opcfoundation.webserver.digitaltwin.element.ElementCollectionType;
+import org.opcfoundation.webserver.digitaltwin.element.ElementListType;
+import org.opcfoundation.webserver.digitaltwin.element.ReferenceElementType;
+import org.opcfoundation.webserver.digitaltwin.callback.GeneralSubmodelCallback;
+import org.opcfoundation.webserver.types.ServiceContext;
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.UaChildId;
+import org.opcfoundation.webserver.types.UaReferenceDescriptor;
+import org.opcfoundation.webserver.types.message.*;
+import org.opcfoundation.webserver.types.message.digitaltwin.*;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
+public abstract class GeneralSubmodelType extends SubmodelType implements GeneralSubmodelCallback {
+    public GeneralSubmodelType(String typeId,
+                               LocalizedText displayName,
+                               DigitalTwinSpace namespace)
+    {
+        super(typeId, displayName, namespace);
+    }
+
+    public UaVariable addPropertyElement(
+            String        name,
+            LocalizedText displayName,
+            LocalizedText description,
+            UaDataType    dataType,
+            boolean       writable)
+    {
+        return addPropertyElement(
+                UaVariableTypes.PropertyType,
+                name,
+                displayName,
+                description,
+                dataType,
+                writable,
+                false,
+                true,
+                null);
+    }
+
+    public UaVariable addPropertyElement(
+            UaVariableType    type,
+            String            name,
+            LocalizedText     displayName,
+            LocalizedText     description,
+            UaDataType        dataType,
+            boolean           writable,
+            boolean           historizing,
+            boolean           mandatory,
+            @Nullable Integer valueRank)
+    {
+        UaVariable newVariable = addVariableNode(name, displayName, dataType,writable, historizing, valueRank, type);
+        if (description.isNotNull()) newVariable.setDescription(description);
+        newVariable.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newVariable;
+    }
+
+    public UaMethod addOperationElement(
+            String                   name,
+            LocalizedText            displayName,
+            LocalizedText            description,
+            boolean                  mandatory,
+            @Nullable List<Argument> inputArguments,
+            @Nullable List<Argument> outputArguments)
+    {
+        UaMethod newMethod = addMethodNode(name, displayName, inputArguments, outputArguments);
+        if (description.isNotNull()) newMethod.setDescription(description);
+        newMethod.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newMethod;
+    }
+
+    public UaObject addElementCollection(
+            ElementCollectionType type,
+            String                name,
+            LocalizedText         displayName,
+            LocalizedText         description,
+            boolean               mandatory)
+    {
+        UaObject newObject = addObjectNode(name, displayName, type);
+        if (description.isNotNull()) newObject.setDescription(description);
+        newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newObject;
+    }
+
+    public UaObject addReferenceElement(
+            ReferenceElementType type,
+            String               name,
+            LocalizedText        displayName,
+            LocalizedText        description,
+            boolean              mandatory)
+    {
+        UaObject newObject = addObjectNode(name, displayName, type);
+        if (description.isNotNull()) newObject.setDescription(description);
+        newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newObject;
+    }
+
+    public UaObject addElementList(
+            ElementListType type,
+            String          name,
+            LocalizedText   displayName,
+            LocalizedText   description,
+            boolean         mandatory)
+    {
+        UaObject newObject = addObjectNode(name, displayName, type);
+        if (description.isNotNull()) newObject.setDescription(description);
+        newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newObject;
+    }
+
+    @Override
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
+    {
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
+        List<UaInstanceNode> members = getMembers();
+        final List<UaInstanceNode> membersToReturn = new ArrayList<>();
+
+        for (UaInstanceNode item: members)
+        {
+            if (item.nodeClass() == NodeClass.Object)
+            {
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) continue;
+            }
+
+            if (item.nodeClass() == NodeClass.Method)
+            {
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK)) continue;
+            }
+
+            if (item.nodeClass() == NodeClass.Variable)
+            {
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK)) continue;
+
+                NodeId variableTypeId = ((UaVariable) item).typeDefinition().nodeId();
+                if (referenceTypeId.equals(NodeIds.HasProperty))
+                {
+                    if (!variableTypeId.equals(NodeIds.PropertyType)) continue;
+                } else if (referenceTypeId.equals(NodeIds.HasComponent)) {
+                    if (variableTypeId.equals(NodeIds.PropertyType)) continue;
+                }
+            }
+
+            membersToReturn.add(item);
+        }
+
+        if (membersToReturn.isEmpty()) return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
+
+        ServiceContext context = new ServiceContext(request.getObjectId());
+        GetElementsRequest getElementsRequest = new GetElementsRequest(context);
+
+        return onGetElements(getElementsRequest).
+                thenApply(response -> processBrowseObjectChildrenResponse(membersToReturn, response));
+    }
+
+    @Override
+    public final CompletableFuture<BrowseMemberResponse> onBrowseMemberChildren(BrowseMemberRequest request)
+    {
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
+        UaInstanceNode member = getMember(request.getChildId());
+        if (null == member || NodeClass.Object == member.nodeClass()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
+
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
+        List<UaInstanceNode> members = member.getMembers();
+
+        for (UaInstanceNode item: members)
+        {
+            if (item.nodeClass() != NodeClass.Variable) continue;
+
+            NodeId variableTypeId = ((UaVariable)item).typeDefinition().nodeId();
+
+            if (referenceTypeId.equals(NodeIds.HasProperty))
+            {
+                if (!variableTypeId.equals(NodeIds.PropertyType)) continue;
+            } else if (referenceTypeId.equals(NodeIds.HasComponent)) {
+                if (variableTypeId.equals(NodeIds.PropertyType)) continue;
+            }
+
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
+                    item.browseName(),
+                    item,
+                    variableTypeId.equals(NodeIds.PropertyType) ? NodeIds.HasProperty : NodeIds.HasComponent,
+                    true);
+
+            childDescriptors.add(descriptor);
+        }
+
+        return CompletableFuture.completedFuture(new BrowseMemberResponse(childDescriptors));
+    }
+
+    @Override
+    public final CompletableFuture<ReadMemberAttributeResponse> onReadMemberAttributes(ReadMemberAttributeRequest request)
+    {
+        return CompletableFuture.supplyAsync(() -> {
+            UaInstanceNode memberNode = getMember(request.getChildId().getId());
+
+            if (null != memberNode && null != request.getChildId().getSubElementName())
+            {
+                memberNode = memberNode.getMember(request.getChildId().getSubElementName());
+            }
+
+            if (null == memberNode) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
+            return new ReadMemberAttributeResponse(memberNode);
+        });
+    }
+
+    @Override
+    public final CompletableFuture<ReadVariableValueResponse> onReadVariablesValue(ReadVariableValueRequest request)
+    {
+        final Set<String> propertyNames = new HashSet<>();
+        final Set<UaChildId> subElementNames = new HashSet<>();
+
+        for (UaChildId item: request.getVariableIds())
+        {
+            if (null == item.getSubElementName())
+            {
+                propertyNames.add(item.getId());
+            } else {
+                subElementNames.add(item);
+            }
+        }
+
+        ServiceContext context = new ServiceContext(request.getObjectId());
+        ReadPropertyValuesRequest readPropertyValuesRequest = new ReadPropertyValuesRequest(
+                context,
+                propertyNames);
+
+        return onReadPropertyValues(readPropertyValuesRequest).
+                thenApply(readPropertyValuesResponse -> {
+                    return processReadVariableValueResponse(subElementNames, readPropertyValuesResponse); });
+    }
+
+    @Override
+    public final CompletableFuture<WriteVariableValueResponse> onWriteVariablesValue(WriteVariableValueRequest request)
+    {
+        Map<String, Variant> elementValues = new HashMap<>();
+
+        for (Map.Entry<UaChildId, Variant> item : request.getVariableValues().entrySet())
+        {
+            UaChildId childId = item.getKey();
+            if (null != childId.getSubElementName()) continue;
+
+            UaNode memberNode = getMember(childId.getId());
+            if (null == memberNode || NodeClass.Variable != memberNode.nodeClass()) continue;
+
+            UaVariable variableToWrite = (UaVariable) memberNode;
+            if ((AccessLevel.CurrentWrite.getValue() & variableToWrite.accessLevel()) == 0) continue;
+
+            elementValues.put(childId.getId(), item.getValue());
+        }
+
+        if (elementValues.isEmpty())
+        {
+            return CompletableFuture.completedFuture(new WriteVariableValueResponse());
+        }
+
+        ServiceContext context = new ServiceContext(request.getObjectId());
+        WritePropertyValuesRequest writePropertyValuesRequest = new WritePropertyValuesRequest(
+                context,
+                elementValues);
+
+        return onWritePropertyValues(writePropertyValuesRequest)
+                .thenApply(response -> {
+                    return new WriteVariableValueResponse(response.getResults());
+                });
+    }
+
+    @Override
+    public CompletableFuture<MethodCallResponse> onMethodCall(MethodCallRequest request)
+    {
+        ServiceContext context = new ServiceContext(request.getObjectId());
+        InvokeOperationRequest invokeOperationRequest = new InvokeOperationRequest(
+                context,
+                request.getMethodName(),
+                request.getInputArguments());
+
+        return onInvokeOperation(invokeOperationRequest)
+                .thenApply(response -> {
+                    return new MethodCallResponse(response.getOutputArguments());
+                });
+    }
+
+    private BrowseObjectResponse processBrowseObjectChildrenResponse(
+            List<UaInstanceNode> members,
+            GetElementsResponse response)
+    {
+        List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
+
+        for (UaInstanceNode item: members)
+        {
+            if (item.modellingRule() == UaModellingRule.Optional &&
+                    response.getElementNames().contains(item.browseName())) continue;
+
+            NodeId referenceType = (item.nodeClass() == NodeClass.Variable &&
+                    ((UaVariable) item).typeDefinition().nodeId().equals(NodeIds.PropertyType)) ? NodeIds.HasProperty : NodeIds.HasComponent;
+
+            UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
+                    item.browseName(),
+                    item,
+                    referenceType,
+                    true);
+
+            childDescriptors.add(descriptor);
+        }
+
+        return new BrowseObjectResponse(childDescriptors, false);
+    }
+
+    private ReadVariableValueResponse processReadVariableValueResponse(
+            Set<UaChildId> subElementNames,
+            ReadPropertyValuesResponse response)
+    {
+        ReadVariableValueResponse readVariableValueResponse = new ReadVariableValueResponse(response.getResults());
+
+        Map<UaChildId, DataValue> results = response.getResults();
+
+        for (UaChildId item: subElementNames)
+        {
+            if (null == item.getSubElementName()) continue;
+
+            UaInstanceNode node = getMember(item.getId());
+            if (null == node) continue;
+
+            UaInstanceNode subElementNode = node.getMember(item.getSubElementName());
+            if (null == subElementNode || NodeClass.Variable != subElementNode.nodeClass()) continue;
+
+            results.put(
+                    item,
+                    new DataValue(((UaVariable)subElementNode).value(), StatusCode.GOOD, null, null));
+        }
+
+        return readVariableValueResponse;
+    }
+}

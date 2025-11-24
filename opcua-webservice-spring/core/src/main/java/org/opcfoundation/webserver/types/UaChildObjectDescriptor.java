@@ -8,6 +8,7 @@ import org.opcfoundation.webserver.addressspace.models.UaObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.UaReferenceType;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
 
+@Deprecated
 public class UaChildObjectDescriptor {
     private final String id;
     private final LocalizedText displayName;

@@ -11,9 +11,15 @@ public class UaBrowseAdditionalInfo {
     private final int taskCheckListMasks;
 
     public static final int GET_PARENT_TASK = 1;
-    public static final int GET_CHILD_TASK = 2;
-    public static final int GET_DEFINITION_TASK = 4;
-    public static final int GET_LINK_TASK = 8;
+    public static final int GET_DEFINITION_TASK = 2;
+    public static final int GET_LINK_TASK = 4;
+
+    public static final int GET_CHILD_OBJECT_TASK = 8;
+    public static final int GET_CHILD_VARIABLE_TASK = 16;
+    public static final int GET_CHILD_METHOD_TASK = 32;
+    public static final int GET_CHILD_TASK = GET_CHILD_OBJECT_TASK + GET_CHILD_VARIABLE_TASK + GET_CHILD_METHOD_TASK;
+
+    public static final int ALL_TASK = GET_PARENT_TASK + GET_CHILD_TASK + GET_DEFINITION_TASK + GET_LINK_TASK;
 
     public UaBrowseAdditionalInfo(
             int maxReferencesPerNode,
@@ -64,7 +70,17 @@ public class UaBrowseAdditionalInfo {
 
                 if (description.getBrowseDirection() == BrowseDirection.Forward ||
                         description.getBrowseDirection() == BrowseDirection.Both) {
-                    browseInfoMask = browseInfoMask | GET_CHILD_TASK; // Get Child
+                    if ((description.getNodeClassMask().longValue() & NodeClass.Object.getValue()) != 0) {
+                        browseInfoMask = browseInfoMask | GET_CHILD_OBJECT_TASK;  // Get object child
+                    }
+
+                    if ((description.getNodeClassMask().longValue() & NodeClass.Variable.getValue()) != 0) {
+                        browseInfoMask = browseInfoMask | GET_CHILD_VARIABLE_TASK;  // Get variable child
+                    }
+
+                    if ((description.getNodeClassMask().longValue() & NodeClass.Method.getValue()) != 0) {
+                        browseInfoMask = browseInfoMask | GET_CHILD_METHOD_TASK;  // Get method child
+                    }
                 }
             }
 
@@ -85,11 +101,29 @@ public class UaBrowseAdditionalInfo {
             if (description.getBrowseDirection() == BrowseDirection.Forward ||
                     description.getBrowseDirection() == BrowseDirection.Both)
             {
-                if (description.getReferenceTypeId().equals(NodeIds.Organizes) ||
-                            description.getReferenceTypeId().equals(NodeIds.HasComponent) ||
-                            description.getReferenceTypeId().equals(NodeIds.HasProperty))
+                if ((description.getNodeClassMask().longValue() & NodeClass.Object.getValue()) != 0)
                 {
-                    browseInfoMask = browseInfoMask | GET_CHILD_TASK; // Get Child
+                    if (description.getReferenceTypeId().equals(NodeIds.HasComponent))
+                    {
+                        browseInfoMask = browseInfoMask | GET_CHILD_OBJECT_TASK;  // Get object child
+                    }
+                }
+
+                if ((description.getNodeClassMask().longValue() & NodeClass.Variable.getValue()) != 0)
+                {
+                    if (description.getReferenceTypeId().equals(NodeIds.HasComponent) ||
+                            description.getReferenceTypeId().equals(NodeIds.HasProperty))
+                    {
+                        browseInfoMask = browseInfoMask | GET_CHILD_VARIABLE_TASK;  // Get variable child
+                    }
+                }
+
+                if ((description.getNodeClassMask().longValue() & NodeClass.Method.getValue()) != 0)
+                {
+                    if (description.getReferenceTypeId().equals(NodeIds.HasComponent))
+                    {
+                        browseInfoMask = browseInfoMask | GET_CHILD_METHOD_TASK;  // Get method child
+                    }
                 }
 
                 if ((description.getNodeClassMask().longValue() & NodeClass.ObjectType.getValue()) != 0 &&
@@ -110,10 +144,12 @@ public class UaBrowseAdditionalInfo {
 
     public UaBrowseAdditionalInfo taskComplete(int taskMask)
     {
+        if (!isTaskRequired(taskMask)) return this;
+
         return new UaBrowseAdditionalInfo(
                 maxReferencesPerNode,
-                referenceOffset,
-                isTaskRequired(taskMask) ? taskCheckListMasks^taskMask : taskCheckListMasks);
+                0,
+                taskCheckListMasks&(~taskMask));
     }
 
     public boolean isAllTaskComplete()

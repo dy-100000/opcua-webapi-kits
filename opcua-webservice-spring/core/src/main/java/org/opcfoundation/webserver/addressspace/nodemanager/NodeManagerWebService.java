@@ -7,21 +7,17 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaDataType;
-import org.opcfoundation.webserver.addressspace.nodes.UaInstanceNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjects;
-import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
-import org.opcfoundation.webserver.addressspace.models.UaVariableDirectoryType;
 import org.opcfoundation.webserver.addressspace.models.UaObjectType;
 import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.UaInstanceIdentifier;
-import org.opcfoundation.webserver.types.UaMemberIdentifier;
 import org.opcfoundation.webserver.types.UaObjectIdentifier;
-import org.opcfoundation.webserver.service.transactions.UaBrowseTransaction;
-import org.opcfoundation.webserver.service.transactions.UaMethodCallTransaction;
-import org.opcfoundation.webserver.service.transactions.UaReadTransaction;
-import org.opcfoundation.webserver.service.transactions.UaWriteTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
 import org.opcfoundation.webapi.service.types.CallContext;
 import org.opcfoundation.webapi.service.types.ReadContext;
 import org.opcfoundation.webapi.service.types.ServiceContext;
@@ -36,7 +32,8 @@ public class NodeManagerWebService extends NodeManager {
         super(namespaceUri);
     }
 
-    public void addRootObject(String objectId, UaObjectType objectType) throws UaRuntimeException
+    @Deprecated
+    public final void addRootObject(String objectId, UaObjectType objectType) throws UaRuntimeException
     {
         UaInstanceIdentifier objectIdentifier = new UaInstanceIdentifier(
                 new UaObjectIdentifier(objectType.nodeId().toParseableString(), objectId, null),
@@ -55,18 +52,18 @@ public class NodeManagerWebService extends NodeManager {
         UaObjects.ObjectsFolder.organizes(newObject);
     }
 
-    public void addObjectType(UaObjectType objectType) throws UaRuntimeException
+    public final void addObjectType(UaObjectType objectType) throws UaRuntimeException
     {
         super.addNode(objectType);
     }
 
-    public void addDataType(UaDataType dataType) throws UaRuntimeException
+    public final void addDataType(UaDataType dataType) throws UaRuntimeException
     {
         super.addNode(dataType);
     }
 
     @Override
-    public void addNode(UaNode node) throws UaRuntimeException {
+    public final void addNode(UaNode node) throws UaRuntimeException {
         if (node.nodeClass() == NodeClass.ObjectType ||
                 node.nodeClass() == NodeClass.DataType ||
                 node.nodeClass() == NodeClass.VariableType ||
@@ -75,7 +72,7 @@ public class NodeManagerWebService extends NodeManager {
         super.addNode(node);
     }
 
-    public @Nullable UaObjectType findObjectType(UaObjectIdentifier objectId)
+    public final @Nullable UaObjectType findObjectType(UaObjectIdentifier objectId)
     {
         NodeId objectTypeId = NodeId.parseOrNull(objectId.getTypeId());
         if (null == objectTypeId || objectTypeId.getType() != IdType.String) return null;
@@ -86,7 +83,7 @@ public class NodeManagerWebService extends NodeManager {
         return (UaObjectType)node;
     }
 
-    public @Nullable UaObject findInstanceDeclaration(UaObjectIdentifier objectId)
+    public final @Nullable UaObject findInstanceDeclaration(UaObjectIdentifier objectId)
     {
         if (null == objectId.getInstanceDeclId()) return null;
         NodeId instanceDeclarationId = NodeId.parseOrNull(objectId.getInstanceDeclId());
@@ -97,36 +94,8 @@ public class NodeManagerWebService extends NodeManager {
         return (UaObject) instanceDeclaration;
     }
 
-    public @Nullable UaNode findMember(UaInstanceIdentifier identifier)
-    {
-        if (null == identifier.getMemberId()) return null;
-
-        UaMemberIdentifier memberId = identifier.getMemberId();
-        UaObjectType objectType = findObjectType(identifier.getObjectId());
-
-        if (null == memberId || null == objectType) return null;
-
-        UaNode memberNode = null;
-        if (null == memberId.getVariableTypeId())
-        {
-            memberNode = objectType.getMember(memberId.getPath());
-        } else {
-            if (memberId.getVariableTypeId().isEmpty())
-            {
-                memberNode = UaVariableTypes.BaseDataVariableType;
-            } else {
-                NodeId variableTypeId = NodeId.parseOrNull(memberId.getVariableTypeId());
-                if (null != variableTypeId) memberNode = getNode(variableTypeId);
-            }
-        }
-
-        if (null == memberNode || null == memberId.getPathL2()) return memberNode;
-
-        return memberNode.getMember(memberId.getPathL2());
-    }
-
     @Override
-    public UaBrowseTransaction getBrowseTransaction(
+    public final UaBrowseTransaction getBrowseTransaction(
             ServiceContext context,
             BrowseDescription nodeToBrowse,
             UaBrowseAdditionalInfo additionalInfo,
@@ -140,7 +109,7 @@ public class NodeManagerWebService extends NodeManager {
     }
 
     @Override
-    public List<UaReadTransaction> getReadTransactions(
+    public final List<UaReadTransaction> getReadTransactions(
             ReadContext context,
             List<Integer> handleIds)
     {
@@ -148,7 +117,7 @@ public class NodeManagerWebService extends NodeManager {
     }
 
     @Override
-    public List<UaWriteTransaction> getWriteTransactions(
+    public final List<UaWriteTransaction> getWriteTransactions(
             WriteContext context,
             List<Integer> handleIds)
     {
@@ -156,7 +125,7 @@ public class NodeManagerWebService extends NodeManager {
     }
 
     @Override
-    public UaMethodCallTransaction getMethodCallTransaction(
+    public final UaMethodCallTransaction getMethodCallTransaction(
             CallContext context,
             int handleId)
     {

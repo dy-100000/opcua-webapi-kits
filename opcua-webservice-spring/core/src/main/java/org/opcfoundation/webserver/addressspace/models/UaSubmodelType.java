@@ -8,6 +8,8 @@ import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.BaseUaObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
+import org.opcfoundation.webserver.types.message.GetParentObjectRequest;
+import org.opcfoundation.webserver.types.message.GetParentObjectResponse;
 import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.message.*;
 
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+@Deprecated
 public class UaSubmodelType extends UaObjectType {
     public UaSubmodelType(
             String objectTypeId,
@@ -41,7 +44,7 @@ public class UaSubmodelType extends UaObjectType {
     public CompletableFuture<GetParentObjectResponse> getParent(GetParentObjectRequest request)
     {
         return CompletableFuture.supplyAsync(() -> {
-            UaObject instanceDeclaration = request.getObjectId().getInstanceDeclaration();
+            UaObject instanceDeclaration = request.getObjectId().getInstance();
 
             if (null != instanceDeclaration)
             {
@@ -61,7 +64,7 @@ public class UaSubmodelType extends UaObjectType {
 
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request) {
-        UaObject instanceDeclaration = request.getObjectId().getInstanceDeclaration();
+        UaObject instanceDeclaration = request.getObjectId().getInstance();
 
         if (null == instanceDeclaration) {
             return getObjectAttribute(request);

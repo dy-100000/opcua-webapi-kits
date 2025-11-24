@@ -1,24 +1,21 @@
 package org.opcfoundation.webserver.types.message;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.UaObjectId;
 
 public class BrowseObjectRequest {
     private final UaObjectId objectId;
-    private final int limit;
-    private final int offset;
+    private final UaBrowseAdditionalInfo additionalInfo;
     private final BrowseDescription browseDescription;
 
     public BrowseObjectRequest(
             UaObjectId objectId,
-            int limit,
-            int offset,
+            UaBrowseAdditionalInfo additionalInfo,
             BrowseDescription browseDescription)
     {
         this.objectId = objectId;
-        this.limit = limit;
-        this.offset = offset;
+        this.additionalInfo = additionalInfo;
         this.browseDescription = browseDescription;
     }
 
@@ -26,12 +23,8 @@ public class BrowseObjectRequest {
         return objectId;
     }
 
-    public int getLimit() {
-        return limit;
-    }
-
-    public int getOffset() {
-        return offset;
+    public UaBrowseAdditionalInfo getAdditionalInfo() {
+        return additionalInfo;
     }
 
     public BrowseDescription getBrowseDescription() { return browseDescription; }

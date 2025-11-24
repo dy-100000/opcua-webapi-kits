@@ -10,15 +10,22 @@ import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
-import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
+import org.opcfoundation.webserver.types.ServiceContext;
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.message.GetChildObjectIdRequest;
+import org.opcfoundation.webserver.types.message.GetChildObjectIdResponse;
+import org.opcfoundation.webserver.types.message.GetParentObjectRequest;
+import org.opcfoundation.webserver.types.message.GetParentObjectResponse;
 import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.message.*;
+import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsRequest;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
+@Deprecated
 public abstract class UaMasterObjectType extends UaObjectType {
     public UaMasterObjectType(
             String objectTypeId,
@@ -84,34 +91,20 @@ public abstract class UaMasterObjectType extends UaObjectType {
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
-        UaNode hasComponentType = nodeManager.getNode(NodeIds.HasComponent);
-        UaNode hasPropertyType = nodeManager.getNode(NodeIds.HasProperty);
-
-        if (null == hasComponentType || hasComponentType.nodeClass() != NodeClass.ReferenceType ||
-                null == hasPropertyType || hasPropertyType.nodeClass() != NodeClass.ReferenceType)
-        {
-            throw new UaRuntimeException(StatusCodes.Bad_InternalError);
-        }
-
         List<UaInstanceNode> members = getMembers();
         final List<UaInstanceNode> membersToReturn = new ArrayList<>();
 
-        int nodeClassMask = request.getBrowseDescription().getNodeClassMask().intValue();
-        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
-
         for (UaInstanceNode item: members)
         {
-            if ((item.nodeClass().getValue() & nodeClassMask) == 0) continue;
-
-            if (item.nodeClass() == NodeClass.Object || item.nodeClass() == NodeClass.Method)
+            if (item.nodeClass() == NodeClass.Object)
             {
-                if (!((UaReferenceType)hasComponentType).isSubtypeOf(referenceTypeId)) continue;
-            } else if (item.nodeClass() == NodeClass.Variable) {
-                if (!((UaReferenceType)hasPropertyType).isSubtypeOf(referenceTypeId)) continue;
+                if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) continue;
             }
 
             membersToReturn.add(item);
         }
+
+        if (membersToReturn.isEmpty()) return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
         GetChildObjectIdRequest getChildIdRequest = new GetChildObjectIdRequest(request.getObjectId());
         return getChildId(getChildIdRequest).thenApply(response -> processBrowseChildResponse(request.getObjectId().getId(), membersToReturn, response));

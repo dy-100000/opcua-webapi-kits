@@ -15,6 +15,14 @@ public interface UaObjectCallback {
         });
     }
 
+    default CompletableFuture<BrowseMemberResponse> onBrowseMemberChildren(BrowseMemberRequest request)
+    {
+        return CompletableFuture.supplyAsync(()-> {
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
+
+    // Browse object parent
     default CompletableFuture<BrowseObjectResponse> onBrowseObjectParent(BrowseObjectRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {
@@ -39,7 +47,7 @@ public interface UaObjectCallback {
     }
 
     // Read object member attributes
-    default CompletableFuture<ReadChildAttributeResponse> onReadChildAttributes(ReadChildAttributeRequest request)
+    default CompletableFuture<ReadMemberAttributeResponse> onReadMemberAttributes(ReadMemberAttributeRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {
             throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);

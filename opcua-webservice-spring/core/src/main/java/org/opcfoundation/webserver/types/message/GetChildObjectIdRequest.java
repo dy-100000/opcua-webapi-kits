@@ -2,8 +2,7 @@ package org.opcfoundation.webserver.types.message;
 
 import org.opcfoundation.webserver.types.UaObjectId;
 
-import java.util.Set;
-
+@Deprecated
 public class GetChildObjectIdRequest {
     private final UaObjectId objectId;
 

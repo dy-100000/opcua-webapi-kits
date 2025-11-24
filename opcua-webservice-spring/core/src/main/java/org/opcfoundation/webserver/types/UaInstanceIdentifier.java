@@ -12,21 +12,21 @@ public class UaInstanceIdentifier {
 
     @JsonProperty("oi")
     private UaObjectIdentifier objectId;
-    @JsonProperty("mi")
-    private @Nullable UaMemberIdentifier memberId;
+    @JsonProperty("ci")
+    private @Nullable UaChildIdentifier childId;
 
     public UaInstanceIdentifier()
     {
         objectId = new UaObjectIdentifier();
-        memberId = null;
+        childId = null;
     }
 
     public UaInstanceIdentifier(
             UaObjectIdentifier objectId,
-            @Nullable UaMemberIdentifier memberId)
+            @Nullable UaChildIdentifier memberId)
     {
         this.objectId = objectId;
-        this.memberId = memberId;
+        this.childId = memberId;
     }
 
     public UaObjectIdentifier getObjectId() {
@@ -37,12 +37,12 @@ public class UaInstanceIdentifier {
         this.objectId = objectId;
     }
 
-    public @Nullable UaMemberIdentifier getMemberId() {
-        return memberId;
+    public @Nullable UaChildIdentifier getChildId() {
+        return childId;
     }
 
-    public void setMemberId(@Nullable UaMemberIdentifier memberId) {
-        this.memberId = memberId;
+    public void setChildId(@Nullable UaChildIdentifier childId) {
+        this.childId = childId;
     }
 
     public static @Nullable UaInstanceIdentifier fromByteString(ByteString identifier)
@@ -70,7 +70,7 @@ public class UaInstanceIdentifier {
         String ret = "ObjectId: ";
         ret += objectId.toString();
 
-        if (null != memberId) ret += " MemberId: " + memberId;
+        if (null != childId) ret += " ChildId: " + childId;
         return ret;
     }
 }

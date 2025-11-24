@@ -2,6 +2,7 @@ package org.opcfoundation.webserver.types.message;
 
 import java.util.Set;
 
+@Deprecated
 public class GetOptionalMemberResponse {
     private final Set<String> absentMembers;
 

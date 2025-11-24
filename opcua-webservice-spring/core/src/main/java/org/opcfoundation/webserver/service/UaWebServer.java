@@ -9,12 +9,9 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
-import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerBase;
-import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerList;
-import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerNs0;
-import org.opcfoundation.webserver.service.transactions.*;
+import org.opcfoundation.webserver.addressspace.nodemanager.*;
 import org.opcfoundation.webapi.service.types.*;
+import org.opcfoundation.webserver.service.transactions.base.*;
 import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.UaBrowseContinuationPoint;
 
@@ -38,9 +35,12 @@ public abstract class UaWebServer extends UaWebServerBase {
     @Override
     public void startUp() throws UaRuntimeException
     {
-        // Create built in namespace ns0
+        // Create built in namespaces
         NodeManagerNs0 ns0 = new NodeManagerNs0();
         NodeManagerList.nodeManagerList.addNodeManager(ns0);
+
+        NodeManagerNs1 ns1 = new NodeManagerNs1();
+        NodeManagerList.nodeManagerList.addNodeManager(ns1);
 
         // Initialize server
         onStartUp();

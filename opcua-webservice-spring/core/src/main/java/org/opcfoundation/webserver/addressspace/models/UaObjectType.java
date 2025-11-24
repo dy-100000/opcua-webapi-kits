@@ -11,9 +11,9 @@ import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
 import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.*;
+import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public abstract class UaObjectType extends BaseUaObjectType implements UaObjectCallback {
@@ -22,14 +22,14 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
     public UaObjectType(
             String objectTypeId,
             LocalizedText displayName,
-            BaseUaObjectType parentType,
+            @Nullable BaseUaObjectType parentType,
             NodeManager nodeManager)
     {
         super(new NodeId(nodeManager.nsIndex(),objectTypeId),
                 objectTypeId,
                 displayName,
                 false,
-                parentType);
+                (null == parentType) ? UaObjectTypes.BaseObjectType : parentType);
 
         if (objectTypeId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
@@ -40,7 +40,7 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
 
     public boolean isGetLinkSupported() { return false; }
 
-    protected UaObject addObjectNode(
+    protected final UaObject addObjectNode(
             String memberId,
             LocalizedText displayName,
             UaObjectType objectType)
@@ -75,7 +75,7 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
         return newObject;
     }
 
-    protected UaVariable addVariableNode(
+    protected final UaVariable addVariableNode(
             String memberId,
             LocalizedText displayName,
             UaDataType dataType,
@@ -123,7 +123,7 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
         return newVariable;
     }
 
-    protected UaMethod addMethodNode(
+    protected final UaMethod addMethodNode(
             String memberId,
             LocalizedText displayName,
             @Nullable List<Argument> inputArguments,

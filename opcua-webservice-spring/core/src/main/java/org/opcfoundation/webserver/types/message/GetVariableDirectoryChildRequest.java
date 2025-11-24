@@ -2,6 +2,7 @@ package org.opcfoundation.webserver.types.message;
 
 import org.opcfoundation.webserver.types.UaObjectId;
 
+@Deprecated
 public class GetVariableDirectoryChildRequest {
     private final UaObjectId objectId;
     private final int limit;

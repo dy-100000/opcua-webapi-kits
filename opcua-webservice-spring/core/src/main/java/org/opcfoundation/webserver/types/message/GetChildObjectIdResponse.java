@@ -3,6 +3,7 @@ package org.opcfoundation.webserver.types.message;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class GetChildObjectIdResponse {
     private final Map<String, String> childObjectIdsByName;
 

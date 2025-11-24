@@ -5,6 +5,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariableType;
 
+@Deprecated
 public class UaChildVariableDescriptor {
     private final String id;
     private final LocalizedText displayName;

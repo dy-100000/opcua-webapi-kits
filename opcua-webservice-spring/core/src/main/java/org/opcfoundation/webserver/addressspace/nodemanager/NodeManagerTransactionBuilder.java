@@ -13,11 +13,11 @@ import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
 import org.opcfoundation.webserver.addressspace.models.UaObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
-import org.opcfoundation.webserver.addressspace.transactions.*;
-import org.opcfoundation.webserver.service.transactions.UaBrowseTransaction;
-import org.opcfoundation.webserver.service.transactions.UaMethodCallTransaction;
-import org.opcfoundation.webserver.service.transactions.UaReadTransaction;
-import org.opcfoundation.webserver.service.transactions.UaWriteTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
+import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
+import org.opcfoundation.webserver.service.transactions.object.*;
 import org.opcfoundation.webserver.types.*;
 import org.opcfoundation.webapi.service.types.CallContext;
 import org.opcfoundation.webapi.service.types.ReadContext;
@@ -46,12 +46,13 @@ public class NodeManagerTransactionBuilder {
                 additionalInfo,
                 handleId);
 
-        if (IdType.Opaque != nodeToBrowse.getNodeId().getType()) return new UaBrowseNodeTransaction(
-                context,
-                nodeToBrowse,
-                additionalInfo,
-                handleId,
-                nodeManager);
+        if (IdType.Opaque != nodeToBrowse.getNodeId().getType())
+            return new UaBrowseNodeTransaction(
+                    context,
+                    nodeToBrowse,
+                    additionalInfo,
+                    handleId,
+                    nodeManager);
 
         final UaInstanceIdentifier identifier = UaInstanceIdentifier.fromByteString((ByteString) nodeToBrowse.getNodeId().getIdentifier());
         if (null == identifier)
@@ -60,20 +61,20 @@ public class NodeManagerTransactionBuilder {
             return transactionNothingToDo;
         }
 
-        //System.out.println("NodeToBrowse: " + identifier);
-        if (null == identifier.getMemberId())
+        // Browse object
+        UaObjectType objectType = nodeManager.findObjectType(identifier.getObjectId());
+
+        if (null == objectType)
         {
-            // Browse object
-            UaObjectType objectType = nodeManager.findObjectType(identifier.getObjectId());
+            transactionNothingToDo.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
+            return transactionNothingToDo;
+        }
 
-            if (null == objectType)
-            {
-                transactionNothingToDo.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
-                return transactionNothingToDo;
-            }
+        UaObject instanceDeclaration = nodeManager.findInstanceDeclaration(identifier.getObjectId());
 
-            UaObject instanceDeclaration = nodeManager.findInstanceDeclaration(identifier.getObjectId());
-
+        //System.out.println("NodeToBrowse: " + identifier);
+        if (null == identifier.getChildId())
+        {
             return new UaBrowseObjectTransaction(
                     context,
                     nodeToBrowse,
@@ -83,11 +84,14 @@ public class NodeManagerTransactionBuilder {
                     new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
                     nodeManager);
         } else {
-            return new UaBrowseMemberTransaction(context,
+            return new UaBrowseMemberTransaction(
+                    context,
                     nodeToBrowse,
                     additionalInfo,
                     handleId,
-                    identifier,
+                    objectType,
+                    new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
+                    identifier.getChildId(),
                     nodeManager);
         }
     }
@@ -116,7 +120,7 @@ public class NodeManagerTransactionBuilder {
                 {
                     if (nodeToRead.getAttributeId().intValue() == AttributeId.Value.id())
                     {
-                        if (null != identifier.getMemberId())
+                        if (null != identifier.getChildId())
                         {
                             handleIdsForObjectVariableValues.put(handleId, identifier);
                             //System.out.println("Read value: " + identifier);
@@ -125,7 +129,7 @@ public class NodeManagerTransactionBuilder {
                             //System.out.println("Read error, id invalid");
                         }
                     } else {
-                        if (null != identifier.getMemberId())
+                        if (null != identifier.getChildId())
                         {
                             handleIdsForObjectMemberAttributes.put(handleId, identifier);
                             //System.out.println("Read object member attribute: " + identifier);
@@ -190,19 +194,19 @@ public class NodeManagerTransactionBuilder {
 
             for (Map.Entry<UaObjectIdentifier, List<Integer>> item: handleIdsByObjectId.entrySet())
             {
-                Map<UaMemberIdentifier, List<Integer>> handleIdsByChildId = new HashMap<>();
+                Map<UaChildIdentifier, List<Integer>> handleIdsByChildId = new HashMap<>();
 
                 for (Integer handleId: item.getValue())
                 {
-                    UaMemberIdentifier memberId = handleIdsForObjectMemberAttributes.get(handleId).getMemberId();
+                    UaChildIdentifier memberId = handleIdsForObjectMemberAttributes.get(handleId).getChildId();
                     if (null == memberId) continue;
 
                     handleIdsByChildId.computeIfAbsent(memberId, k-> new ArrayList<>()).add(handleId);
                 }
 
-                for (Map.Entry<UaMemberIdentifier, List<Integer>> child: handleIdsByChildId.entrySet())
+                for (Map.Entry<UaChildIdentifier, List<Integer>> child: handleIdsByChildId.entrySet())
                 {
-                    UaReadChildAttributeTransaction transaction = new UaReadChildAttributeTransaction(
+                    UaReadMemberAttributeTransaction transaction = new UaReadMemberAttributeTransaction(
                             context,
                             item.getKey(),
                             child.getKey(),
@@ -230,7 +234,7 @@ public class NodeManagerTransactionBuilder {
 
                 for (Integer handleId: item.getValue())
                 {
-                    UaMemberIdentifier memberId = handleIdsForObjectVariableValues.get(handleId).getMemberId();
+                    UaChildIdentifier memberId = handleIdsForObjectVariableValues.get(handleId).getChildId();
                     if (null == memberId) continue;
                     handleIdsAndVariableIds.put(handleId,new UaChildId(memberId.getPath(), memberId.getPathL2()));
                 }
@@ -271,7 +275,7 @@ public class NodeManagerTransactionBuilder {
                 {
                     if (nodeToWrite.getAttributeId().intValue() == AttributeId.Value.id())
                     {
-                        if (null != identifier.getMemberId())
+                        if (null != identifier.getChildId())
                         {
                             handleIdsForWriteVariableValues.put(handleId, identifier);
                             //System.out.println("Write value: " + identifier);
@@ -280,7 +284,7 @@ public class NodeManagerTransactionBuilder {
                             //System.out.println("Write not writable: " + identifier);
                         }
                     } else {
-                        if (null == identifier.getMemberId() &&
+                        if (null == identifier.getChildId() &&
                                 null == identifier.getObjectId().getInstanceDeclId())
                         {
                             handleIdsForObjectAttributes.put(handleId, identifier);
@@ -349,7 +353,7 @@ public class NodeManagerTransactionBuilder {
 
                 for (Integer handleId: item.getValue())
                 {
-                    UaMemberIdentifier memberId = handleIdsForWriteVariableValues.get(handleId).getMemberId();
+                    UaChildIdentifier memberId = handleIdsForWriteVariableValues.get(handleId).getChildId();
                     DataValue value = context.getNodesToWrite().get(handleId).getValue();
                     if (null == memberId) continue;
 

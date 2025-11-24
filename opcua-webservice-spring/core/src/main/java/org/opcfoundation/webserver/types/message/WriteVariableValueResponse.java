@@ -15,6 +15,8 @@ public class WriteVariableValueResponse {
         results = new HashMap<>();
     }
 
+    public WriteVariableValueResponse(Map<UaChildId, StatusCode> results) { this.results = results; }
+
     public void setOperationResults(WriteVariableValueRequest request, StatusCode code)
     {
         Set<UaChildId> childIds = request.getVariableValues().keySet();

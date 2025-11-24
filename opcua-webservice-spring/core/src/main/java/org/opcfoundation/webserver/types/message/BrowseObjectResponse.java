@@ -1,12 +1,14 @@
 package org.opcfoundation.webserver.types.message;
 
+import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 
 import java.util.List;
 
 public class BrowseObjectResponse {
-    private List<UaReferenceDescriptor> children;
-    private boolean containsMoreData;
+    private final List<UaReferenceDescriptor> children;
+    private final boolean containsMoreData;
+    private final int taskMask;
 
     public BrowseObjectResponse(
             List<UaReferenceDescriptor> children,
@@ -14,6 +16,17 @@ public class BrowseObjectResponse {
     {
         this.children = children;
         this.containsMoreData = containsMoreData;
+        this.taskMask = UaBrowseAdditionalInfo.ALL_TASK;
+    }
+
+    public BrowseObjectResponse(
+            List<UaReferenceDescriptor> children,
+            boolean containsMoreData,
+            int taskMask)
+    {
+        this.children = children;
+        this.containsMoreData = containsMoreData;
+        this.taskMask = taskMask;
     }
 
     public List<UaReferenceDescriptor> getChildren() {
@@ -22,5 +35,9 @@ public class BrowseObjectResponse {
 
     public boolean containsMoreData() {
         return containsMoreData;
+    }
+
+    public int getTaskMask() {
+        return taskMask;
     }
 }

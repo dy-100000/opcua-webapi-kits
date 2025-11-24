@@ -1,46 +1,45 @@
 package org.opcfoundation.webserver.types;
 
 import org.jspecify.annotations.Nullable;
-import org.opcfoundation.webserver.addressspace.nodes.UaVariableType;
 
 import java.util.Objects;
 
 public class UaChildId {
-    private final String pathId;
-    private final @Nullable String subElementId;
+    private final String id;
+    private final @Nullable String subElementName;
 
-    public UaChildId(String pathId)
+    public UaChildId(String id)
     {
-        this.pathId = pathId;
-        subElementId = null;
+        this.id = id;
+        subElementName = null;
     }
 
     public UaChildId(
-            String pathId,
-            @Nullable String subElementId)
+            String id,
+            @Nullable String subElementName)
     {
-        this.pathId = pathId;
-        this.subElementId = (null == subElementId || subElementId.isEmpty()) ? null : subElementId;
+        this.id = id;
+        this.subElementName = (null == subElementName || subElementName.isEmpty()) ? null : subElementName;
     }
 
-    public String getPathId() {
-        return pathId;
+    public String getId() {
+        return id;
     }
 
-    public @Nullable String getSubElementId() {
-        return subElementId;
+    public @Nullable String getSubElementName() {
+        return subElementName;
     }
 
     @Override
     public String toString()
     {
-        String ret = "PathId: ";
-        ret += pathId;
+        String ret = "Id: ";
+        ret += id;
 
-        if (null != subElementId)
+        if (null != subElementName)
         {
-            ret += " SubElementId: ";
-            ret += subElementId;
+            ret += " SubElementName: ";
+            ret += subElementName;
         }
 
         return ret;
@@ -52,12 +51,22 @@ public class UaChildId {
         if (obj == null || getClass() != obj.getClass()) return false;
         UaChildId childId = (UaChildId) obj;
 
-        return Objects.equals(pathId,childId.pathId) &&
-                Objects.equals(subElementId,childId.subElementId);
+        return Objects.equals(id,childId.id) &&
+                Objects.equals(subElementName,childId.subElementName);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(pathId, subElementId);
+        return Objects.hash(id, subElementName);
+    }
+
+    @Deprecated
+    public String getPathId() {
+        return id;
+    }
+
+    @Deprecated
+    public @Nullable String getSubElementId() {
+        return subElementName;
     }
 }

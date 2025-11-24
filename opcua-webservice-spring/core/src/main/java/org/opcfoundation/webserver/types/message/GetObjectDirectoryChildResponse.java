@@ -4,6 +4,7 @@ import org.opcfoundation.webserver.types.UaChildObjectDescriptor;
 
 import java.util.List;
 
+@Deprecated
 public class GetObjectDirectoryChildResponse {
     private final List<UaChildObjectDescriptor> children;
     private final boolean containsMoreData;

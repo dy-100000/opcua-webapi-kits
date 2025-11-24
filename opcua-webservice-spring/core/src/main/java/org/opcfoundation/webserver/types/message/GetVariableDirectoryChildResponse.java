@@ -4,6 +4,7 @@ import org.opcfoundation.webserver.types.UaChildVariableDescriptor;
 
 import java.util.List;
 
+@Deprecated
 public class GetVariableDirectoryChildResponse {
     private final List<UaChildVariableDescriptor> children;
     private final boolean containsMoreData;

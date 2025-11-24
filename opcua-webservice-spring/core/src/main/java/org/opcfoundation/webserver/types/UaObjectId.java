@@ -5,34 +5,29 @@ import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 
 public class UaObjectId {
     private final String id;
-    private final @Nullable UaObject instanceDeclaration;
+    private final @Nullable UaObject instance;
 
-    public UaObjectId(String id, @Nullable UaObject instanceDeclaration)
+    public UaObjectId(String id, @Nullable UaObject instance)
     {
         this.id = id;
-        this.instanceDeclaration = instanceDeclaration;
+        this.instance = instance;
     }
 
     public String getId() {
         return id;
     }
 
-    public @Nullable String getPathName()
-    {
-        return (null == instanceDeclaration) ? null : instanceDeclaration.browseName();
-    }
-
-    public @Nullable UaObject getInstanceDeclaration() {
-        return instanceDeclaration;
+    public @Nullable UaObject getInstance() {
+        return instance;
     }
 
     @Override
     public String toString() {
         String ret = "Id: " + id;
 
-        if (null != instanceDeclaration)
+        if (null != instance)
         {
-            ret += " Path: " + instanceDeclaration.browseName();
+            ret += " Path: " + instance.browseName();
         }
 
         return ret;
