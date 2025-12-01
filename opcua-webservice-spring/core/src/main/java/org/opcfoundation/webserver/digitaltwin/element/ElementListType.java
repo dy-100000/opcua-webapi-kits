@@ -1,6 +1,5 @@
 package org.opcfoundation.webserver.digitaltwin.element;
 
-import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
@@ -46,14 +45,14 @@ public abstract class ElementListType extends ElementType implements ElementList
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription());
+                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
             });
         } else {
-            ReadObjectAttributeResponse response = new ReadObjectAttributeResponse(
-                    instanceDeclaration.displayName(),
-                    instanceDeclaration.description());
-
-            return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription()));
+            return CompletableFuture.completedFuture(
+                    new ReadObjectAttributeResponse(
+                            instanceDeclaration.browseName(),
+                            instanceDeclaration.displayName(),
+                            instanceDeclaration.description()));
         }
     }
 
@@ -115,7 +114,10 @@ public abstract class ElementListType extends ElementType implements ElementList
                 request.getChildId().getId(),
                 request.getChildId().getSubElementName());
 
-        return onGetPropertyDescriptor(getPropertyDescriptorRequest).thenApply(this::processReadMemberAttributeResponse);
+        return onGetPropertyDescriptor(getPropertyDescriptorRequest).thenApply(
+                response -> {
+                    return processReadMemberAttributeResponse(request.getChildId(), response);
+                });
     }
 
     @Override
@@ -157,21 +159,10 @@ public abstract class ElementListType extends ElementType implements ElementList
 
             if (null == childId.getSubElementName())
             {
-                UaNode memberNode = getMember(childId.getId());
-                if (null == memberNode || NodeClass.Variable != memberNode.nodeClass()) continue;
-
-                UaVariable variableToWrite = (UaVariable) memberNode;
-                if ((AccessLevel.CurrentWrite.getValue() & variableToWrite.accessLevel()) == 0) continue;
-
                 propertyIdAndValues.put(childId.getId(), item.getValue());
             } else {
                 subPropertyIdsAndValues.put(childId, item.getValue());
             }
-        }
-
-        if (propertyIdAndValues.isEmpty() && subPropertyIdsAndValues.isEmpty())
-        {
-            return CompletableFuture.completedFuture(new WriteVariableValueResponse());
         }
 
         ServiceContext context = new ServiceContext(request.getObjectId());
@@ -207,7 +198,7 @@ public abstract class ElementListType extends ElementType implements ElementList
         return new BrowseObjectResponse(
                 childDescriptors,
                 response.containsMoreData(),
-                UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK);
+                UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK | UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK);
     }
 
     private BrowseObjectResponse processBrowseObjectChildrenResponse(GetPropertyElementListResponse response)
@@ -231,7 +222,7 @@ public abstract class ElementListType extends ElementType implements ElementList
         return new BrowseObjectResponse(
                 childDescriptors,
                 response.containsMoreData(),
-                UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK);
+                UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK | UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK);
     }
 
     private BrowseMemberResponse processBrowseMemberChildren(GetPropertySubElementsResponse response)
@@ -255,15 +246,17 @@ public abstract class ElementListType extends ElementType implements ElementList
         return new BrowseMemberResponse(childDescriptors);
     }
 
-    private ReadMemberAttributeResponse processReadMemberAttributeResponse(GetPropertyDescriptorResponse response)
+    private ReadMemberAttributeResponse processReadMemberAttributeResponse(UaChildId childId, GetPropertyDescriptorResponse response)
     {
         return new ReadMemberAttributeResponse(
                 NodeClass.Variable,
+                (null == childId.getSubElementName()) ? childId.getId() : childId.getSubElementName(),
                 response.getDisplayName(),
                 response.getDescription(),
                 response.getDataTypeId(),
                 response.getValueRank(),
                 response.getAccessLevel(),
-                response.getHistorizing());
+                response.getHistorizing(),
+                null);
     }
 }

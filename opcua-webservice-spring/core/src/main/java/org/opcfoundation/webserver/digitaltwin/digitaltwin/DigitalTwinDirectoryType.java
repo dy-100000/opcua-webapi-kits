@@ -50,8 +50,9 @@ public abstract class DigitalTwinDirectoryType extends UaObjectType implements D
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request) {
         return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(
-                    new LocalizedText(request.getObjectId().getId()),
-                    LocalizedText.NULL_VALUE));
+                request.getObjectId().getId(),
+                new LocalizedText(request.getObjectId().getId()),
+                LocalizedText.NULL_VALUE));
     }
 
     private BrowseObjectResponse processBrowseObjectChildrenResponse(GetDigitalTwinListResponse response)

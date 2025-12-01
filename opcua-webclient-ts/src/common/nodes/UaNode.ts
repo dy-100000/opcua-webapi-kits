@@ -75,4 +75,11 @@ export abstract class UaDefintionNode extends UaNode
         this._parentType = parentType;
         parentType._childTypes.push(this);
     }
+
+    isSubtypeOf(typeId : UaNodeId) : boolean
+    {     
+        if (typeId.equal(this._nodeId)) return true;
+        if (null == this._parentType) return false;
+        return this._parentType.isSubtypeOf(typeId);
+    }
 }

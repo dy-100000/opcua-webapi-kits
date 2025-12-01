@@ -138,8 +138,6 @@ public class UaBrowseObjectTransaction extends UaBrowseTransaction {
                         memberIdentifier);
             }
 
-            // System.out.println("Result: " + newIdentifier);
-
             references.add(new ReferenceDescription(
                     item.getReferenceTypeId(),
                     item.isForward(),

@@ -56,7 +56,7 @@ public interface ElementListCallback {
     default CompletableFuture<GetPropertySubElementsResponse> onGetPropertySubElements(GetPropertySubElementsRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {
-            return new GetPropertySubElementsResponse(new HashSet<>());
+            return new GetPropertySubElementsResponse();
         });
     }
 

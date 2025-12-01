@@ -1,6 +1,7 @@
 package org.opcfoundation.webserver.digitaltwin.callback;
 
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
+import org.opcfoundation.webserver.types.SubmodelDescriptor;
 import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsRequest;
 import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsResponse;
 import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
@@ -21,7 +22,7 @@ public interface DigitalTwinCallback {
             GetSubmodelsResponse response = new GetSubmodelsResponse();
             for (UaObject item: submodels)
             {
-                response.add(digitalTwinId, item.browseName());
+                response.add(new SubmodelDescriptor(digitalTwinId, item));
             }
 
             return response;

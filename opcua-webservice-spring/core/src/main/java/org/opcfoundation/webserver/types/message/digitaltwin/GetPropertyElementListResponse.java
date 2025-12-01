@@ -2,18 +2,22 @@ package org.opcfoundation.webserver.types.message.digitaltwin;
 
 import org.opcfoundation.webserver.types.PropertyElementDescriptor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class GetPropertyElementListResponse {
     private final List<PropertyElementDescriptor> elements;
-    private final boolean containsMoreData;
+    private boolean containsMoreData;
 
-    public GetPropertyElementListResponse(
-            List<PropertyElementDescriptor> elements,
-            boolean containsMoreData)
+    public GetPropertyElementListResponse()
     {
-        this.elements = elements;
-        this.containsMoreData = containsMoreData;
+        this.elements = new ArrayList<>();
+        this.containsMoreData = false;
+    }
+
+    public void add(PropertyElementDescriptor descriptor)
+    {
+        elements.add(descriptor);
     }
 
     public List<PropertyElementDescriptor> getElements() {
@@ -23,5 +27,9 @@ public class GetPropertyElementListResponse {
     public boolean containsMoreData()
     {
         return containsMoreData;
+    }
+
+    public void setContainsMoreData(boolean containsMoreData) {
+        this.containsMoreData = containsMoreData;
     }
 }

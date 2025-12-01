@@ -19,6 +19,6 @@ public class UaWriteNodeTransaction extends UaWriteTransaction {
     @Override
     public CompletableFuture<Void> execute()
     {
-        return CompletableFuture.supplyAsync(()-> buildErrorResponse(new UaRuntimeException(StatusCodes.Bad_NotWritable)));
+        return CompletableFuture.completedFuture(buildErrorResponse(new UaRuntimeException(StatusCodes.Bad_NotWritable)));
     }
 }

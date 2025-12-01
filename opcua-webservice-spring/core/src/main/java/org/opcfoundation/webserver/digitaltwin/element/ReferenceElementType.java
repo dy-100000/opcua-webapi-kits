@@ -53,14 +53,14 @@ public abstract class ReferenceElementType extends ElementType implements Refere
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription());
+                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
             });
         } else {
-            ReadObjectAttributeResponse response = new ReadObjectAttributeResponse(
-                    instanceDeclaration.displayName(),
-                    instanceDeclaration.description());
-
-            return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription()));
+            return CompletableFuture.completedFuture(
+                    new ReadObjectAttributeResponse(
+                            instanceDeclaration.browseName(),
+                            instanceDeclaration.displayName(),
+                            instanceDeclaration.description()));
         }
     }
 

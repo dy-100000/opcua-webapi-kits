@@ -9,7 +9,7 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjects;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinType;
 import org.opcfoundation.webserver.digitaltwin.element.ElementType;
-import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
+import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelTypeBase;
 import org.opcfoundation.webserver.types.UaInstanceIdentifier;
 import org.opcfoundation.webserver.types.UaObjectIdentifier;
 
@@ -27,7 +27,7 @@ public class DigitalTwinSpace extends NodeManagerWebService {
         addObjectType(type);
     }
 
-    public final void addSubmodelType(SubmodelType type)
+    public final void addSubmodelType(SubmodelTypeBase type)
     {
         addObjectType(type);
     }

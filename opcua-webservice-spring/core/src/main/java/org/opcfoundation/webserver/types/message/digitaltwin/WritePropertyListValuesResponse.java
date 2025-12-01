@@ -19,9 +19,9 @@ public class WritePropertyListValuesResponse {
         results.put(new UaChildId(propertyId), code);
     }
 
-    public void setWriteValueResult(String propertyId,String subPropertyName,StatusCode code)
+    public void setWriteValueResult(UaChildId subPropertyId,StatusCode code)
     {
-        results.put(new UaChildId(propertyId,subPropertyName), code);
+        results.put(subPropertyId, code);
     }
 
     public Map<UaChildId, StatusCode> getResults() {

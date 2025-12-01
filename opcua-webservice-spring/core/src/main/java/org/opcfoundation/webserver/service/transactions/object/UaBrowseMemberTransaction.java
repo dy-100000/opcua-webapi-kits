@@ -42,16 +42,18 @@ public class UaBrowseMemberTransaction extends UaBrowseTransaction {
     {
         try {
             if (!additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK) ||
-                    null != memberId.getPathL2()) return null;
+                    null != memberId.getPathL2()) return CompletableFuture.completedFuture(null);
+
+            boolean isMethod = null != memberId.getMethodNode() && memberId.getMethodNode();
 
             BrowseMemberRequest request = new BrowseMemberRequest(
                     objectId,
                     memberId.getPath(),
-                    null != memberId.getMethodNode() && memberId.getMethodNode(),
+                    isMethod,
                     getItem());
 
             return objectType.onBrowseMemberChildren(request).
-                    thenApply(this::browseMemberChildResult).
+                    thenApply(response -> { return browseMemberChildResult(isMethod, response); }).
                     exceptionally(ex -> buildErrorResponse(ex.getCause()));
         } catch (Exception e) {
             buildErrorResponse(e);
@@ -60,7 +62,7 @@ public class UaBrowseMemberTransaction extends UaBrowseTransaction {
         return CompletableFuture.completedFuture(null);
     }
 
-    private Void browseMemberChildResult(BrowseMemberResponse response)
+    private Void browseMemberChildResult(boolean isMethodParent, BrowseMemberResponse response)
     {
         for (UaReferenceDescriptor item: response.getChildren())
         {
@@ -72,9 +74,9 @@ public class UaBrowseMemberTransaction extends UaBrowseTransaction {
                         (null == objectId.getInstance()) ? null : objectId.getInstance().nodeId().toParseableString());
 
             UaChildIdentifier memberIdentifier = new UaChildIdentifier(
-                        memberId.getPath(),
-                        item.getId(),
-                        item.getNodeClass() == NodeClass.Method);
+                    memberId.getPath(),
+                    item.getId(),
+                    isMethodParent);
 
             UaInstanceIdentifier newIdentifier = new UaInstanceIdentifier(
                         objectIdentifier,

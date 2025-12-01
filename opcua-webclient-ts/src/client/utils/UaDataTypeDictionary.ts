@@ -1,5 +1,5 @@
-import { BrowseDescription, BrowseDirection, NodeClass, ReferenceTypeIds } from "opcua-webapi";
-import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType } from "../../common"
+import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
+import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType, ReferenceTypeIds } from "../../common"
 import { UaWebClient } from "../UaWebClient"
 
 export class UaDataTypeDictionary
@@ -64,7 +64,7 @@ export class UaDataTypeDictionary
                 {
                     NodeId: item.toString(),
                     BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: ReferenceTypeIds.HasSubtype,
+                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasSubtype).toString(),
                     IncludeSubtypes: false,
                     NodeClassMask: NodeClass.DataType,
                     ResultMask: 31
@@ -130,7 +130,7 @@ export class UaDataTypeDictionary
                 {
                     NodeId: item.toString(),
                     BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: ReferenceTypeIds.HasProperty,
+                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasProperty).toString(),
                     IncludeSubtypes: false,
                     NodeClassMask: NodeClass.Variable,
                     ResultMask: 8

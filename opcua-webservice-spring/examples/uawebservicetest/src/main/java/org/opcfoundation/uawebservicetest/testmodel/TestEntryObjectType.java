@@ -7,7 +7,6 @@ import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 public class TestEntryObjectType extends UaMasterObjectType {
     public TestEntryObjectType(
             TestObjectDirectoryType testObjectDirectoryType,
-            TestVariableDirectoryType testVariableDirectoryType,
             TestDataObjectType testDataObjectType,
             NodeManager nodeManager)
     {
@@ -19,13 +18,6 @@ public class TestEntryObjectType extends UaMasterObjectType {
                 new LocalizedText("TestObjectFolder"),
                 new LocalizedText("Folder contains data objects"),
                 testObjectDirectoryType);
-
-        addSubmodel(
-                "TestVariableFolder",
-                true,
-                new LocalizedText("TestVariableFolder"),
-                new LocalizedText("Folder contains variables"),
-                testVariableDirectoryType);
 
         addSubmodel(
                 "TestDataObject",

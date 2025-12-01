@@ -17,8 +17,8 @@ public abstract class UaNode {
     protected String browseName;
     protected LocalizedText displayName;
     protected UInteger writeMask;
-    protected @Nullable LocalizedText description;
-    protected @Nullable ArrayList<UaReference> references;
+    protected LocalizedText description;
+    protected List<UaReference> references;
 
     public UaNode(
             NodeId nodeId,
@@ -29,8 +29,8 @@ public abstract class UaNode {
         this.browseName = browseName;
         this.displayName = displayName;
         this.writeMask = UInteger.valueOf(0);
-        this.description = null;
-        this.references = null;
+        this.description = LocalizedText.NULL_VALUE;
+        this.references = new ArrayList<>();
     }
 
     public NodeId nodeId() {
@@ -78,11 +78,11 @@ public abstract class UaNode {
         this.writeMask = writeMask;
     }
 
-    public @Nullable LocalizedText description() {
+    public LocalizedText description() {
         return description;
     }
 
-    public void setDescription(@Nullable LocalizedText description) {
+    public void setDescription(LocalizedText description) {
         this.description = description;
     }
 
@@ -142,7 +142,6 @@ public abstract class UaNode {
 
     public boolean hasMember()
     {
-        if (null == references) return false;
         for (UaReference item: references)
         {
             if (item.isForward() &&
@@ -155,11 +154,23 @@ public abstract class UaNode {
 
     public @Nullable UaInstanceNode getMember(String path)
     {
-        List<UaReference> references = getReferences(BrowseDirection.Forward);
         for (UaReference item : references)
         {
-            if (item.linkedNode().browseName().equals(path) &&
+            if (item.isForward() &&
+                    item.linkedNode().browseName().equals(path) &&
                     item.linkedNode().isInstanceNode() &&
+                    item.reference().isSubtypeOf(NodeIds.Aggregates)) return (UaInstanceNode)item.linkedNode();
+        }
+
+        return null;
+    }
+
+    public @Nullable UaInstanceNode getMember(NodeId memberId)
+    {
+        for (UaReference item : references)
+        {
+            if (item.isForward() &&
+                    item.linkedNode().nodeId().equals(memberId) &&
                     item.linkedNode().isInstanceNode() &&
                     item.reference().isSubtypeOf(NodeIds.Aggregates)) return (UaInstanceNode)item.linkedNode();
         }
@@ -169,7 +180,6 @@ public abstract class UaNode {
 
     protected void addReference(UaReference reference)
     {
-        if (null == references) references = new ArrayList<>();
         references.add(reference);
     }
 
@@ -184,7 +194,7 @@ public abstract class UaNode {
             }
         }
 
-        this.addReference(new UaReference(member, reference, true));
+        addReference(new UaReference(member, reference, true));
         member.addReference(new UaReference(this,reference, false));
     }
 }

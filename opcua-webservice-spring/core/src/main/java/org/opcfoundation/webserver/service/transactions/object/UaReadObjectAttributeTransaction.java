@@ -40,6 +40,8 @@ public class UaReadObjectAttributeTransaction extends UaReadTransaction {
 
     public CompletableFuture<Void> execute()
     {
+        // System.out.println("Read object" + objectId);
+
         try {
             UaObjectType objectType = nodeManager.findObjectType(objectId);
             if (null == objectType) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
@@ -54,8 +56,10 @@ public class UaReadObjectAttributeTransaction extends UaReadTransaction {
                     thenAccept(this::setResults).
                     exceptionally(ex -> buildErrorResponse(ex.getCause()));
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(buildErrorResponse(e));
+            buildErrorResponse(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private void setResults(ReadObjectAttributeResponse response)
@@ -80,7 +84,7 @@ public class UaReadObjectAttributeTransaction extends UaReadTransaction {
             } else if (item.getAttributeId().intValue() == AttributeId.NodeId.id()) {
                 value = new Variant(item.getNodeId());
             } else if (item.getAttributeId().intValue() == AttributeId.BrowseName.id()) {
-                value = new Variant(new QualifiedName(0, objectId.getId()));
+                value = new Variant(new QualifiedName(0, response.getBrowseName()));
             } else if (item.getAttributeId().intValue() == AttributeId.NodeClass.id()) {
                 value = new Variant(NodeClass.Object.getValue());
             } else if (item.getAttributeId().intValue() == AttributeId.WriteMask.id()) {

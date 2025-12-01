@@ -13,10 +13,7 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.ElementCollectionCallback;
-import org.opcfoundation.webserver.types.ServiceContext;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaChildId;
-import org.opcfoundation.webserver.types.UaReferenceDescriptor;
+import org.opcfoundation.webserver.types.*;
 import org.opcfoundation.webserver.types.message.*;
 import org.opcfoundation.webserver.types.message.digitaltwin.*;
 
@@ -43,29 +40,31 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             boolean       writable)
     {
         return addPropertyElement(
-                UaVariableTypes.PropertyType,
                 name,
                 displayName,
                 description,
                 dataType,
                 writable,
                 false,
-                true,
-                null);
+                -1,
+                UaVariableTypes.PropertyType,
+                null,
+                true);
     }
 
     public UaVariable addPropertyElement(
-            UaVariableType    type,
-            String            name,
-            LocalizedText     displayName,
-            LocalizedText     description,
-            UaDataType        dataType,
-            boolean           writable,
-            boolean           historizing,
-            boolean           mandatory,
-            @Nullable Integer valueRank)
+            String                         name,
+            LocalizedText                  displayName,
+            LocalizedText                  description,
+            UaDataType                     dataType,
+            boolean                        writable,
+            boolean                        historizing,
+            @Nullable Integer              valueRank,
+            @Nullable UaVariableType       variableType,
+            @Nullable Map<NodeId, Variant> subElements,
+            boolean                        mandatory)
     {
-        UaVariable newVariable = addVariableNode(name, displayName, dataType,writable, historizing, valueRank, type);
+        UaVariable newVariable = addVariableNode(name, displayName, dataType,writable, historizing, valueRank, variableType, subElements);
         if (description.isNotNull()) newVariable.setDescription(description);
         newVariable.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
         return newVariable;
@@ -75,9 +74,9 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             String                   name,
             LocalizedText            displayName,
             LocalizedText            description,
-            boolean                  mandatory,
             @Nullable List<Argument> inputArguments,
-            @Nullable List<Argument> outputArguments)
+            @Nullable List<Argument> outputArguments,
+            boolean                  mandatory)
     {
         UaMethod newMethod = addMethodNode(name, displayName, inputArguments, outputArguments);
         if (description.isNotNull()) newMethod.setDescription(description);
@@ -135,14 +134,14 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription());
+                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
             });
         } else {
-            ReadObjectAttributeResponse response = new ReadObjectAttributeResponse(
-                    instanceDeclaration.displayName(),
-                    instanceDeclaration.description());
-
-            return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(response.getDisplayName(), response.getDescription()));
+            return CompletableFuture.completedFuture(
+                    new ReadObjectAttributeResponse(
+                            instanceDeclaration.browseName(),
+                            instanceDeclaration.displayName(),
+                            instanceDeclaration.description()));
         }
     }
 
@@ -188,7 +187,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         GetElementsRequest getElementsRequest = new GetElementsRequest(context);
 
         return onGetElements(getElementsRequest).
-                thenApply(response -> processBrowseObjectChildrenResponse(membersToReturn, response));
+                thenApply(response -> processBrowseObjectChildrenResponse(request.getObjectId(),membersToReturn, response));
     }
 
     @Override
@@ -241,7 +240,6 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             if (null == memberNode) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
 
             return new ReadMemberAttributeResponse(memberNode);
-
         });
     }
 
@@ -265,6 +263,11 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         ReadPropertyValuesRequest readPropertyValuesRequest = new ReadPropertyValuesRequest(
                 context,
                 propertyNames);
+
+        if (propertyNames.isEmpty())
+        {
+            return CompletableFuture.completedFuture(processReadVariableValueResponse(subElementNames, new ReadPropertyValuesResponse()));
+        }
 
         return onReadPropertyValues(readPropertyValuesRequest).
                 thenApply(readPropertyValuesResponse -> {
@@ -322,6 +325,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
     }
 
     private BrowseObjectResponse processBrowseObjectChildrenResponse(
+            UaObjectId objectId,
             List<UaInstanceNode> members,
             GetElementsResponse response)
     {
@@ -330,13 +334,13 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         for (UaInstanceNode item: members)
         {
             if (item.modellingRule() == UaModellingRule.Optional &&
-                    response.getElementNames().contains(item.browseName())) continue;
+                    !response.getElementNames().contains(item.browseName())) continue;
 
             NodeId referenceType = (item.nodeClass() == NodeClass.Variable &&
                     ((UaVariable) item).typeDefinition().nodeId().equals(NodeIds.PropertyType)) ? NodeIds.HasProperty : NodeIds.HasComponent;
 
             UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
-                    item.browseName(),
+                    (item.nodeClass() == NodeClass.Object) ? objectId.getId() : item.browseName(),
                     item,
                     referenceType,
                     true);
@@ -370,5 +374,11 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         }
 
         return readVariableValueResponse;
+    }
+
+    @Override
+    public final List<UaInstanceNode> getElements()
+    {
+        return getMembers();
     }
 }

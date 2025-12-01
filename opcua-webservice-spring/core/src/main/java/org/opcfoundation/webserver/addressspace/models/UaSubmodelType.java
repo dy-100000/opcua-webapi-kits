@@ -35,6 +35,7 @@ public class UaSubmodelType extends UaObjectType {
     public CompletableFuture<ReadObjectAttributeResponse> getObjectAttribute(ReadObjectAttributeRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             return new ReadObjectAttributeResponse(
+                    request.getObjectId().getId(),
                     new LocalizedText(request.getObjectId().getId()),
                     LocalizedText.NULL_VALUE);
         });
@@ -71,6 +72,7 @@ public class UaSubmodelType extends UaObjectType {
         } else {
             return CompletableFuture.supplyAsync(() -> {
                 return new ReadObjectAttributeResponse(
+                        instanceDeclaration.browseName(),
                         instanceDeclaration.displayName(),
                         instanceDeclaration.description());
             });

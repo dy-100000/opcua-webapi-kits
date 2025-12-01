@@ -1,22 +1,24 @@
 package org.opcfoundation.webserver.types.message.digitaltwin;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.opcfoundation.webserver.types.SubmodelDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class GetSubmodelsResponse {
-    private final Map<String,String> submodelIdsByName;
+    private final List<SubmodelDescriptor> submodels;
 
     public GetSubmodelsResponse()
     {
-        this.submodelIdsByName = new HashMap<>();
+        this.submodels = new ArrayList<>();
     }
 
-    public void add(String submodelId, String submodelName)
+    public void add(SubmodelDescriptor descriptor)
     {
-        submodelIdsByName.put(submodelName, submodelId);
+        submodels.add(descriptor);
     }
 
-    public Map<String, String> getSubmodelIdsByName() {
-        return submodelIdsByName;
+    public List<SubmodelDescriptor> getSubmodels() {
+        return submodels;
     }
 }

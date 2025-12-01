@@ -42,6 +42,8 @@ public class UaReadMemberAttributeTransaction extends UaReadTransaction {
 
     public CompletableFuture<Void> execute()
     {
+        // System.out.println("Read member of object " + objectId);
+
         try {
             UaObjectType objectType = nodeManager.findObjectType(objectId);
             if (null == objectType) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
@@ -51,15 +53,18 @@ public class UaReadMemberAttributeTransaction extends UaReadTransaction {
                     new UaObjectId(
                             objectId.getId(),
                             instanceDeclaration),
-                    new UaChildId(memberId.getPath(), memberId.getPathL2()));
+                    new UaChildId(memberId.getPath(), memberId.getPathL2()),
+                    null != memberId.getMethodNode() && memberId.getMethodNode());
 
             return objectType.onReadMemberAttributes(request).
                     thenAccept(this::setResults).
                     exceptionally(ex -> buildErrorResponse(ex.getCause()));
 
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(buildErrorResponse(e));
+           buildErrorResponse(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private void setResults(ReadMemberAttributeResponse response)
@@ -112,10 +117,16 @@ public class UaReadMemberAttributeTransaction extends UaReadTransaction {
                 } else {
                     statusCode = StatusCode.of(StatusCodes.Bad_NodeAttributesInvalid);
                 }
+            } else if (item.getAttributeId().intValue() == AttributeId.Value.id()) {
+                if (null != response.getValue()) {
+                    value = response.getValue();
+                } else {
+                    statusCode = StatusCode.of(StatusCodes.Bad_NodeAttributesInvalid);
+                }
             } else if (item.getAttributeId().intValue() == AttributeId.NodeId.id()) {
                 value = new Variant(item.getNodeId());
             } else if (item.getAttributeId().intValue() == AttributeId.BrowseName.id()) {
-                value = new Variant(new QualifiedName(0, memberId.getPath()));
+                value = new Variant(new QualifiedName(0, response.getBrowseName()));
             } else if (item.getAttributeId().intValue() == AttributeId.Executable.id()) {
                 value = new Variant(Boolean.TRUE);
             } else if (item.getAttributeId().intValue() == AttributeId.UserExecutable.id()) {

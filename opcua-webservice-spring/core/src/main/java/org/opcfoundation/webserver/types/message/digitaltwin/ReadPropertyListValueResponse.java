@@ -21,9 +21,9 @@ public class ReadPropertyListValueResponse {
         results.put(new UaChildId(propertyId), new DataValue(value, StatusCode.GOOD, null, null));
     }
 
-    public void setValue(String propertyId, String subPropertyName, Variant value)
+    public void setValue(UaChildId subPropertyId, Variant value)
     {
-        results.put(new UaChildId(propertyId,subPropertyName), new DataValue(value, StatusCode.GOOD, null, null));
+        results.put(subPropertyId, new DataValue(value, StatusCode.GOOD, null, null));
     }
 
     public void setError(String propertyId, StatusCode errorCode)
@@ -31,9 +31,9 @@ public class ReadPropertyListValueResponse {
         results.put(new UaChildId(propertyId), new DataValue(Variant.NULL_VALUE, errorCode, null, null));
     }
 
-    public void setError(String propertyId, String subPropertyName, StatusCode errorCode)
+    public void setError(UaChildId subPropertyId, StatusCode errorCode)
     {
-        results.put(new UaChildId(propertyId,subPropertyName), new DataValue(Variant.NULL_VALUE, errorCode, null, null));
+        results.put(subPropertyId, new DataValue(Variant.NULL_VALUE, errorCode, null, null));
     }
 
     public Map<UaChildId, DataValue> getResults() {

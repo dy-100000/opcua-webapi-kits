@@ -122,8 +122,15 @@ public class NodeManagerTransactionBuilder {
                     {
                         if (null != identifier.getChildId())
                         {
-                            handleIdsForObjectVariableValues.put(handleId, identifier);
-                            //System.out.println("Read value: " + identifier);
+                            if (null == identifier.getChildId().getMethodNode() ||
+                                    !identifier.getChildId().getMethodNode())
+                            {
+                                handleIdsForObjectVariableValues.put(handleId, identifier);
+                                //System.out.println("Read value: " + identifier);
+                            } else {
+                                handleIdsForObjectMemberAttributes.put(handleId, identifier);
+                                //System.out.println("Read arguments: " + identifier);
+                            }
                         } else {
                             handleIdsForNodes.add(handleId);
                             //System.out.println("Read error, id invalid");

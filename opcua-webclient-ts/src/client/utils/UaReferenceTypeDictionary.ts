@@ -1,5 +1,5 @@
-import { BrowseDescription, BrowseDirection, NodeClass, ReferenceTypeIds } from "opcua-webapi";
-import { parseUaNodeIdOrNull, UaReferenceType, UaLocalizedText, UaNodeId, UaPayloadMapper } from "../../common"
+import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
+import { parseUaNodeIdOrNull, UaReferenceType, UaLocalizedText, UaNodeId, UaPayloadMapper, ReferenceTypeIds } from "../../common"
 import { UaWebClient } from "../UaWebClient"
 
 export class UaReferenceTypeDictionary
@@ -23,7 +23,7 @@ export class UaReferenceTypeDictionary
                     true 
                 ));
     
-        this._remainingNodesToBrowse = [ new UaNodeId(ReferenceTypeIds.References) ];
+        this._remainingNodesToBrowse = [ referencesId ];
     }
     
     public async read(client : UaWebClient)
@@ -56,7 +56,7 @@ export class UaReferenceTypeDictionary
                 {
                     NodeId: item.toString(),
                     BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: ReferenceTypeIds.HasSubtype,
+                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasSubtype).toString(),
                     IncludeSubtypes: false,
                     NodeClassMask: NodeClass.ReferenceType,
                     ResultMask: 31

@@ -81,6 +81,7 @@ public class TestDataObjectType extends UaDataObjectType {
 
         return CompletableFuture.supplyAsync(() -> {
             return new ReadObjectAttributeResponse(
+                    objectId,
                     new LocalizedText("DataObject-" + objectId),
                     new LocalizedText("DataObject number " + objectId));
         });
@@ -142,21 +143,6 @@ public class TestDataObjectType extends UaDataObjectType {
             outputArguments.add(Variant.ofDouble(15.5));
 
             return new MethodCallResponse(outputArguments);
-        });
-    }
-
-    @Override
-    public CompletableFuture<GetOptionalMemberResponse> getAbsentMembers(GetOptionalMemberRequest request)
-    {
-        return CompletableFuture.supplyAsync(()->{
-            Set<String> absentMembers = new HashSet<>();
-
-            if (request.getObjectId().getId().equals("2") || request.getObjectId().getId().equals("5"))
-            {
-                absentMembers.add("Double");
-            }
-
-            return new GetOptionalMemberResponse(absentMembers);
         });
     }
 }

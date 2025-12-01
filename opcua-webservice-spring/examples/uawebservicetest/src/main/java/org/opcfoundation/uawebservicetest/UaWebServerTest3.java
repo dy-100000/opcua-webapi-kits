@@ -6,7 +6,7 @@ import org.opcfoundation.webapi.service.UaServerConfigure;
 import org.opcfoundation.uawebservicetest.testmodel.TestNodeManagerWebService;
 import org.springframework.stereotype.Service;
 
-@Service
+//@Service
 public class UaWebServerTest3 extends UaWebServer {
     public UaWebServerTest3()
     {

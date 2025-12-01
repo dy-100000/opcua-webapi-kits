@@ -64,8 +64,10 @@ public class UaWriteVariableValueTransaction extends UaWriteTransaction {
 
 
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(buildErrorResponse(e));
+            buildErrorResponse(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private void setResults(WriteVariableValueResponse response) {

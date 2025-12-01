@@ -40,6 +40,8 @@ public class UaReadVariableValueTransaction extends UaReadTransaction {
 
     public CompletableFuture<Void> execute()
     {
+        // System.out.println("Read variable of object " + objectId);
+
         try {
             UaObjectType objectType = nodeManager.findObjectType(objectId);
             if (null == objectType) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
@@ -57,8 +59,10 @@ public class UaReadVariableValueTransaction extends UaReadTransaction {
                         thenAccept(this::setResults).
                         exceptionally(ex -> buildErrorResponse(ex.getCause()));
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(buildErrorResponse(e));
+            buildErrorResponse(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private void setResults(ReadVariableValueResponse response)

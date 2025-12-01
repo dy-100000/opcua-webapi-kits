@@ -62,28 +62,9 @@ public abstract class NodeManager implements NodeManagerBase {
 
     public void addNode(UaNode node) throws UaRuntimeException
     {
-        if (nodes.containsKey(node.nodeId()))
-        {
-            for (Map.Entry<NodeId, UaNode> item: nodes.entrySet())
-            {
-                System.out.println(item.getValue().browseName());
-            }
-        }
-
-        if (node.nodeId().getNamespaceIndex().intValue() != nsIndex())
-        {
-            System.out.println("NsIndex = " + nsIndex());
-        }
-
         if (nodes.containsKey(node.nodeId())) throw new UaRuntimeException(StatusCodes.Bad_NodeIdExists);
         if (node.nodeId().getNamespaceIndex().intValue() != nsIndex()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdInvalid);
         nodes.put(node.nodeId(), node);
-    }
-
-    public void deleteNode(NodeId nodeId) throws UaRuntimeException
-    {
-        if (!nodes.containsKey(nodeId)) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
-        nodes.remove(nodeId);
     }
 
     public @Nullable List<UaReference> browseNode(

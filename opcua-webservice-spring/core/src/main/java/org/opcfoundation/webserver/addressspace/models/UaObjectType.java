@@ -6,6 +6,7 @@ import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
+import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
 import org.jspecify.annotations.Nullable;
@@ -15,6 +16,7 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 
 import java.util.List;
+import java.util.Map;
 
 public abstract class UaObjectType extends BaseUaObjectType implements UaObjectCallback {
     protected final NodeManager nodeManager;
@@ -82,7 +84,8 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
             boolean writable,
             boolean historizing,
             @Nullable Integer valueRank,
-            @Nullable UaVariableType variableType)
+            @Nullable UaVariableType variableType,
+            @Nullable Map<NodeId, Variant> subElements)
     {
         if (memberId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
@@ -102,21 +105,23 @@ public abstract class UaObjectType extends BaseUaObjectType implements UaObjectC
 
         newVariable.setHistorizing(historizing);
 
-        this.addMember(newVariable);
+        addMember(newVariable);
         nodeManager.addNode(newVariable);
 
-        if (null != variableType)
+        if (null != subElements && null != variableType)
         {
-            List<UaInstanceNode> members = variableType.getMembers();
-            for (UaInstanceNode item: members)
+            for (Map.Entry<NodeId, Variant> item : subElements.entrySet())
             {
-                if (NodeClass.Variable != item.nodeClass()) continue;
-                String memberIdOfVariable = variableId;
-                memberIdOfVariable += "-";
-                memberIdOfVariable += item.browseName();
+                UaInstanceNode memberVariable = variableType.getMember(item.getKey());
+                if (null == memberVariable || NodeClass.Variable != memberVariable.nodeClass()) continue;
 
-                UaInstanceNode newMember = copyNode(item,memberIdOfVariable);
-                newVariable.addMember((UaVariable) newMember);
+                String newMemberIdValue = variableId;
+                newMemberIdValue += "-";
+                newMemberIdValue += memberVariable.browseName();
+
+                UaVariable newVariableMember = (UaVariable)copyNode(memberVariable, newMemberIdValue);
+                newVariableMember.setValue(item.getValue());
+                newVariable.addMember(newVariableMember);
             }
         }
 

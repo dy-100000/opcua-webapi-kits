@@ -64,6 +64,6 @@ public class UaCallMethodTransaction extends UaMethodCallTransaction {
             buildErrorResponse(e);
         }
 
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
 }

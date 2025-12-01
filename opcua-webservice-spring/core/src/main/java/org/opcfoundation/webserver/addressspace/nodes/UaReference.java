@@ -26,4 +26,14 @@ public class UaReference {
     public boolean isForward() {
         return isForward;
     }
+
+    @Override
+    public String toString() {
+        String ret = "{";
+        ret += "Linked Node: " + linkedNode.nodeId() + " " + linkedNode.browseName();
+        ret += " Reference " + reference().browseName();
+        ret += " IsForward " + isForward;
+        ret += " }";
+        return ret;
+    }
 }

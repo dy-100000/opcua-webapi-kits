@@ -6,13 +6,16 @@ import org.opcfoundation.webserver.types.UaObjectId;
 public class ReadMemberAttributeRequest {
     private final UaObjectId objectId;
     private final UaChildId childId;
+    private final boolean isMethod;
 
     public ReadMemberAttributeRequest(
             UaObjectId objectId,
-            UaChildId childId)
+            UaChildId childId,
+            boolean isMethod)
     {
         this.objectId = objectId;
         this.childId = childId;
+        this.isMethod = isMethod;
     }
 
     public UaObjectId getObjectId() {
@@ -21,5 +24,9 @@ public class ReadMemberAttributeRequest {
 
     public UaChildId getChildId() {
         return childId;
+    }
+
+    public boolean isMethod() {
+        return isMethod;
     }
 }

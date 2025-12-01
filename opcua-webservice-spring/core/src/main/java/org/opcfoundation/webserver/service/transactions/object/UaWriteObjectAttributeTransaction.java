@@ -30,7 +30,9 @@ public class UaWriteObjectAttributeTransaction extends UaWriteTransaction {
         try {
             throw new UaRuntimeException(StatusCodes.Bad_NotWritable);
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(buildErrorResponse(e));
+            buildErrorResponse(e);
         }
+
+        return CompletableFuture.completedFuture(null);
     }
 }

@@ -12,6 +12,7 @@ import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.UaObjectId;
 import org.opcfoundation.webserver.types.UaReferenceDescriptor;
 import org.opcfoundation.webserver.types.UaChildId;
 import org.opcfoundation.webserver.types.message.*;
@@ -80,7 +81,7 @@ public abstract class UaDataObjectType extends UaSubmodelType {
             @Nullable Integer valueRank,
             @Nullable UaVariableType variableType)
     {
-        UaVariable newVariable = addVariableNode(memberId, displayName, dataType,writable, historizing, valueRank, variableType);
+        UaVariable newVariable = addVariableNode(memberId, displayName, dataType,writable, historizing, valueRank, variableType, null);
         if (description.isNotNull()) newVariable.setDescription(description);
         newVariable.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
         return newVariable;
@@ -138,7 +139,7 @@ public abstract class UaDataObjectType extends UaSubmodelType {
 
         if (membersToReturn.isEmpty()) return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
-        BrowseObjectResponse response = processBrowseChildResponse(membersToReturn, new HashSet<>());
+        BrowseObjectResponse response = processBrowseChildResponse(request.getObjectId(), membersToReturn);
         return CompletableFuture.completedFuture(response);
     }
 
@@ -240,21 +241,18 @@ public abstract class UaDataObjectType extends UaSubmodelType {
     }
 
     private BrowseObjectResponse processBrowseChildResponse(
-            List<UaInstanceNode> members,
-            Set<String> absentMembers)
+            UaObjectId objectId,
+            List<UaInstanceNode> members)
     {
         List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
 
         for (UaInstanceNode item: members)
         {
-            if (item.modellingRule() == UaModellingRule.Optional &&
-                    absentMembers.contains(item.browseName())) continue;
-
             NodeId referenceType = (item.nodeClass() == NodeClass.Variable &&
                     ((UaVariable) item).typeDefinition().nodeId().equals(NodeIds.PropertyType)) ? NodeIds.HasProperty : NodeIds.HasComponent;
 
             UaReferenceDescriptor descriptor = new UaReferenceDescriptor(
-                    item.browseName(),
+                    (item.nodeClass() == NodeClass.Object) ? objectId.getId() : item.browseName(),
                     item,
                     referenceType,
                     true);
