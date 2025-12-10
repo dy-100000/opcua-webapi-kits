@@ -10,23 +10,6 @@ CREATE TABLE Department (
         ON UPDATE CASCADE
 );
 
-CREATE TABLE Project (
-    ID INT PRIMARY KEY,
-    Name VARCHAR(50) NOT NULL,
-    MissionDescription VARCHAR(200) NULL,
-    StartTime DATETIME NOT NULL,
-    EndTime DATETIME NULL,
-    Budget INT NOT NULL,
-    DepartmentId INT NOT NULL,
-    CONSTRAINT FK_Project_Department 
-        FOREIGN KEY (DepartmentId) 
-        REFERENCES Department(ID)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-	CONSTRAINT CK_Project_Time 
-        CHECK (EndTime IS NULL OR EndTime >= StartTime)
-);
-
 CREATE TABLE Skill (
     ID INT PRIMARY KEY AUTO_INCREMENT,
     SkillName VARCHAR(64) NOT NULL,
@@ -47,6 +30,8 @@ CREATE TABLE EmployeeInfo (
     Birthday DATETIME NOT NULL,
     PhoneNumber VARCHAR(16) NOT NULL,
     Address VARCHAR(64) NOT NULL,
+    StartTime DATETIME NOT NULL,
+    Salary INT NOT NULL,
     EmployeeId INT NOT NULL,
     CONSTRAINT FK_EmployeeInfo_Employee 
         FOREIGN KEY (EmployeeId)
@@ -87,17 +72,10 @@ CREATE TABLE EmployeeDepartment (
 
 INSERT INTO Department (ID,Name, Comment, ParentDepartmentId)
 VALUES 
-    (1,'研发中心', 'New tech R&D, including DCS/PLC/Industry software', null),
-    (2,'平台所', 'Software and platform development', 1),
-    (3,'控制所', 'PLC programing tool and runtime development', 1),
-    (4,'通讯所', 'Industry protocal R&D', 1);
-
-INSERT INTO Project (ID,Name,MissionDescription,StartTime,EndTime,Budget,DepartmentId)
-VALUES 
-	(1,"开放PLC","New generation controller platform","2024-01-01 00:00:00", '2026-12-31 18:00:00', 15, 3),
-	(2,"数字孪生","Digital twin platform based on information model","2024-05-01 00:00:00", '2027-06-30 18:00:00', 10, 2),
-    (3,"WebHMI","WebBased HMI","2024-03-01 00:00:00", '2025-9-30 18:00:00', 5, 2),
-    (4,"Profinet协议","Supporting Profinet in PLC","2024-06-01 00:00:00", '2025-9-30 18:00:00', 3, 4);
+    (1,'Research center', 'New tech R&D, including DCS/PLC/Industry software', null),
+    (2,'Platform department', 'Software and platform development', 1),
+    (3,'Controller department', 'PLC programing tool and runtime development', 1),
+    (4,'Communication department', 'Industry protocal R&D', 1);
 
 INSERT INTO Skill(ID,SkillName,Description,Level,Category,YearOfExperience)
 VALUES
@@ -119,13 +97,13 @@ VALUES
     (4,"Zhao"),
     (5,"Sun");
 
-INSERT INTO employeeinfo(Sex,Birthday,PhoneNumber,Address,EmployeeId)
+INSERT INTO employeeinfo(Sex,Birthday,PhoneNumber,Address,StartTime,Salary,EmployeeId)
 VALUES 
-	(true,"1990-06-01 00:00:00","XXXXXXXXXXXX","XX,Beijing",1),
-	(false,"1993-07-12 00:00:00","XXXXXXXXXXXX","XX,Shanghai",2),
-    (true,"1987-04-23 00:00:00","XXXXXXXXXXXX","XX,Hangzhou",3),
-    (false,"1999-1-25 00:00:00","XXXXXXXXXXXX","XX,HaErBin",4),
-    (true,"1997-12-19 00:00:00","XXXXXXXXXXXX","XX,Tianjin",5);
+	(true,"1990-06-01 00:00:00","XXXXXXXXXXXX","XX,Beijing","2020-01-01 00:00:00",10000,1),
+	(false,"1993-07-12 00:00:00","XXXXXXXXXXXX","XX,Shanghai","2021-01-01 00:00:00",11000,2),
+    (true,"1987-04-23 00:00:00","XXXXXXXXXXXX","XX,Hangzhou","2015-09-01 00:00:00",12000,3),
+    (false,"1999-1-25 00:00:00","XXXXXXXXXXXX","XX,HaErBin","2024-09-01 00:00:00",13000,4),
+    (true,"1997-12-19 00:00:00","XXXXXXXXXXXX","XX,Tianjin","2022-06-01 00:00:00",14000,5);
     
 INSERT INTO employeedepartment(EmployeeId,DepartmentId)
 values

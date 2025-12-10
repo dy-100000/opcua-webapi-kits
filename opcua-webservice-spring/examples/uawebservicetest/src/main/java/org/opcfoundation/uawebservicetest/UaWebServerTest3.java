@@ -1,12 +1,12 @@
 package org.opcfoundation.uawebservicetest;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.opcfoundation.webserver.service.UaWebServer;
+import org.opcfoundation.uawebservicetest.testdigitaltwin.DigitalTwinSpaceTest;
 import org.opcfoundation.webapi.service.UaServerConfigure;
-import org.opcfoundation.uawebservicetest.testmodel.TestNodeManagerWebService;
+import org.opcfoundation.webserver.service.UaWebServer;
 import org.springframework.stereotype.Service;
 
-//@Service
+@Service
 public class UaWebServerTest3 extends UaWebServer {
     public UaWebServerTest3()
     {
@@ -18,7 +18,7 @@ public class UaWebServerTest3 extends UaWebServer {
         System.out.println("Start up server with NodeManager ");
 
         configureServer();
-        addNodeManager(new TestNodeManagerWebService());
+        addNodeManager(new DigitalTwinSpaceTest());
     }
 
     @Override

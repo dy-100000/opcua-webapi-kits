@@ -3,12 +3,11 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.ReferenceElementType;
-import org.opcfoundation.webserver.types.ReferenceTargetDescriptor;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkResponse;
-
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkResponse;
+import org.opcfoundation.webserver.types.digitaltwin.ReferenceTargetDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

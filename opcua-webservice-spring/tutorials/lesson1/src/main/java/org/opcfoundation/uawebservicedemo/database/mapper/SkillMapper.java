@@ -7,9 +7,13 @@ import java.util.List;
 
 @Mapper
 public interface SkillMapper {
-    Skill getSkillInfo(Integer id);
+    Skill getSkill(Integer id);
 
     Skill getSkillData(Integer id);
 
-    List<Skill> getAllSkillInfo();
+    List<Skill> getSkillOfEmployee(Integer employeeId);
+
+    List<Skill> getSkillDataOfEmployee(Integer employeeId);
+
+    List<Skill> getAllSkill();
 }

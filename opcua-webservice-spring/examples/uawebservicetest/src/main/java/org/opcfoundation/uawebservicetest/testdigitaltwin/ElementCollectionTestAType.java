@@ -3,7 +3,6 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
@@ -15,8 +14,8 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.ElementCollectionType;
-import org.opcfoundation.webserver.types.UaStructureUtilities;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
+import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -49,12 +48,7 @@ public class ElementCollectionTestAType extends ElementCollectionType {
                 false,
                 null,
                 null,
-                null,
                 false);
-
-        Map<NodeId, Variant> values = new HashMap<>();
-        values.put(NodeIds.BaseAnalogType_EURange, UaStructureUtilities.toVariant(new Range(0.0,50.0)));
-        values.put(NodeIds.BaseAnalogType_EngineeringUnits, UaStructureUtilities.toVariant(new EUInformation(null,1, new LocalizedText("C"), new LocalizedText("Temperature C"))));
 
         Double = addPropertyElement(
                 "Double",
@@ -65,8 +59,17 @@ public class ElementCollectionTestAType extends ElementCollectionType {
                 false,
                 null,
                 UaVariableTypes.BaseAnalogType,
-                values,
                 false);
+
+        addSubElementOfProperty(
+                Double,
+                "EURange",
+                UaStructureUtilities.toVariant(new Range(0.0,50.0)));
+
+        addSubElementOfProperty(
+                Double,
+                "EngineeringUnits",
+                UaStructureUtilities.toVariant(new EUInformation(null,1, new LocalizedText("C"), new LocalizedText("Temperature C"))));
 
         List<Argument> inputArguments = new ArrayList<>();
         inputArguments.add(new Argument("In1", NodeIds.Int32, ValueRank.Scalar.getValue(), null, LocalizedText.NULL_VALUE));

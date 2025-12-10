@@ -1,5 +1,6 @@
 package org.opcfoundation.webserver.addressspace.nodes;
 
+import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
@@ -86,6 +87,31 @@ public class UaVariable extends UaInstanceNode {
     public void addMember(UaVariable member)
     {
         addMemberNode(member);
+    }
+
+    public @Nullable UaVariable addMember(String name)
+    {
+        UaInstanceNode member = typeDefinition.getMember(name);
+        if (null == member || NodeClass.Variable != member.nodeClass()) return null;
+
+        UaVariable memberVariable = (UaVariable)member;
+
+        String newMemberIdValue = nodeId().getIdentifier().toString();
+        newMemberIdValue += "-";
+        newMemberIdValue += memberVariable.browseName();
+
+        UaVariable newVariable = new UaVariable(
+                new NodeId(nodeId().getNamespaceIndex(),newMemberIdValue),
+                memberVariable.browseName(),
+                memberVariable.displayName(),
+                memberVariable.dataType(),
+                memberVariable.valueRank(),
+                AccessLevel.CurrentRead.getValue(),
+                memberVariable.typeDefinition());
+
+        addMemberNode(newVariable);
+
+        return newVariable;
     }
 
     @Override

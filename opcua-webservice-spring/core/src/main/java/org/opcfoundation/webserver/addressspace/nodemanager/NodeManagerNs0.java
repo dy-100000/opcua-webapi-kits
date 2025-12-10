@@ -10,11 +10,11 @@ import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.*;
-import org.opcfoundation.webserver.service.transactions.object.UaBrowseNodeTransaction;
-import org.opcfoundation.webserver.service.transactions.object.UaReadNodeTransaction;
+import org.opcfoundation.webserver.service.transactions.reactiveobject.UaBrowseNodeTransaction;
+import org.opcfoundation.webserver.service.transactions.reactiveobject.UaReadNodeTransaction;
 import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
 import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
 import org.opcfoundation.webapi.service.types.ReadContext;
 import org.opcfoundation.webapi.service.types.ServiceContext;
 

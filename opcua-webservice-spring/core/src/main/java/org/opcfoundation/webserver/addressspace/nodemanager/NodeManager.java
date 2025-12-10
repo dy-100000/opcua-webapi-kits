@@ -16,13 +16,12 @@ import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaReference;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaBrowseContinuationPoint;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaBrowseContinuationPoint;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public abstract class NodeManager implements NodeManagerBase {
 

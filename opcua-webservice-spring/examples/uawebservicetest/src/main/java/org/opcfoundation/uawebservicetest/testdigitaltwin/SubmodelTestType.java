@@ -16,8 +16,8 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
-import org.opcfoundation.webserver.types.UaStructureUtilities;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
+import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -48,10 +48,6 @@ public class SubmodelTestType extends SubmodelType {
                 UaDataTypes.Boolean,
                 true);
 
-        Map<NodeId, Variant> values = new HashMap<>();
-        values.put(NodeIds.BaseAnalogType_EURange, UaStructureUtilities.toVariant(new Range(0.0,50.0)));
-        values.put(NodeIds.BaseAnalogType_EngineeringUnits, UaStructureUtilities.toVariant(new EUInformation(null,1, new LocalizedText("C"), new LocalizedText("Temperature C"))));
-
         Double = addPropertyElement(
                 "Double",
                 new LocalizedText("Double"),
@@ -61,8 +57,17 @@ public class SubmodelTestType extends SubmodelType {
                 false,
                 null,
                 UaVariableTypes.BaseAnalogType,
-                values,
                 false);
+
+        addSubElementOfProperty(
+                Double,
+                "EURange",
+                UaStructureUtilities.toVariant(new Range(0.0,50.0)));
+
+        addSubElementOfProperty(
+                Double,
+                "EngineeringUnits",
+                UaStructureUtilities.toVariant(new EUInformation(null,1, new LocalizedText("C"), new LocalizedText("Temperature C"))));
 
         List<Argument> inputArguments = new ArrayList<>();
         inputArguments.add(new Argument("In", NodeIds.String, ValueRank.Scalar.getValue(), null, LocalizedText.NULL_VALUE));

@@ -5,8 +5,8 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.opcfoundation</groupId>
-    <artifactId>uawebservicedemo</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <artifactId>lesson1</artifactId>
+    <version>1.0.0</version>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -17,7 +17,7 @@
         <dependency>
             <groupId>org.opcfoundation</groupId>
             <artifactId>opcua-webservice-spring</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.mysql</groupId>
@@ -45,6 +45,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+
                 <configuration>
                     <includeSystemScope>true</includeSystemScope>
                 </configuration>

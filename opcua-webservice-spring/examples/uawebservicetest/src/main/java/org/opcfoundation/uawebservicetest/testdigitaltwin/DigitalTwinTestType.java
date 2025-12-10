@@ -4,11 +4,11 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinType;
-import org.opcfoundation.webserver.types.SubmodelDescriptor;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsResponse;
+import org.opcfoundation.webserver.types.digitaltwin.SubmodelDescriptor;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public class DigitalTwinTestType extends DigitalTwinType {
     public DigitalTwinTestType(
             SubmodelTestType submodel,
-            ElementListSubmodelTestType elementListSubmodel,
+            DynamicSubmodelTestType elementListSubmodel,
             DigitalTwinSpace space) {
         super("TestDigitalTwin", new LocalizedText("TestDigitalTwin"), space);
 

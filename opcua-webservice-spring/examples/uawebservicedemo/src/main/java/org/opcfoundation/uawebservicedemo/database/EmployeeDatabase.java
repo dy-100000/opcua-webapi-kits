@@ -2,7 +2,6 @@ package org.opcfoundation.uawebservicedemo.database;
 
 import org.opcfoundation.uawebservicedemo.database.mapper.DepartmentMapper;
 import org.opcfoundation.uawebservicedemo.database.mapper.EmployeeMapper;
-import org.opcfoundation.uawebservicedemo.database.mapper.ProjectMapper;
 import org.opcfoundation.uawebservicedemo.database.mapper.SkillMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -18,8 +17,6 @@ public class EmployeeDatabase implements ApplicationContextAware {
     @Autowired
     private EmployeeMapper employeeMapper;
     @Autowired
-    private ProjectMapper projectMapper;
-    @Autowired
     private SkillMapper skillMapper;
 
     public static DepartmentMapper getDepartmentMapper() {
@@ -28,10 +25,6 @@ public class EmployeeDatabase implements ApplicationContextAware {
 
     public static EmployeeMapper getEmployeeMapper() {
         return getInstance().employeeMapper;
-    }
-
-    public static ProjectMapper getProjectMapper() {
-        return getInstance().projectMapper;
     }
 
     public static SkillMapper getSkillMapper() {

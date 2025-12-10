@@ -13,7 +13,7 @@
         <result column="YearOfExperience" property="yearOfExperience"/>
     </resultMap>
 
-    <select id="getSkillInfo" resultMap="SkillResult">
+    <select id="getSkill" resultMap="SkillResult">
         SELECT ID, SkillName, Description FROM Skill WHERE ID = #{id}
     </select>
 
@@ -21,7 +21,19 @@
         SELECT Level,Category,YearOfExperience FROM Skill WHERE ID = #{id}
     </select>
 
-    <select id="getAllSkillInfo" resultMap="SkillResult">
+    <select id="getSkillOfEmployee" resultMap="SkillResult">
+        SELECT s.ID, s.SkillName FROM employeeskill ek
+        INNER JOIN Skill s ON ek.SkillId = s.ID
+        WHERE ek.EmployeeId = #{employeeId}
+    </select>
+
+    <select id="getSkillDataOfEmployee" resultMap="SkillResult">
+        SELECT s.Level,s.Category,s.YearOfExperience FROM employeeskill ek
+        INNER JOIN Skill s ON ek.SkillId = s.ID
+        WHERE ek.EmployeeId = #{employeeId}
+    </select>
+
+    <select id="getAllSkill" resultMap="SkillResult">
         SELECT ID, SkillName FROM Skill
     </select>
 </mapper>

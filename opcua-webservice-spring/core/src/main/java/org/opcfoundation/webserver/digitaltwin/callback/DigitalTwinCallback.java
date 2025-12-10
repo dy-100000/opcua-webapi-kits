@@ -1,11 +1,11 @@
 package org.opcfoundation.webserver.digitaltwin.callback;
 
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
-import org.opcfoundation.webserver.types.SubmodelDescriptor;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorResponse;
+import org.opcfoundation.webserver.types.digitaltwin.SubmodelDescriptor;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResponse;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;

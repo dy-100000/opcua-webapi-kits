@@ -12,7 +12,7 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.EnumValueType;
 import org.jspecify.annotations.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
-import org.opcfoundation.webserver.types.UaStructureUtilities;
+import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
 public class UaDataType extends UaDefinitionNode {
     private @Nullable UaVariable enumVariable;

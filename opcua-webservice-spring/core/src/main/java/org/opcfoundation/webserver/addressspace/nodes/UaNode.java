@@ -165,19 +165,6 @@ public abstract class UaNode {
         return null;
     }
 
-    public @Nullable UaInstanceNode getMember(NodeId memberId)
-    {
-        for (UaReference item : references)
-        {
-            if (item.isForward() &&
-                    item.linkedNode().nodeId().equals(memberId) &&
-                    item.linkedNode().isInstanceNode() &&
-                    item.reference().isSubtypeOf(NodeIds.Aggregates)) return (UaInstanceNode)item.linkedNode();
-        }
-
-        return null;
-    }
-
     protected void addReference(UaReference reference)
     {
         references.add(reference);

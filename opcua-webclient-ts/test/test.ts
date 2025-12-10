@@ -2,7 +2,7 @@ import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
 import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaDataTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
+import { UaDataTypeDictionary, UaObjectTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
 
 class Test {
     private client : UaWebClient;
@@ -29,9 +29,9 @@ class Test {
             await this.testReadMethodArgument();
             await this.testWriteValues(); 
             await this.testMethodCall(); 
-            await this.testDataTypeDictionary(); */
-            
-            await this.testReferenceTypeDictionary();
+            await this.testDataTypeDictionary();             
+            await this.testReferenceTypeDictionary();*/
+            await this.testObjectTypeDictionary();
         } catch (e) {            
             console.log(e);
         }
@@ -229,14 +229,33 @@ class Test {
         let referenceTypeDictionary = new UaReferenceTypeDictionary();
         await referenceTypeDictionary.read(this.client);
         
-        let referneceTypeIds = referenceTypeDictionary.getReferenceTypeIds();       
+        let referenceTypeIds = referenceTypeDictionary.getReferenceTypeIds();       
         
-        for (let item of referneceTypeIds)
+        for (let item of referenceTypeIds)
         {
             let referenceType = referenceTypeDictionary.getReferenceType(item);
             if (referenceType)
             {
                 console.log(`Id: ${referenceType.nodeId.toString()} Name: ${referenceType.browseName} Abstract: ${referenceType.isAbstract}`)
+            }
+        }
+    }
+
+    async testObjectTypeDictionary()
+    {
+        console.log("testObjectTypeDictionary");
+
+        let objectTypeDictionary = new UaObjectTypeDictionary();
+        await objectTypeDictionary.read(this.client);
+        
+        let objectTypeIds = objectTypeDictionary.getObjectTypeIds();       
+        
+        for (let item of objectTypeIds)
+        {
+            let objectType = objectTypeDictionary.getObjectType(item);
+            if (objectType)
+            {
+                console.log(`Id: ${objectType.nodeId.toString()} Name: ${objectType.browseName}`)
             }
         }
     }

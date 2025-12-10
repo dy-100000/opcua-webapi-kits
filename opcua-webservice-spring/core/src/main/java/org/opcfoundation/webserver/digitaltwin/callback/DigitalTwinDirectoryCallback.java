@@ -1,7 +1,7 @@
 package org.opcfoundation.webserver.digitaltwin.callback;
 
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDigitalTwinListRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDigitalTwinListResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListResponse;
 
 import java.util.concurrent.CompletableFuture;
 

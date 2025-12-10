@@ -12,8 +12,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.opcfoundation.webserver.addressspace.nodemanager.*;
 import org.opcfoundation.webapi.service.types.*;
 import org.opcfoundation.webserver.service.transactions.base.*;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaBrowseContinuationPoint;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaBrowseContinuationPoint;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +39,7 @@ public abstract class UaWebServer extends UaWebServerBase {
         NodeManagerNs0 ns0 = new NodeManagerNs0();
         NodeManagerList.nodeManagerList.addNodeManager(ns0);
 
-        NodeManagerNs1 ns1 = new NodeManagerNs1();
+        NodeManagerNS1 ns1 = new NodeManagerNS1();
         NodeManagerList.nodeManagerList.addNodeManager(ns1);
 
         // Initialize server

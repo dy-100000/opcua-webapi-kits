@@ -2,79 +2,71 @@ package org.opcfoundation.webserver.digitaltwin;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.opcfoundation.webserver.addressspace.models.UaEnumDataType;
-import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerWebService;
+import org.opcfoundation.webserver.addressspace.nodes.UaEnumDataType;
+import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerReactiveObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjects;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinType;
 import org.opcfoundation.webserver.digitaltwin.element.ElementType;
+import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
 import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelTypeBase;
-import org.opcfoundation.webserver.types.UaInstanceIdentifier;
-import org.opcfoundation.webserver.types.UaObjectIdentifier;
+import org.opcfoundation.webserver.types.common.UaInstanceIdentifier;
+import org.opcfoundation.webserver.types.common.UaObjectIdentifier;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class DigitalTwinSpace extends NodeManagerWebService {
+public class DigitalTwinSpace extends NodeManagerReactiveObject {
     public DigitalTwinSpace(String namespaceUri)
     {
         super(namespaceUri);
     }
 
-    public final void addDigitalTwinType(DigitalTwinType type)
+    public final void addDefinition(DigitalTwinType type)
     {
         addObjectType(type);
     }
 
-    public final void addSubmodelType(SubmodelTypeBase type)
+    public final void addDefinition(DigitalTwinDirectoryType type)
     {
         addObjectType(type);
     }
 
-    public final void addElementType(ElementType type)
+    public final void addDefinition(SubmodelTypeBase type)
     {
         addObjectType(type);
     }
 
-    public final void addEnumerationType(UaEnumDataType dataType)
+    public final void addDefinition(ElementType type)
     {
-        addDataType(dataType);
+        addObjectType(type);
     }
 
-    public final void addDigitalTwinDirectoryType(
+    public final void addDefinition(UaEnumDataType type)
+    {
+        addDataType(type);
+    }
+
+    public final void addEntryPoint(
             DigitalTwinDirectoryType type,
-            String entryId)
+            String id,
+            LocalizedText displayName,
+            LocalizedText description)
     {
-        HashSet<String> entryIds = new HashSet<>();
-        entryIds.add(entryId);
-        addDigitalTwinDirectoryType(type, entryIds);
-    }
+        UaInstanceIdentifier objectIdentifier = new UaInstanceIdentifier(
+                new UaObjectIdentifier(type.nodeId().toParseableString(), id, null),
+                null);
 
-    public final void addDigitalTwinDirectoryType(
-            DigitalTwinDirectoryType type,
-            Set<String> entryIds)
-    {
-        addObjectType(type);
+        NodeId objectNodeId = new NodeId(nsIndex(), objectIdentifier.toByteString());
 
-        for (String item: entryIds)
-        {
-            UaInstanceIdentifier objectIdentifier = new UaInstanceIdentifier(
-                    new UaObjectIdentifier(type.nodeId().toParseableString(), item, null),
-                    null);
+        UaObject newObject = new UaObject(
+                objectNodeId,
+                id,
+                displayName,
+                type);
 
-            NodeId objectNodeId = new NodeId(nsIndex(), objectIdentifier.toByteString());
+        newObject.setDescription(description);
 
-            UaObject newObject = new UaObject(
-                    objectNodeId,
-                    item,
-                    new LocalizedText(item),
-                    type);
+        this.addNode(newObject);
 
-            this.addNode(newObject);
-
-            UaObjects.ObjectsFolder.organizes(newObject);
-        }
-
+        UaObjects.ObjectsFolder.organizes(newObject);
     }
 }

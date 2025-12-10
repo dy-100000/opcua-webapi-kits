@@ -7,17 +7,17 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.ReferenceElementCallback;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.ReferenceTargetDescriptor;
-import org.opcfoundation.webserver.types.ServiceContext;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaReferenceDescriptor;
-import org.opcfoundation.webserver.types.message.BrowseObjectRequest;
-import org.opcfoundation.webserver.types.message.BrowseObjectResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkResponse;
-import org.opcfoundation.webserver.types.message.ReadObjectAttributeRequest;
-import org.opcfoundation.webserver.types.message.ReadObjectAttributeResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.types.digitaltwin.ReferenceTargetDescriptor;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaReferenceDescriptor;
+import org.opcfoundation.webserver.service.message.reactiveobject.BrowseObjectRequest;
+import org.opcfoundation.webserver.service.message.reactiveobject.BrowseObjectResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkResponse;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeRequest;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,13 +27,13 @@ public abstract class ReferenceElementType extends ElementType implements Refere
     public ReferenceElementType(
             String typeId,
             LocalizedText displayName,
-            DigitalTwinSpace namespace)
+            DigitalTwinSpace twinSpace)
     {
         super(
                 typeId,
                 displayName,
                 UaObjectTypes.ReferenceElementType,
-                namespace);
+                twinSpace);
     }
 
     @Override
@@ -49,7 +49,7 @@ public abstract class ReferenceElementType extends ElementType implements Refere
 
         if (null == instanceDeclaration)
         {
-            ServiceContext context = new ServiceContext(request.getObjectId());
+            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
@@ -73,7 +73,7 @@ public abstract class ReferenceElementType extends ElementType implements Refere
     @Override
     public CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
     {
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetLinkRequest getLinkRequest = new GetLinkRequest(
                 context,
                 request.getAdditionalInfo().getMaxReferencesPerNode(),

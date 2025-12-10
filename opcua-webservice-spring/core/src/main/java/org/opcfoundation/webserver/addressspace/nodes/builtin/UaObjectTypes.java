@@ -19,4 +19,6 @@ public class UaObjectTypes {
     public final static BaseUaObjectType SubmodelType = new BaseUaObjectType(new NodeId(1,12),"SubmodelType", new LocalizedText("SubmodelType"), true, BaseObjectType);
     public final static BaseUaObjectType ElementType = new BaseUaObjectType(new NodeId(1,13),"ElementType", new LocalizedText("ElementType"), true, BaseObjectType);
     public final static BaseUaObjectType ReferenceElementType = new BaseUaObjectType(new NodeId(1,14),"ReferenceElementType", new LocalizedText("ReferenceElementType"), true, ElementType);
+    public final static BaseUaObjectType ElementCollectionType = new BaseUaObjectType(new NodeId(1,15),"ElementCollectionType", new LocalizedText("ElementCollectionType"), true, ElementType);
+    public final static BaseUaObjectType ElementListType = new BaseUaObjectType(new NodeId(1,16),"ElementListType", new LocalizedText("ElementListType"), true, ElementType);
 }

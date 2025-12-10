@@ -6,11 +6,10 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.ElementListType;
-import org.opcfoundation.webserver.types.ObjectElementDescriptor;
-import org.opcfoundation.webserver.types.PropertyElementDescriptor;
-import org.opcfoundation.webserver.types.UaChildId;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
-
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
+import org.opcfoundation.webserver.types.common.UaChildId;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectElementDescriptor;
+import org.opcfoundation.webserver.types.digitaltwin.PropertyElementDescriptor;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 

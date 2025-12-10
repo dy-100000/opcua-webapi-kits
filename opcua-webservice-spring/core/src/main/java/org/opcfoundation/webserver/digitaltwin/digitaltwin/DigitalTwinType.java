@@ -3,32 +3,35 @@ package org.opcfoundation.webserver.digitaltwin.digitaltwin;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
-import org.opcfoundation.webserver.addressspace.models.UaObjectType;
+import org.opcfoundation.webserver.addressspace.reactiveobject.UaReactiveObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.DigitalTwinCallback;
 import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelTypeBase;
-import org.opcfoundation.webserver.types.SubmodelDescriptor;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetSubmodelsResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.ServiceContext;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaReferenceDescriptor;
-import org.opcfoundation.webserver.types.message.*;
+import org.opcfoundation.webserver.types.digitaltwin.SubmodelDescriptor;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetSubmodelsResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaReferenceDescriptor;
+import org.opcfoundation.webserver.service.message.reactiveobject.BrowseObjectRequest;
+import org.opcfoundation.webserver.service.message.reactiveobject.BrowseObjectResponse;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeRequest;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class DigitalTwinType extends UaObjectType implements DigitalTwinCallback {
+public abstract class DigitalTwinType extends UaReactiveObjectType implements DigitalTwinCallback {
     public DigitalTwinType(
             String typeId,
             LocalizedText displayName,
-            DigitalTwinSpace namespace)
+            DigitalTwinSpace twinSpace)
     {
-        super(typeId, displayName, UaObjectTypes.DigitalTwinType, namespace);
+        super(typeId, displayName, UaObjectTypes.DigitalTwinType, twinSpace);
     }
 
     public final UaObject addSubmodel(
@@ -62,7 +65,7 @@ public abstract class DigitalTwinType extends UaObjectType implements DigitalTwi
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request)
     {
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
         return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
@@ -76,7 +79,7 @@ public abstract class DigitalTwinType extends UaObjectType implements DigitalTwi
         if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK))
             return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetSubmodelsRequest getSubmodelsRequest = new GetSubmodelsRequest(context);
 
         return onGetSubmodels(getSubmodelsRequest).thenApply(this::processBrowseObjectChildrenResponse);

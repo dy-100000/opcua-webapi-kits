@@ -2,9 +2,8 @@ package org.opcfoundation.webserver.digitaltwin.callback;
 
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
 
-import java.util.HashSet;
 import java.util.concurrent.CompletableFuture;
 
 public interface ElementListCallback {

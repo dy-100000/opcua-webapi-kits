@@ -1,5 +1,6 @@
 package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
+import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 
 public class DigitalTwinSpaceTest extends DigitalTwinSpace {
@@ -7,7 +8,7 @@ public class DigitalTwinSpaceTest extends DigitalTwinSpace {
     public static DigitalTwinTestType digitalTwinTestType;
 
     public static SubmodelTestType submodelTestType;
-    public static ElementListSubmodelTestType elementListSubmodelTestType;
+    public static DynamicSubmodelTestType dynamicSubmodelTestType;
 
     public static ElementCollectionTestAType elementCollectionTestAType;
     public static ElementCollectionTestBType elementCollectionTestBType;
@@ -27,30 +28,31 @@ public class DigitalTwinSpaceTest extends DigitalTwinSpace {
         System.out.println("DigitalTwinSpaceTest.onStartUp");
 
         enumTestDataType = new EnumTestDataType(this);
-        addEnumerationType(enumTestDataType);
+        addDefinition(enumTestDataType);
 
         elementListTestType = new ElementListTestType(this);
-        addElementType(elementListTestType);
+        addDefinition(elementListTestType);
 
         referenceElementTestType = new ReferenceElementTestType(this);
-        addElementType(referenceElementTestType);
+        addDefinition(referenceElementTestType);
 
         elementCollectionTestAType = new ElementCollectionTestAType(enumTestDataType,this);
-        addElementType(elementCollectionTestAType);
+        addDefinition(elementCollectionTestAType);
 
         elementCollectionTestBType = new ElementCollectionTestBType(referenceElementTestType, elementListTestType, this);
-        addElementType(elementCollectionTestBType);
+        addDefinition(elementCollectionTestBType);
 
         submodelTestType = new SubmodelTestType(elementCollectionTestAType, elementCollectionTestBType, referenceElementTestType, elementListTestType, this);
-        addSubmodelType(submodelTestType);
+        addDefinition(submodelTestType);
 
-        elementListSubmodelTestType = new ElementListSubmodelTestType(this);
-        addSubmodelType(elementListSubmodelTestType);
+        dynamicSubmodelTestType = new DynamicSubmodelTestType(this);
+        addDefinition(dynamicSubmodelTestType);
 
-        digitalTwinTestType = new DigitalTwinTestType(submodelTestType, elementListSubmodelTestType, this);
-        addDigitalTwinType(digitalTwinTestType);
+        digitalTwinTestType = new DigitalTwinTestType(submodelTestType, dynamicSubmodelTestType, this);
+        addDefinition(digitalTwinTestType);
 
         digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(this);
-        addDigitalTwinDirectoryType(digitalTwinDirectoryTestType, "Entry");
+        addDefinition(digitalTwinDirectoryTestType);
+        addEntryPoint(digitalTwinDirectoryTestType, "Entry", new LocalizedText("入口"), new LocalizedText("测试用入口节点"));
     }
 }

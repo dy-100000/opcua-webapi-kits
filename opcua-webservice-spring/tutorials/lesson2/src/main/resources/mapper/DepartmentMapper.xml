@@ -24,5 +24,4 @@
             ParentDepartmentId IS NULL
         </if>
     </select>
-
 </mapper>

@@ -10,14 +10,14 @@ import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.ElementListCallback;
-import org.opcfoundation.webserver.types.ObjectElementDescriptor;
-import org.opcfoundation.webserver.types.PropertyElementDescriptor;
-import org.opcfoundation.webserver.types.ServiceContext;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.UaChildId;
-import org.opcfoundation.webserver.types.UaReferenceDescriptor;
-import org.opcfoundation.webserver.types.message.*;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectElementDescriptor;
+import org.opcfoundation.webserver.types.digitaltwin.PropertyElementDescriptor;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaChildId;
+import org.opcfoundation.webserver.types.common.UaReferenceDescriptor;
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.reactiveobject.*;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -25,13 +25,13 @@ import java.util.concurrent.CompletableFuture;
 public abstract class ElementListType extends ElementType implements ElementListCallback {
     public ElementListType(String typeId,
                            LocalizedText displayName,
-                           DigitalTwinSpace namespace)
+                           DigitalTwinSpace twinSpace)
     {
         super(
                 typeId,
                 displayName,
-                UaObjectTypes.ElementType,
-                namespace);
+                UaObjectTypes.ElementListType,
+                twinSpace);
     }
 
     @Override
@@ -41,7 +41,7 @@ public abstract class ElementListType extends ElementType implements ElementList
 
         if (null == instanceDeclaration)
         {
-            ServiceContext context = new ServiceContext(request.getObjectId());
+            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
@@ -59,7 +59,7 @@ public abstract class ElementListType extends ElementType implements ElementList
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
 
         if (request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) &&
                 supportObjectElementList())
@@ -96,7 +96,7 @@ public abstract class ElementListType extends ElementType implements ElementList
             throw new UaRuntimeException(StatusCodes.Bad_InternalError);
         }
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetPropertySubElementsRequest getPropertySubElementsRequest= new GetPropertySubElementsRequest(
                 context,
                 request.getChildId());
@@ -108,7 +108,7 @@ public abstract class ElementListType extends ElementType implements ElementList
     @Override
     public final CompletableFuture<ReadMemberAttributeResponse> onReadMemberAttributes(ReadMemberAttributeRequest request)
     {
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetPropertyDescriptorRequest getPropertyDescriptorRequest = new GetPropertyDescriptorRequest(
                 context,
                 request.getChildId().getId(),
@@ -136,7 +136,7 @@ public abstract class ElementListType extends ElementType implements ElementList
             }
         }
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         ReadPropertyListValueRequest readPropertyValuesRequest = new ReadPropertyListValueRequest(
                 context,
                 propertyIds,
@@ -165,7 +165,7 @@ public abstract class ElementListType extends ElementType implements ElementList
             }
         }
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         WritePropertyListValuesRequest writePropertyValuesRequest = new WritePropertyListValuesRequest(
                 context,
                 propertyIdAndValues,

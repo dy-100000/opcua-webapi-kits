@@ -1,9 +1,9 @@
 package org.opcfoundation.webserver.digitaltwin.callback;
 
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDescriptorResponse;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetLinkResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkResponse;
 
 import java.util.concurrent.CompletableFuture;
 

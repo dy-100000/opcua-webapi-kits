@@ -3,9 +3,9 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
-import org.opcfoundation.webserver.types.DigitalTwinDescriptor;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDigitalTwinListRequest;
-import org.opcfoundation.webserver.types.message.digitaltwin.GetDigitalTwinListResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListResponse;
+import org.opcfoundation.webserver.types.digitaltwin.DigitalTwinDescriptor;
 
 import java.util.concurrent.CompletableFuture;
 

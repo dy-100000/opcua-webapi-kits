@@ -13,9 +13,13 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.ElementCollectionCallback;
-import org.opcfoundation.webserver.types.*;
-import org.opcfoundation.webserver.types.message.*;
-import org.opcfoundation.webserver.types.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.digitaltwin.*;
+import org.opcfoundation.webserver.service.message.reactiveobject.*;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaChildId;
+import org.opcfoundation.webserver.types.common.UaObjectId;
+import org.opcfoundation.webserver.types.common.UaReferenceDescriptor;
+import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -23,13 +27,13 @@ import java.util.concurrent.CompletableFuture;
 public abstract class ElementCollectionType extends ElementType implements ElementCollectionCallback {
     public ElementCollectionType(String typeId,
                                LocalizedText displayName,
-                               DigitalTwinSpace namespace)
+                               DigitalTwinSpace twinSpace)
     {
         super(
                 typeId,
                 displayName,
-                UaObjectTypes.ElementType,
-                namespace);
+                UaObjectTypes.ElementCollectionType,
+                twinSpace);
     }
 
     public UaVariable addPropertyElement(
@@ -48,7 +52,6 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
                 false,
                 -1,
                 UaVariableTypes.PropertyType,
-                null,
                 true);
     }
 
@@ -61,13 +64,22 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             boolean                        historizing,
             @Nullable Integer              valueRank,
             @Nullable UaVariableType       variableType,
-            @Nullable Map<NodeId, Variant> subElements,
             boolean                        mandatory)
     {
-        UaVariable newVariable = addVariableNode(name, displayName, dataType,writable, historizing, valueRank, variableType, subElements);
+        UaVariable newVariable = addVariableNode(name, displayName, dataType,writable, historizing, valueRank, variableType);
         if (description.isNotNull()) newVariable.setDescription(description);
         newVariable.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
         return newVariable;
+    }
+
+    public void addSubElementOfProperty(UaVariable property, String subElementName, Variant value)
+    {
+        UaVariable subElement = property.addMember(subElementName);
+        if (null != subElement)
+        {
+            subElement.setValue(value);
+            nodeManager.addNode(subElement);
+        }
     }
 
     public UaMethod addOperationElement(
@@ -130,7 +142,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
 
         if (null == instanceDeclaration)
         {
-            ServiceContext context = new ServiceContext(request.getObjectId());
+            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
             GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
             return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
@@ -183,7 +195,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
 
         if (membersToReturn.isEmpty()) return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetElementsRequest getElementsRequest = new GetElementsRequest(context);
 
         return onGetElements(getElementsRequest).
@@ -259,7 +271,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             }
         }
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         ReadPropertyValuesRequest readPropertyValuesRequest = new ReadPropertyValuesRequest(
                 context,
                 propertyNames);
@@ -298,7 +310,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
             return CompletableFuture.completedFuture(new WriteVariableValueResponse());
         }
 
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         WritePropertyValuesRequest writePropertyValuesRequest = new WritePropertyValuesRequest(
                 context,
                 elementValues);
@@ -312,7 +324,7 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
     @Override
     public CompletableFuture<MethodCallResponse> onMethodCall(MethodCallRequest request)
     {
-        ServiceContext context = new ServiceContext(request.getObjectId());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         InvokeOperationRequest invokeOperationRequest = new InvokeOperationRequest(
                 context,
                 request.getMethodName(),

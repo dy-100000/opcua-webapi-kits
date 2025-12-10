@@ -11,7 +11,7 @@ import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction
 import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
 import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
 import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
-import org.opcfoundation.webserver.types.UaBrowseAdditionalInfo;
+import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
 import org.opcfoundation.webapi.service.types.CallContext;
 import org.opcfoundation.webapi.service.types.ReadContext;
 import org.opcfoundation.webapi.service.types.ServiceContext;

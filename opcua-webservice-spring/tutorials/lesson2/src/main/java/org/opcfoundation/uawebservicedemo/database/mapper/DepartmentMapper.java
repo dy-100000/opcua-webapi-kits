@@ -1,6 +1,7 @@
 package org.opcfoundation.uawebservicedemo.database.mapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.opcfoundation.uawebservicedemo.database.entity.Department;
+import org.opcfoundation.uawebservicedemo.database.entity.EmployeeData;
 
 import java.util.List;
 

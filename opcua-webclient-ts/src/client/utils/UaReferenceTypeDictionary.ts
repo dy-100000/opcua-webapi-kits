@@ -75,20 +75,20 @@ export class UaReferenceTypeDictionary
 
             for (let item of results[i].References)
             {
-                let referencesTypeId = parseUaNodeIdOrNull(item.NodeId);
-                if (!referencesTypeId || NodeClass.ReferenceType != item.NodeClass ||
+                let referenceTypeId = parseUaNodeIdOrNull(item.NodeId);
+                if (!referenceTypeId || NodeClass.ReferenceType != item.NodeClass ||
                     !item.BrowseName || !item.DisplayName) continue;
 
                 let referenceType = new UaReferenceType(
-                    referencesTypeId, 
+                    referenceTypeId, 
                     item.BrowseName, 
                     UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
                     false,
                     new UaLocalizedText(),
                     false);              
                 
-                this._referenceTypes.set(referencesTypeId, referenceType);
-                this._remainingNodesToBrowse.push(referencesTypeId);
+                this._referenceTypes.set(referenceTypeId, referenceType);
+                this._remainingNodesToBrowse.push(referenceTypeId);
                 if (parentType) referenceType.setParentType(parentType);
             }
         }

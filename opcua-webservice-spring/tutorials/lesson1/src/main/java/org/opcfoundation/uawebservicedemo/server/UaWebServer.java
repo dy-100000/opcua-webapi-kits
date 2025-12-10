@@ -2,7 +2,7 @@ package org.opcfoundation.uawebservicedemo.server;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webapi.service.UaServerConfigure;
-import org.opcfoundation.uawebservicedemo.models.EmployeeDataManager;
+import org.opcfoundation.uawebservicedemo.models.EmployeeTwinSpace;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -20,7 +20,7 @@ public class UaWebServer extends org.opcfoundation.webserver.service.UaWebServer
         configureServer();
 
         // Add opc ua data manager
-        addNodeManager(new EmployeeDataManager());
+        addNodeManager(new EmployeeTwinSpace());
     }
 
     @Override
@@ -33,7 +33,7 @@ public class UaWebServer extends org.opcfoundation.webserver.service.UaWebServer
     {
         UaServerConfigure configure = new UaServerConfigure();
         configure.setApplicationUri("EmployeeDemo");
-        configure.setApplicationName(LocalizedText.english("EmployeeDemo"));
+        configure.setApplicationName(new LocalizedText("EmployeeDemo"));
         configure.setProductUri("EmployeeDemo");
         setServerConfigure(configure);
     }
