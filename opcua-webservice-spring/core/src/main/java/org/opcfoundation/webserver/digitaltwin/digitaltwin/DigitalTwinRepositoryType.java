@@ -28,12 +28,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public abstract class DigitalTwinDirectoryType extends UaReactiveObjectType implements DigitalTwinDirectoryCallback {
-    public DigitalTwinDirectoryType(String typeId,
-                                    LocalizedText displayName,
-                                    DigitalTwinSpace twinSpace)
+public abstract class DigitalTwinRepositoryType extends UaReactiveObjectType implements DigitalTwinDirectoryCallback {
+    public DigitalTwinRepositoryType(String typeId,
+                                     LocalizedText displayName,
+                                     DigitalTwinSpace twinSpace)
     {
-        super(typeId, displayName, UaObjectTypes.DigitalTwinDirectoryType, twinSpace);
+        super(typeId, displayName, UaObjectTypes.DigitalTwinRepositoryType, twinSpace);
     }
 
     @Override

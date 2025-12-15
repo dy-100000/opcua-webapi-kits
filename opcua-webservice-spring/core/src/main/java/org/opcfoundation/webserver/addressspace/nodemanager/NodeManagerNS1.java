@@ -30,7 +30,7 @@ public class NodeManagerNS1 extends NodeManager {
     }
 
     private void buildObjectTypes() {
-        addNode(UaObjectTypes.DigitalTwinDirectoryType);
+        addNode(UaObjectTypes.DigitalTwinRepositoryType);
         addNode(UaObjectTypes.DigitalTwinType);
         addNode(UaObjectTypes.SubmodelType);
         addNode(UaObjectTypes.ElementType);

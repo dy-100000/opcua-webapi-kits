@@ -34,7 +34,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
     private final UaVariable startTime;
     private final UaVariable salary;
 
-    private UaMethod getServiceTime;
+    private UaMethod getCumulatedSalary;
 
     public EmployeeDataSubmodelType(EmployeeTwinSpace twinSpace) {
         super("EmployeeDataSubmodelType", new LocalizedText("EmployeeDataModel"), twinSpace);
@@ -64,7 +64,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
                 "EngineeringUnits",
                 UaStructureUtilities.toVariant(new EUInformation(null,-1, new LocalizedText("RMB/M"), new LocalizedText("RMB per month"))));
 
-        addGetServiceTimeMethod();
+        addCumulatedSalaryOperation();
     }
 
     @Override
@@ -116,9 +116,9 @@ public class EmployeeDataSubmodelType extends SubmodelType {
 
             if (null == employeeData) throw new UaRuntimeException(StatusCodes.Bad_MethodInvalid);
 
-            if (request.getOperationName().equals(getServiceTime.browseName()))
+            if (request.getOperationName().equals(getCumulatedSalary.browseName()))
             {
-                Integer result = getServiceTime(employeeData);
+                Integer result = getCumulatedSalary(employeeData);
                 outputArguments.add(Variant.ofInt32(result));
                 return CompletableFuture.completedFuture(new InvokeOperationResponse(outputArguments));
             }
@@ -129,28 +129,28 @@ public class EmployeeDataSubmodelType extends SubmodelType {
         }
     }
 
-    private void addGetServiceTimeMethod()
+    private void addCumulatedSalaryOperation()
     {
         List<Argument> outputArguments = new ArrayList<>();
-        Argument serviceTime = new Argument(
-                "ServiceTime",
+        Argument cumulatedSalary = new Argument(
+                "CumulatedSalary",
                 UaDataTypes.Int32.nodeId(),
                 -1,
                 null,
-                new LocalizedText("Service time in mouth"));
+                new LocalizedText("CumulatedSalary"));
 
-        outputArguments.add(serviceTime);
+        outputArguments.add(cumulatedSalary);
 
-        getServiceTime = addOperationElement(
-                "GetServiceTime",
-                new LocalizedText("GetServiceTime"),
-                new LocalizedText("Get the cumulated mouths the employee works in this company"),
+        getCumulatedSalary = addOperationElement(
+                "GetCumulatedSalary",
+                new LocalizedText("GetCumulatedSalary"),
+                new LocalizedText("Calculate the cumulated salary the company gives to employee"),
                 null,
                 outputArguments,
                 true);
     }
 
-    private Integer getServiceTime(EmployeeData employeeData)
+    private Integer getCumulatedSalary(EmployeeData employeeData)
     {
         LocalDateTime now = LocalDateTime.now(ZoneId.systemDefault());
 
@@ -164,6 +164,8 @@ public class EmployeeDataSubmodelType extends SubmodelType {
         int months = period.getMonths();
 
         // 4. 总月份 = 年×12 + 月（Period的差值已处理自然月，如2024-01-30到2024-02-28算1个月）
-        return years * 12 + months;
+        int totalMonth = years * 12 + months;
+
+        return employeeData.getSalary() * totalMonth;
     }
 }

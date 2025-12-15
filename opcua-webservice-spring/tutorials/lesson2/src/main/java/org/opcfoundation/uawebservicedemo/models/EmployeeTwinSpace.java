@@ -3,12 +3,12 @@ package org.opcfoundation.uawebservicedemo.models;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.uawebservicedemo.models.company.CompanyDigitalTwinType;
-import org.opcfoundation.uawebservicedemo.models.company.CompanyDirectoryType;
+import org.opcfoundation.uawebservicedemo.models.company.CompanyRepositoryType;
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentEmployeeReferenceType;
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentSubmodelType;
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeDataSubmodelType;
-import org.opcfoundation.uawebservicedemo.models.employee.EmployeeDirectoryType;
+import org.opcfoundation.uawebservicedemo.models.employee.EmployeeRepositoryType;
 import org.opcfoundation.uawebservicedemo.models.employee.personaldata.PersonalDataSubmodelType;
 import org.opcfoundation.uawebservicedemo.models.employee.EmployeeDigitalTwinType;
 import org.opcfoundation.uawebservicedemo.models.employee.personaldata.enumeration.SexEnumType;
@@ -17,7 +17,7 @@ import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 public class EmployeeTwinSpace extends DigitalTwinSpace {
     // Employee definitions
     public SexEnumType sexEnumType;
-    public EmployeeDirectoryType employeeDirectoryType;
+    public EmployeeRepositoryType employeeRepositoryType;
     public EmployeeDigitalTwinType employeeDigitalTwinType;
     public PersonalDataSubmodelType personalDataSubmodelType;
     public EmployeeDataSubmodelType employeeDataSubmodelType;
@@ -28,12 +28,12 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
     public DepartmentEmployeeReferenceType departmentEmployeeReferenceType;
 
     // Company definition
-    public CompanyDirectoryType companyDirectoryType;
+    public CompanyRepositoryType companyRepositoryType;
     public CompanyDigitalTwinType companyDigitalTwinType;
 
     public EmployeeTwinSpace()
     {
-        super("EmployeeDataManager");
+        super("EmployeeTwinSpace");
     }
 
     @Override
@@ -51,8 +51,8 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
         employeeDigitalTwinType = new EmployeeDigitalTwinType(personalDataSubmodelType, employeeDataSubmodelType, this);
         addDefinition(employeeDigitalTwinType);
 
-        employeeDirectoryType = new EmployeeDirectoryType(this);
-        addDefinition(employeeDirectoryType);
+        employeeRepositoryType = new EmployeeRepositoryType(this);
+        addDefinition(employeeRepositoryType);
 
         // Department
         departmentEmployeeReferenceType = new DepartmentEmployeeReferenceType(this);
@@ -68,11 +68,11 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
         companyDigitalTwinType = new CompanyDigitalTwinType(departmentSubmodelType, this);
         addDefinition(companyDigitalTwinType);
 
-        companyDirectoryType = new CompanyDirectoryType(this);
-        addDefinition(companyDirectoryType);
+        companyRepositoryType = new CompanyRepositoryType(this);
+        addDefinition(companyRepositoryType);
 
         // Entry points
-        addEntryPoint(employeeDirectoryType, "Employees", new LocalizedText("Employees"), new LocalizedText("Provides employee information"));
-        addEntryPoint(companyDirectoryType, "Companies", new LocalizedText("Companies"), new LocalizedText("Provides company information"));
+        addRepository(employeeRepositoryType, "Employees", new LocalizedText("Employees"), new LocalizedText("Provides employee information"));
+        addRepository(companyRepositoryType, "Companies", new LocalizedText("Companies"), new LocalizedText("Provides company information"));
     }
 }

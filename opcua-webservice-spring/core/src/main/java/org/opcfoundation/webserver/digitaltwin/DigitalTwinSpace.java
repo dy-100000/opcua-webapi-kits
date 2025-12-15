@@ -6,10 +6,9 @@ import org.opcfoundation.webserver.addressspace.nodes.UaEnumDataType;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerReactiveObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjects;
-import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
+import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinRepositoryType;
 import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinType;
 import org.opcfoundation.webserver.digitaltwin.element.ElementType;
-import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
 import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelTypeBase;
 import org.opcfoundation.webserver.types.common.UaInstanceIdentifier;
 import org.opcfoundation.webserver.types.common.UaObjectIdentifier;
@@ -25,7 +24,7 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
         addObjectType(type);
     }
 
-    public final void addDefinition(DigitalTwinDirectoryType type)
+    public final void addDefinition(DigitalTwinRepositoryType type)
     {
         addObjectType(type);
     }
@@ -45,14 +44,14 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
         addDataType(type);
     }
 
-    public final void addEntryPoint(
-            DigitalTwinDirectoryType type,
+    public final void addRepository(
+            DigitalTwinRepositoryType repositoryType,
             String id,
             LocalizedText displayName,
             LocalizedText description)
     {
         UaInstanceIdentifier objectIdentifier = new UaInstanceIdentifier(
-                new UaObjectIdentifier(type.nodeId().toParseableString(), id, null),
+                new UaObjectIdentifier(repositoryType.nodeId().toParseableString(), id, null),
                 null);
 
         NodeId objectNodeId = new NodeId(nsIndex(), objectIdentifier.toByteString());
@@ -61,7 +60,7 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
                 objectNodeId,
                 id,
                 displayName,
-                type);
+                repositoryType);
 
         newObject.setDescription(description);
 

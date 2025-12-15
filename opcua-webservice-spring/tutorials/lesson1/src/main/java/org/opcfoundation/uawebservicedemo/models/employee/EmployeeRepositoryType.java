@@ -7,7 +7,7 @@ import org.opcfoundation.uawebservicedemo.database.EmployeeDatabase;
 import org.opcfoundation.uawebservicedemo.database.entity.Employee;
 import org.opcfoundation.uawebservicedemo.database.mapper.EmployeeMapper;
 import org.opcfoundation.uawebservicedemo.models.EmployeeTwinSpace;
-import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
+import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinRepositoryType;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListResponse;
 import org.opcfoundation.webserver.types.digitaltwin.DigitalTwinDescriptor;
@@ -16,9 +16,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 // Defining entry of employee list
-public class EmployeeDirectoryType extends DigitalTwinDirectoryType {
-    public EmployeeDirectoryType(EmployeeTwinSpace twinSpace) {
-        super("EmployeeDirectoryType", new LocalizedText("EmployeeDirectory"), twinSpace);
+public class EmployeeRepositoryType extends DigitalTwinRepositoryType {
+    public EmployeeRepositoryType(EmployeeTwinSpace twinSpace) {
+        super("EmployeeRepositoryType", new LocalizedText("EmployeeRepository"), twinSpace);
     }
 
     @Override

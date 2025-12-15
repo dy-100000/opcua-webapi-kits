@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4840"
+            basePath: "http://dingyan3:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
