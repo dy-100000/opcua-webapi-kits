@@ -6,7 +6,7 @@
 
 2.opcua-webclient-ts：TypeScript 语言开发的 UA WebClient 模块。提供 Browse（浏览）、Read（读取）、Write（写入）、MethodCall（方法调用）等基础 UA Web 服务调用能力，可同时运行于浏览器和 Node 环境。
 
-3.opcua-webbrowser-tool：OPC UA WebService 地址空间可视化工具，功能类似 UaExpert。开发者可直接通过浏览器访问 OPC 基金会官网获取（官网网址：http://opcua-webbrowser-tool.opcfoundation.cn/）。
+3.opcua-webbrowser-tool：OPC UA WebService 地址空间可视化工具，功能类似 UaExpert。开发者可直接通过浏览器访问 OPC 基金会官网获取（官网网址：https://opcua-webbrowser-tool.opcfoundation.cn/）。
 
 4.opcua-webservice-node：功能与用法和 opcua-webservice-spring 一致，目前处于待开发阶段，后续将逐步完善。
 

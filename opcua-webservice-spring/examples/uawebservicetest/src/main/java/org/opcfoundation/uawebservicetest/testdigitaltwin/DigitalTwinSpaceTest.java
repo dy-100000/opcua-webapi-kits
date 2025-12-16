@@ -53,6 +53,6 @@ public class DigitalTwinSpaceTest extends DigitalTwinSpace {
 
         digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(this);
         addDefinition(digitalTwinDirectoryTestType);
-        addEntryPoint(digitalTwinDirectoryTestType, "Entry", new LocalizedText("入口"), new LocalizedText("测试用入口节点"));
+        addRepository(digitalTwinDirectoryTestType, "Entry", new LocalizedText("入口"), new LocalizedText("测试用入口节点"));
     }
 }

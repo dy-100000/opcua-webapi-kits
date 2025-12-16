@@ -13,7 +13,7 @@ public class CorsConfig implements WebMvcConfigurer {
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 允许的请求方法
                 .allowedHeaders("*")  // 允许的请求头
                 .exposedHeaders("token")  // 允许前端获取的响应头（如自定义的 token）
-                .allowCredentials(true)  // 是否允许携带 cookie
+                .allowCredentials(false)  // 是否允许携带 cookie
                 .maxAge(3600);  // 预检请求的有效期（秒），避免频繁预检
     }
 }

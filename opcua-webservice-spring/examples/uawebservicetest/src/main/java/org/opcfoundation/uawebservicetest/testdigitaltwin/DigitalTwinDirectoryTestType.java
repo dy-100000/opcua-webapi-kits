@@ -2,14 +2,14 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
-import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinDirectoryType;
+import org.opcfoundation.webserver.digitaltwin.digitaltwin.DigitalTwinRepositoryType;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDigitalTwinListResponse;
 import org.opcfoundation.webserver.types.digitaltwin.DigitalTwinDescriptor;
 
 import java.util.concurrent.CompletableFuture;
 
-public class DigitalTwinDirectoryTestType extends DigitalTwinDirectoryType {
+public class DigitalTwinDirectoryTestType extends DigitalTwinRepositoryType {
     public DigitalTwinDirectoryTestType(DigitalTwinSpace space) {
         super("TestDigitalTwinDirectory", new LocalizedText("TestDigitalTwinDirectory"), space);
     }
