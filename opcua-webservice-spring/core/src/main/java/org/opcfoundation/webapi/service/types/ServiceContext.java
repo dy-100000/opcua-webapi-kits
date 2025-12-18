@@ -1,7 +1,7 @@
 package org.opcfoundation.webapi.service.types;
 
 import org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.springframework.web.context.request.NativeWebRequest;
 
 public class ServiceContext {

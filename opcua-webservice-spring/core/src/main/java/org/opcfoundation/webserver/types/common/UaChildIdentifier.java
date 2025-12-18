@@ -2,7 +2,7 @@ package org.opcfoundation.webserver.types.common;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 import java.util.Objects;
 

@@ -2,7 +2,7 @@ package org.opcfoundation.webapi.service.types;
 
 import org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader;
 import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.springframework.web.context.request.NativeWebRequest;
 
 import java.util.List;

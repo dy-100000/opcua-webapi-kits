@@ -4,55 +4,78 @@ import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
-import org.opcfoundation.webapi.mapper.UaEncoder;
+import org.opcfoundation.webapi.mapper.extensionobjects.ExtensionObjectEncoder;
 import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UaStructureUtilities {
-    public static Variant toVariant(UaStructuredType structureData)
+    public static Variant toVariant(UaStructuredType structure)
     {
-        return Variant.ofExtensionObject(ExtensionObject.encode(UaEncoder.defaultEncoder, structureData));
+        try
+        {
+            ExtensionObject extensionObject = ExtensionObject.encode(ExtensionObjectEncoder.Encoder.getEncodingContext(), structure);
+            return Variant.ofExtensionObject(extensionObject);
+        } catch (Exception e) {
+            return Variant.NULL_VALUE;
+        }
     }
 
-    public static Variant toVariant(UaStructuredType[] values)
+    public static Variant toVariant(List<UaStructuredType> structures)
     {
-        return Variant.ofExtensionObjectArray(ExtensionObject.encodeArray(UaEncoder.defaultEncoder, values));
+        try {
+            ExtensionObject[] extensionObjects = new ExtensionObject[structures.size()];
+
+            int index = 0;
+            for (UaStructuredType item : structures) {
+                extensionObjects[index] = ExtensionObject.encode(ExtensionObjectEncoder.Encoder.getEncodingContext(), item);
+                index++;
+            }
+
+            return Variant.ofExtensionObjectArray(extensionObjects);
+        } catch (Exception e) {
+            return Variant.NULL_VALUE;
+        }
     }
 
     @Nullable
     public static UaStructuredType toStructure(Variant value)
     {
-        if (value.isNull() || value.getValue().getClass().isArray() ||
-                value.getDataType().isEmpty() || !value.getDataType().equals(OpcUaDataType.ExtensionObject)) return null;
-
         try
         {
+            if (null == value.getValue() ||
+                    value.getValue().getClass().isArray()) return null;
+
+            if (value.getDataType().isEmpty() ||
+                    !value.getDataType().get().equals(OpcUaDataType.ExtensionObject)) return null;
+
             ExtensionObject extensionObject = (ExtensionObject)value.getValue();
-            return extensionObject.decode(UaEncoder.defaultEncoder);
+            return extensionObject.decode(ExtensionObjectEncoder.Encoder.getEncodingContext());
         } catch (Exception e) {
             return null;
         }
     }
 
     @Nullable
-    public static UaStructuredType[] toStructureArray(Variant value)
+    public static List<UaStructuredType> toStructureArray(Variant value)
     {
-        if (value.isNull() || !value.getValue().getClass().isArray() ||
-                value.getDataType().isEmpty() || !value.getDataType().equals(OpcUaDataType.ExtensionObject)) return null;
-
         try
         {
+            if (null == value.getValue() ||
+                    !value.getValue().getClass().isArray()) return null;
+
+            if (value.getDataType().isEmpty() ||
+                    !value.getDataType().get().equals(OpcUaDataType.ExtensionObject)) return null;
+
             ExtensionObject[] extensionObjects = (ExtensionObject[])value.getValue();
             List<UaStructuredType> ret = new ArrayList<>();
 
-            for (ExtensionObject item: extensionObjects)
-            {
-                ret.add(item.decode(UaEncoder.defaultEncoder));
+            for (ExtensionObject item : extensionObjects) {
+                ret.add(item.decode(ExtensionObjectEncoder.Encoder.getEncodingContext()));
             }
 
-            return ret.toArray(ret.toArray(new UaStructuredType[0]));
+            return ret;
         } catch (Exception e) {
             return null;
         }

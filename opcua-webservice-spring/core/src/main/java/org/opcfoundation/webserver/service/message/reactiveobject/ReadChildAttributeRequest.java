@@ -1,6 +1,6 @@
 package org.opcfoundation.webserver.service.message.reactiveobject;
 
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariableType;
 import org.opcfoundation.webserver.types.common.UaChildId;
 import org.opcfoundation.webserver.types.common.UaObjectId;

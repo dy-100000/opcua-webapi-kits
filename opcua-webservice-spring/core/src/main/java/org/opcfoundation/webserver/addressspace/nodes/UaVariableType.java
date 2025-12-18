@@ -5,7 +5,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 public class UaVariableType extends UaDefinitionNode {
     private final NodeId dataType;

@@ -8,7 +8,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
 
 import java.util.List;

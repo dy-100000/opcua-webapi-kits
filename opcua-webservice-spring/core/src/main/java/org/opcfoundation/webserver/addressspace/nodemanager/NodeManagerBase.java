@@ -5,7 +5,7 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
 import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;

@@ -5,14 +5,18 @@ import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.EnumValueType;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.types.common.UaStructureUtilities;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UaDataType extends UaDefinitionNode {
     private @Nullable UaVariable enumVariable;
@@ -60,7 +64,7 @@ public class UaDataType extends UaDefinitionNode {
 
     public UaVariable setEnumValues(
             NodeId nodeId,
-            EnumValueType[] enumValues)
+            List<EnumValueType> enumValues)
     {
         if (!isSubtypeOf(NodeIds.Enumeration) || null != enumVariable) throw new UaRuntimeException(StatusCodes.Bad_TypeDefinitionInvalid);
         enumVariable = new UaVariable(
@@ -72,7 +76,9 @@ public class UaDataType extends UaDefinitionNode {
                 AccessLevel.CurrentRead.getValue(),
                 UaVariableTypes.PropertyType);
 
-        enumVariable.setValue(UaStructureUtilities.toVariant(enumValues));
+        List<UaStructuredType> structs = new ArrayList<>(enumValues);
+        enumVariable.setValue(UaStructureUtilities.toVariant(structs));
+
         addMemberNode(enumVariable);
         return enumVariable;
     }

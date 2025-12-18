@@ -1,42 +1,26 @@
 import { UaNodeId } from "."
 
 export class UaExtensionObject {
-    private _dataTypeId : UaNodeId;
-    private _payload : any;
+    private _typeId : UaNodeId;
+    private _body : any;
 
-    constructor(dataTypeId: UaNodeId, payload: any)
+    constructor(typeId: UaNodeId, body: any)
     {       
-        this._dataTypeId = UaNodeId.nullNodeId;
-        this._payload = null;
-
-        if (typeof payload === "object" && null !== payload)
-        {
-            this._dataTypeId = dataTypeId;
-            this._payload = payload;
-        }        
+        this._typeId = typeId;
+        this._body = body;      
     }
 
     isValid(): boolean {
-        return (this._dataTypeId.isEmpty()) ? false : true;
+        return (this._typeId.isEmpty()) ? false : true;
     }
 
-    get payload() : any
+    get body() : any
     {
-        return this._payload;
+        return this._body;
     }
     
-    get dataTypeId() : UaNodeId
+    get typeId() : UaNodeId
     {
-        return this._dataTypeId;
-    }
-
-    toJson() : any
-    {
-        if (!this.isValid()) return { UaTypeId: UaNodeId.nullNodeId.toString() };
-
-        let ret = this._payload;
-        ret.UaTypeId = this._dataTypeId.toString();
-
-        return ret;
+        return this._typeId;
     }
 }

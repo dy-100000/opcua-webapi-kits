@@ -4,18 +4,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
-import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
+
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
-import org.jspecify.annotations.Nullable;
-import org.opcfoundation.webapi.mapper.extensionobjects.ArgumentWebApi;
-import org.opcfoundation.webapi.mapper.extensionobjects.EUInformationWebApi;
-import org.opcfoundation.webapi.mapper.extensionobjects.EnumValueTypeWebApi;
-import org.opcfoundation.webapi.mapper.extensionobjects.RangeWebApi;
+import org.opcfoundation.webapi.mapper.extensionobjects.ExtensionObjectEncoder;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webapi.model.DataValue;
 import org.opcfoundation.webapi.model.LocalizedText;
 import org.opcfoundation.webapi.model.StatusCode;
@@ -31,6 +28,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class UaTypeMapper {
+    private static ObjectMapper Mapper = new ObjectMapper();
+
     public static @Nullable NodeId nodeIdFromWebApi(@Nullable String nodeId)
     {
         if (null == nodeId) return null;
@@ -96,39 +95,6 @@ public class UaTypeMapper {
     public static OffsetDateTime dateTimeFromMilo(DateTime timestamp)
     {
         return OffsetDateTime.ofInstant(timestamp.getJavaInstant(), ZoneOffset.UTC);
-    }
-
-    public static @Nullable Object extensionObjectFromMilo(ExtensionObject extensionObject)
-    {
-        try {
-            UaStructuredType structureData = extensionObject.decode(UaEncoder.defaultEncoder);
-            if (structureData instanceof org.eclipse.milo.opcua.stack.core.types.structured.Range range)
-            {
-                return new RangeWebApi(range);
-            } else if (structureData instanceof org.eclipse.milo.opcua.stack.core.types.structured.EUInformation euInformation) {
-                return new EUInformationWebApi(euInformation);
-            } else if (structureData instanceof org.eclipse.milo.opcua.stack.core.types.structured.Argument argument) {
-                return new ArgumentWebApi(argument);
-            } else if (structureData instanceof org.eclipse.milo.opcua.stack.core.types.structured.EnumValueType enumValue) {
-                return new EnumValueTypeWebApi(enumValue);
-            }
-        } catch (Exception e) {
-            return null;
-        }
-
-        return null;
-    }
-
-    public static @Nullable Object[] extensionObjectsFromMilo(ExtensionObject[] extensionObjects)
-    {
-        Object[] ret = new Object[extensionObjects.length];
-        for (int i=0; i<extensionObjects.length; ++i)
-        {
-            Object structObject = extensionObjectFromMilo(extensionObjects[i]);
-            if (null == structObject) return null;
-            ret[i] = structObject;
-        }
-        return ret;
     }
 
     public static Variant variantFromMilo(org.eclipse.milo.opcua.stack.core.types.builtin.Variant value)
@@ -350,21 +316,33 @@ public class UaTypeMapper {
         } else if (OpcUaDataType.ExtensionObject == dataType) {
             if (!isArray)
             {
-                ExtensionObject extensionObjectValue = (ExtensionObject)val;
-                Object structureObject = extensionObjectFromMilo(extensionObjectValue);
-                if (null != structureObject)
+                ExtensionObject extensionObjectMilo = (ExtensionObject)val;
+                org.opcfoundation.webapi.model.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectMilo);
+                if (null != extensionObject)
                 {
-                    ret.setValue(structureObject);
+                    ret.setValue(extensionObject);
                 } else {
                     ret.setUaType(0);
                 }
             } else {
-                ExtensionObject[] extensionObjects = (ExtensionObject[])val;
-                Object[] structureObjects = extensionObjectsFromMilo(extensionObjects);
-
-                if (null != structureObjects)
+                ExtensionObject[] extensionObjectsMilo = (ExtensionObject[])val;
+                org.opcfoundation.webapi.model.ExtensionObject[] extensionObjects = new org.opcfoundation.webapi.model.ExtensionObject[extensionObjectsMilo.length];
+                for (int i=0; i<extensionObjects.length; ++i)
                 {
-                    ret.setValue(structureObjects);
+                    org.opcfoundation.webapi.model.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectsMilo[i]);
+
+                    if (null == extensionObject)
+                    {
+                        extensionObjects = null;
+                        break;
+                    }
+
+                    extensionObjects[i] = extensionObject;
+                }
+
+                if (null != extensionObjects)
+                {
+                    ret.setValue(extensionObjects);
                 } else {
                     ret.setUaType(0);
                 }
@@ -665,10 +643,9 @@ public class UaTypeMapper {
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofGuidArray(guids);
                 }
             } else if (OpcUaDataType.LocalizedText.getTypeId() == dataType) {
-                ObjectMapper mapper = new ObjectMapper();
                 if (!isArray)
                 {
-                    LocalizedText localizedText = mapper.convertValue(val, LocalizedText.class);
+                    LocalizedText localizedText = Mapper.convertValue(val, LocalizedText.class);
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofLocalizedText(
                             new org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText(localizedText.getLocale(), localizedText.getText()));
                 } else {
@@ -679,7 +656,7 @@ public class UaTypeMapper {
                     int index = 0;
                     for (Object item : objectArray)
                     {
-                        LocalizedText localizedText = mapper.convertValue(item, LocalizedText.class);
+                        LocalizedText localizedText = Mapper.convertValue(item, LocalizedText.class);
                         localizedTexts[index] = new org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText(
                                 localizedText.getLocale(), localizedText.getText());
                         index++;
@@ -688,10 +665,10 @@ public class UaTypeMapper {
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofLocalizedTextArray(localizedTexts);
                 }
             } else if (OpcUaDataType.StatusCode.getTypeId() == dataType) {
-                ObjectMapper mapper = new ObjectMapper();
+
                 if (!isArray)
                 {
-                    StatusCode statusCode = mapper.convertValue(val, StatusCode.class);
+                    StatusCode statusCode = Mapper.convertValue(val, StatusCode.class);
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofStatusCode(statusCodeFromWebApi(statusCode));
                 } else {
                     List<?> objectArray = (List<?>)val;
@@ -701,7 +678,7 @@ public class UaTypeMapper {
                     int index = 0;
                     for (Object item : objectArray)
                     {
-                        StatusCode statusCode = mapper.convertValue(item, StatusCode.class);
+                        StatusCode statusCode = Mapper.convertValue(item, StatusCode.class);
                         statusCodes[index] = statusCodeFromWebApi(statusCode);
                         index++;
                     }
@@ -709,7 +686,29 @@ public class UaTypeMapper {
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofStatusCodeArray(statusCodes);
                 }
             } else if (OpcUaDataType.ExtensionObject.getTypeId() == dataType) {
-                throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+                if (!isArray)
+                {
+                    org.opcfoundation.webapi.model.ExtensionObject extensionObjectWebApi = Mapper.convertValue(val, org.opcfoundation.webapi.model.ExtensionObject.class);
+                    ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
+                    if (null == extensionObject) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+                    ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofExtensionObject(extensionObject);
+                } else {
+                    List<?> objectArray = (List<?>)val;
+                    ExtensionObject[] extensionObjects = new ExtensionObject[objectArray.size()];
+
+                    int index = 0;
+                    for (Object item : objectArray)
+                    {
+                        org.opcfoundation.webapi.model.ExtensionObject extensionObjectWebApi = Mapper.convertValue(item, org.opcfoundation.webapi.model.ExtensionObject.class);
+                        ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
+                        if (null == extensionObject) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+
+                        extensionObjects[index] = extensionObject;
+                        index++;
+                    }
+
+                    ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofExtensionObjectArray(extensionObjects);
+                }
             }
         } catch (Exception e) {
             throw new UaRuntimeException(StatusCodes.Bad_DecodingError);

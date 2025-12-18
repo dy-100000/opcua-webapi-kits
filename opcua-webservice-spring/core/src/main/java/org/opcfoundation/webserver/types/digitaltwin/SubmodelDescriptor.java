@@ -2,7 +2,7 @@ package org.opcfoundation.webserver.types.digitaltwin;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelTypeBase;
 

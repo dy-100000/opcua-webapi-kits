@@ -6,7 +6,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 public class UaBrowseContinuationPoint {
     private static final ObjectMapper jsonMapper = new ObjectMapper();

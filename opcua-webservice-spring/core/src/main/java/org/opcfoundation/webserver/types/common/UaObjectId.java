@@ -1,6 +1,6 @@
 package org.opcfoundation.webserver.types.common;
 
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 
 public class UaObjectId {

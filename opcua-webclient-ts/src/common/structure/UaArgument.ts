@@ -1,4 +1,4 @@
-import { Argument } from "opcua-webapi";
+import { Argument, ArgumentFromJSON } from "opcua-webapi";
 import { parseUaNodeIdOrNull, UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
 import { UaPayloadMapper } from "../mapper";
 import { DataTypeIds } from "../nodes";
@@ -58,8 +58,8 @@ export class UaArgument
 
     static fromExtensionObject(extensionObject : UaExtensionObject) : UaArgument | null
     {
-        if (!UaArgument.dataTypeId.equal(extensionObject.dataTypeId)) return null;
-        let argument : Argument = extensionObject.payload;
+        if (!UaArgument.dataTypeId.equal(extensionObject.typeId)) return null;
+        let argument : Argument = ArgumentFromJSON(extensionObject.body);
 
         let name = (typeof argument.Name === "string") ? argument.Name : null;
         let dataTypeId = parseUaNodeIdOrNull(argument.DataType);        

@@ -1,4 +1,4 @@
-import { Range } from "opcua-webapi";
+import { Range, RangeFromJSON } from "opcua-webapi";
 import { UaExtensionObject, UaNodeId, UaNodeIdType } from "../types";
 import { DataTypeIds } from "../nodes";
 
@@ -44,15 +44,8 @@ export class UaRange
 
     static fromExtensionObject(extensionObject : UaExtensionObject) : UaRange | null
     {
-        if (!UaRange.dataTypeId.equal(extensionObject.dataTypeId)) return null;
-        
-        let range : Range = extensionObject.payload;       
-
-        let low = (typeof range.Low === "number") ? range.Low : null;
-        let high = (typeof range.High === "number") ? range.High : null;
-
-        if (null == range.Low && null == range.High) return null;
-        
-        return new UaRange(low, high);
+        if (!UaRange.dataTypeId.equal(extensionObject.typeId)) return null;
+        let range = RangeFromJSON(extensionObject.body);       
+        return new UaRange(range.Low, range.High);
     }
 }

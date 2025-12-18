@@ -5,7 +5,7 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.reactiveobject.UaObjectTransactionManager;
 import org.opcfoundation.webserver.addressspace.nodes.UaDataType;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;

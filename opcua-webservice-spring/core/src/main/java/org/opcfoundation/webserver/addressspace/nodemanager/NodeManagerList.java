@@ -2,7 +2,7 @@ package org.opcfoundation.webserver.addressspace.nodemanager;
 
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 import java.util.*;
 

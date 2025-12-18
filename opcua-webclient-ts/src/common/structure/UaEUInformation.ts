@@ -1,4 +1,4 @@
-import { EUInformation } from "opcua-webapi";
+import { EUInformation, EUInformationFromJSON } from "opcua-webapi";
 import { UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
 import { UaPayloadMapper } from "../mapper";
 import { DataTypeIds } from "../nodes";
@@ -58,8 +58,8 @@ export class UaEUInformation
 
     static fromExtensionObject(extensionObject : UaExtensionObject) : UaEUInformation | null
     {
-        if (!UaEUInformation.dataTypeId.equal(extensionObject.dataTypeId)) return null;
-        let euInformation : EUInformation = extensionObject.payload;
+        if (!UaEUInformation.dataTypeId.equal(extensionObject.typeId)) return null;      
+        let euInformation : EUInformation = EUInformationFromJSON(extensionObject.body);
 
         let unitId = (typeof euInformation.UnitId === "number") ? euInformation.UnitId : null;
         let displayName = UaPayloadMapper.localizedTextFromWebApi(euInformation.DisplayName);        

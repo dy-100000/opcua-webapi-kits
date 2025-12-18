@@ -3,7 +3,7 @@ package org.opcfoundation.webapi.serverapi;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webapi.mapper.UaPayloadMapper;
 import org.opcfoundation.webapi.model.GetEndpointsRequest;
 import org.opcfoundation.webapi.model.GetEndpointsResponse;

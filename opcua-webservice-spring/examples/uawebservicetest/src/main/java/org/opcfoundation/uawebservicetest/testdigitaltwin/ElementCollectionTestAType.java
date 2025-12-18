@@ -2,6 +2,9 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
+import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
+import org.eclipse.milo.opcua.stack.core.StatusCodes;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
@@ -24,6 +27,7 @@ public class ElementCollectionTestAType extends ElementCollectionType {
     private final UaVariable Bool;
     private final UaVariable Enum;
     private final UaVariable Double;
+    private final UaVariable Range;
     private final UaMethod   Method;
 
     public ElementCollectionTestAType(
@@ -71,6 +75,14 @@ public class ElementCollectionTestAType extends ElementCollectionType {
                 "EngineeringUnits",
                 UaStructureUtilities.toVariant(new EUInformation(null,1, new LocalizedText("C"), new LocalizedText("Temperature C"))));
 
+        Range = addPropertyElement(
+                "Range",
+                new LocalizedText("Range"),
+                new LocalizedText("Range member"),
+                UaDataTypes.Range,
+                true);
+
+
         List<Argument> inputArguments = new ArrayList<>();
         inputArguments.add(new Argument("In1", NodeIds.Int32, ValueRank.Scalar.getValue(), null, LocalizedText.NULL_VALUE));
         inputArguments.add(new Argument("In2", NodeIds.Double, ValueRank.Scalar.getValue(), null, LocalizedText.NULL_VALUE));
@@ -100,6 +112,8 @@ public class ElementCollectionTestAType extends ElementCollectionType {
                 response.setValue(item, Variant.ofInt32(2));
             } else if (item.equals(Double.browseName())) {
                 response.setValue(item, Variant.ofDouble(11.5));
+            } else if (item.equals(Range.browseName())) {
+                response.setValue(item, UaStructureUtilities.toVariant(new Range(100.0, 150.0)));
             }
         }
 
@@ -114,7 +128,17 @@ public class ElementCollectionTestAType extends ElementCollectionType {
 
         for (Map.Entry<String, Variant> item: request.getPropertyNamesAndValues().entrySet())
         {
-            System.out.println(item);
+            if (item.getValue().getDataType().isEmpty()) continue;
+
+            OpcUaDataType dataType = item.getValue().getDataType().get();
+            if (!dataType.equals(OpcUaDataType.ExtensionObject))
+            {
+                System.out.println("Key: " + item.getKey() + " Value: " + item.getValue().getValue());
+            } else {
+                UaStructuredType structure = UaStructureUtilities.toStructure(item.getValue());
+                System.out.println("Key: " + item.getKey() + " Value: " + structure);
+            }
+
             response.setWriteValueResult(item.getKey(), StatusCode.GOOD);
         }
 

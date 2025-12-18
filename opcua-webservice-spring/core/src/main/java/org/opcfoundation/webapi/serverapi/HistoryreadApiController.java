@@ -43,6 +43,7 @@ public class HistoryreadApiController implements HistoryreadApi {
         return Optional.ofNullable(request);
     }
 
+    /*
     @Override
     public CompletableFuture<ResponseEntity<HistoryReadResponse>> historyRead(
             String serverUri,
@@ -82,5 +83,5 @@ public class HistoryreadApiController implements HistoryreadApi {
         } catch (Exception e) {
             return CompletableFuture.completedFuture(getErrorResponse(readRequest.getRequestHeader(), e));
         }
-    }
+    }*/
 }

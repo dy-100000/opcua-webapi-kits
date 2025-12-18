@@ -1,4 +1,4 @@
-import { BrowseResult, ReferenceDescription } from "opcua-webapi";
+import { BrowseResult, ExtensionObject, ExtensionObjectFromJSON, ReferenceDescription } from "opcua-webapi";
 import { LocalizedText, Variant, StatusCode, DataValue,StatusCodes } from "opcua-webapi"
 import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaBrowseResult, UaError, UaReferenceDescriptor, UaVariantType } from "../types";
 import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionObject, UaVariant, UaDataValue } from "../types";
@@ -6,7 +6,7 @@ import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionO
 export class UaPayloadMapper
 {
     static statusCodeFromWebApi(statusCode? : StatusCode | null) : UaStatusCode
-    {
+    {       
         if (!statusCode) return makeUaStatusCode();
         return makeUaStatusCode(statusCode.Code);
     }
@@ -18,7 +18,7 @@ export class UaPayloadMapper
 
     static localizedTextFromWebApi(text?: LocalizedText | null) : UaLocalizedText | null
     {
-        if (!text) return null;
+        if (!text || !text.Text) return null;
         return new UaLocalizedText(text.Text, text.Locale);
     }
 
@@ -29,27 +29,31 @@ export class UaPayloadMapper
             Locale: text.locale};
     }  
 
-    static extensionObjectFromWebApi(extentionObject: any) : UaExtensionObject
+    static extensionObjectFromWebApi(json: any) : UaExtensionObject
     {        
         try
         {
-            if (typeof extentionObject === "object" &&
-                null !== extentionObject && 
-                typeof extentionObject.UaTypeId === "string")
-            {
-                let typeId = parseUaNodeId(extentionObject.UaTypeId);
-                let payload = extentionObject;
-                delete payload.UaTypeId;
-                return new UaExtensionObject(typeId, payload);                
-            }
-        } catch (e) {}
+            let extensionObject = ExtensionObjectFromJSON(json);
 
-        throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+            if (null !== extensionObject)
+            {
+                let typeId = parseUaNodeId(extensionObject.UaTypeId);
+                let jsonStr = atob(extensionObject.UaBody);                
+
+                let body = JSON.parse(jsonStr);
+                return new UaExtensionObject(typeId, body);                
+            }
+        } catch (e) {
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+        }
     }
 
     static extensionObjectToWebApi(extentionObject: UaExtensionObject) : any
     {
-        return extentionObject.toJson();
+        return {
+            UaTypeId: extentionObject.typeId.toString(),
+            UaBody: btoa(JSON.stringify(extentionObject.body))
+        };
     }
 
     static variantFromWebApi(variant: Variant) : UaVariant

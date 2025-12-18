@@ -6,22 +6,20 @@ import org.eclipse.milo.opcua.stack.core.AttributeId;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
-import org.jspecify.annotations.Nullable;
+import org.opcfoundation.webserver.types.common.UaStructureUtilities;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
-import org.opcfoundation.webapi.mapper.UaEncoder;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UaMethod extends UaInstanceNode {
-    private final static UaEncoder encoder = new UaEncoder();
-
     private @Nullable List<Argument> inputArguments;
     private @Nullable List<Argument> outputArguments;
 
@@ -64,7 +62,8 @@ public class UaMethod extends UaInstanceNode {
                 AccessLevel.CurrentRead.getValue(),
                 UaVariableTypes.PropertyType);
 
-        inputArguments.setValue(new Variant(getExtensionObjectsFromArguments(arguments)));
+        List<UaStructuredType> structs = new ArrayList<>(arguments);
+        inputArguments.setValue(UaStructureUtilities.toVariant(structs));
 
         addMemberNode(inputArguments);
         return inputArguments;
@@ -86,27 +85,12 @@ public class UaMethod extends UaInstanceNode {
                 AccessLevel.CurrentRead.getValue(),
                 UaVariableTypes.PropertyType);
 
-        outputArguments.setValue(new Variant(getExtensionObjectsFromArguments(arguments)));
+        List<UaStructuredType> structs = new ArrayList<>(arguments);
+        outputArguments.setValue(UaStructureUtilities.toVariant(structs));
+
         addMemberNode(outputArguments);
 
         return outputArguments;
-    }
-
-    private ExtensionObject[] getExtensionObjectsFromArguments(List<Argument> arguments)
-    {
-        try
-        {
-            ArrayList<ExtensionObject> extensionObjects = new ArrayList<>();
-
-            for (Argument item : arguments)
-            {
-                extensionObjects.add(ExtensionObject.encode(UaEncoder.defaultEncoder,item));
-            }
-
-            return extensionObjects.toArray(new ExtensionObject[0]);
-        } catch (Exception e) {
-            return new ExtensionObject[0];
-        }
     }
 
     @Override

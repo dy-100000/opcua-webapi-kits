@@ -11,7 +11,7 @@ import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseResult;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReferenceDescription;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaReference;

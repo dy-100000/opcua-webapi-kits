@@ -6,6 +6,8 @@ import org.eclipse.milo.opcua.stack.core.types.structured.EnumValueType;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class UaEnumDataType extends UaDataType {
@@ -54,7 +56,7 @@ public class UaEnumDataType extends UaDataType {
 
         UaVariable enumValuesVariable = setEnumValues(
                 new NodeId(nodeManager.nsIndex(), enumValuesId),
-                enumValues);
+                Arrays.asList(enumValues));
 
         nodeManager.addNode(enumValuesVariable);
     }

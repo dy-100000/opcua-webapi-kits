@@ -1,5 +1,5 @@
 import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText } from "../src";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText, parseUaNodeId } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
 import { UaDataTypeDictionary, UaObjectTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://dingyan3:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -30,8 +30,10 @@ class Test {
             await this.testWriteValues(); 
             await this.testMethodCall(); 
             await this.testDataTypeDictionary();             
-            await this.testReferenceTypeDictionary();*/
-            await this.testObjectTypeDictionary();
+            await this.testReferenceTypeDictionary();
+            await this.testObjectTypeDictionary();*/
+
+            await this.testWriteValues();
         } catch (e) {            
             console.log(e);
         }
@@ -106,8 +108,10 @@ class Test {
     {
         console.log("testReadValues");
 
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn0sImNpIjp7InAiOiJNZXRob2QiLCJwMiI6IklucHV0QXJndW1lbnRzIiwibW4iOnRydWV9fQ==");
+
         let nodeIds : Array<UaNodeId> = [
-            new UaNodeId(11878)
+            nodeId
         ];
 
         let values = await this.client.readValues(nodeIds);
@@ -117,31 +121,32 @@ class Test {
             if (item.statusCode.isGood())
             {
                 if (item.value.type == UaVariantType.ExtensionObject)
-                {
+                { 
                     if (item.value.isScalar())
                     {
                         let extensionObject = item.value.value as UaExtensionObject;
-                        if (UaRange.dataTypeId.equal(extensionObject.dataTypeId))
+                        if (UaRange.dataTypeId.equal(extensionObject.typeId))
                         {
                             let range = UaRange.fromExtensionObject(extensionObject);
                             console.log(range);
-                        } else if (UaEUInformation.dataTypeId.equal(extensionObject.dataTypeId)) {
+                        } else if (UaEUInformation.dataTypeId.equal(extensionObject.typeId)) {
                             let euInformation = UaEUInformation.fromExtensionObject(extensionObject);
                             console.log(euInformation);
                         }
                     } else if (item.value.isArray()) {
                         let extensionObjects = item.value.value as Array<UaExtensionObject>;
-                        for (let item of extensionObjects)
+                       
+                        for (let itemL2 of extensionObjects)
                         {
-                            if (UaArgument.dataTypeId.equal(item.dataTypeId))
+                            if (UaArgument.dataTypeId.equal(itemL2.typeId))
                             {
-                                let argument = UaArgument.fromExtensionObject(item);
+                                let argument = UaArgument.fromExtensionObject(itemL2);
                                 console.log(argument);
                             }
 
-                            if (UaEnumValueType.dataTypeId.equal(item.dataTypeId))
+                            if (UaEnumValueType.dataTypeId.equal(itemL2.typeId))
                             {
-                                let enumValueType = UaEnumValueType.fromExtensionObject(item);
+                                let enumValueType = UaEnumValueType.fromExtensionObject(itemL2);
                                 console.log(enumValueType);
                             }
                         }
@@ -159,11 +164,11 @@ class Test {
     {
         console.log("testWriteValues");
 
-        let value = UaVariant.statusCodes([makeUaStatusCode(), makeUaStatusCode(StatusCodes.Bad)]);
+        let value = UaVariant.extensionObject(new UaRange(15,50).toExtensionObject())
 
         let nodesToWrite : Array<UaWriteValue> = [
             { 
-                nodeId: new UaNodeId("Demo.Static.Arrays.StatusCode",3),
+                nodeId: parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn0sImNpIjp7InAiOiJSYW5nZSJ9fQ=="),
                 value: value
             }
         ];

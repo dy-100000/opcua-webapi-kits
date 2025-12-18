@@ -8,7 +8,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;

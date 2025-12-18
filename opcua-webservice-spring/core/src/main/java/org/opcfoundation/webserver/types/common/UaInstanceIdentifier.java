@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.milo.opcua.stack.core.types.builtin.ByteString;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UaInstanceIdentifier {

@@ -1,6 +1,6 @@
 package org.opcfoundation.webserver.service.message.digitaltwin;
 
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
 
 public class GetPropertyDescriptorRequest {

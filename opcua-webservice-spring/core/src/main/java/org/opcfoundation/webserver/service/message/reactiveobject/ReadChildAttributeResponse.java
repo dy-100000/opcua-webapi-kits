@@ -3,7 +3,7 @@ package org.opcfoundation.webserver.service.message.reactiveobject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
-import org.jspecify.annotations.Nullable;
+import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaInstanceNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
 
