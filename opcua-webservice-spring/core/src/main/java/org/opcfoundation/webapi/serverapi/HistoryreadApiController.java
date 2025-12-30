@@ -1,20 +1,24 @@
 package org.opcfoundation.webapi.serverapi;
 
-
+import jakarta.annotation.Nullable;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
+import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
+import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
+import org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadValueId;
+import org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadResult;
 import org.opcfoundation.webapi.mapper.UaPayloadMapper;
+import org.opcfoundation.webapi.mapper.extensionobjects.ExtensionObjectEncoder;
+import org.opcfoundation.webapi.model.*;
 import org.opcfoundation.webapi.service.UaServerConfigure;
 import org.opcfoundation.webapi.service.UaWebService;
-import org.opcfoundation.webapi.service.types.ReadContext;
+import org.opcfoundation.webapi.service.types.HistoryReadContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.context.request.NativeWebRequest;
-import org.opcfoundation.webapi.model.HistoryReadRequest;
-import org.opcfoundation.webapi.model.HistoryReadResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -43,7 +47,6 @@ public class HistoryreadApiController implements HistoryreadApi {
         return Optional.ofNullable(request);
     }
 
-    /*
     @Override
     public CompletableFuture<ResponseEntity<HistoryReadResponse>> historyRead(
             String serverUri,
@@ -62,26 +65,79 @@ public class HistoryreadApiController implements HistoryreadApi {
 
             if (null == timestampsToReturn) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
 
-            if (historyReadRequest.getNodesToRead().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
-            if (serverConfig.getReadRequestMaxSize() != 0 && historyReadRequest.getNodesToRead().size() > serverConfig.getReadRequestMaxSize())
+            if (historyReadRequest.getNodesToRead().isEmpty() || null == historyReadRequest.getHistoryReadDetails()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
+            if (serverConfig.getHistoryReadRequestMaxSize() != 0 && historyReadRequest.getNodesToRead().size() > serverConfig.getHistoryReadRequestMaxSize())
                 throw new UaRuntimeException(StatusCodes.Bad_RequestTooLarge);
 
-            List<ReadValueId> nodesToRead = UaPayloadMapper.nodesToReadFromWebApi(readRequest.getNodesToRead());
+            List<HistoryReadValueId> nodesToRead = UaPayloadMapper.historyReadValueIdsFromWebApi(historyReadRequest.getNodesToRead());
+            ExtensionObject details = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(historyReadRequest.getHistoryReadDetails());
 
-            ReadContext readContext = new ReadContext(
+            if (null == details) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+
+            UaStructuredType detailsStruct = details.decode(ExtensionObjectEncoder.Encoder.getEncodingContext());
+            if (!(detailsStruct instanceof org.eclipse.milo.opcua.stack.core.types.structured.ReadRawModifiedDetails) &&
+                    !(detailsStruct instanceof org.eclipse.milo.opcua.stack.core.types.structured.ReadAtTimeDetails) &&
+                    !(detailsStruct instanceof org.eclipse.milo.opcua.stack.core.types.structured.ReadProcessedDetails) &&
+                    !(detailsStruct instanceof org.eclipse.milo.opcua.stack.core.types.structured.ReadEventDetails)) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
+
+            HistoryReadContext historyReadContext = new HistoryReadContext(
                     nodesToRead,
-                    readRequest.getMaxAge(),
+                    detailsStruct,
+                    historyReadRequest.getReleaseContinuationPoints(),
                     timestampsToReturn,
-                    UaPayloadMapper.requestHeaderFromWebApi(readRequest.getRequestHeader()),
+                    UaPayloadMapper.requestHeaderFromWebApi(historyReadRequest.getRequestHeader()),
                     serverUri,
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
-            return service.read(readContext)
-                    .thenApply(results -> readComplete(readRequest, results))
-                    .exceptionally(ex-> getErrorResponse(readRequest.getRequestHeader(), ex.getCause()));
+            return service.historyRead(historyReadContext)
+                    .thenApply(results -> historyReadComplete(historyReadRequest, results))
+                    .exceptionally(ex-> getErrorResponse(historyReadRequest.getRequestHeader(), ex.getCause()));
 
         } catch (Exception e) {
-            return CompletableFuture.completedFuture(getErrorResponse(readRequest.getRequestHeader(), e));
+            return CompletableFuture.completedFuture(getErrorResponse(historyReadRequest.getRequestHeader(), e));
         }
-    }*/
+    }
+
+    public ResponseEntity<HistoryReadResponse> historyReadComplete(
+            HistoryReadRequest historyReadRequest,
+            List<HistoryReadResult> results)
+    {
+        StatusCode statusCode = StatusCode.GOOD;
+        HistoryReadResponse response = new HistoryReadResponse();
+
+        if (results.size() == historyReadRequest.getNodesToRead().size())
+        {
+            response.setResults(UaPayloadMapper.historyReadResultsFromMilo(results));
+        } else {
+            statusCode = new StatusCode(StatusCodes.Bad_InternalError);
+        }
+
+        ResponseHeader responseHeader = UaPayloadMapper.responseHeaderFromMilo(
+                historyReadRequest.getRequestHeader(),
+                statusCode);
+
+        response.setResponseHeader(responseHeader);
+
+        return ResponseEntity.ok(response);
+    }
+
+    public ResponseEntity<HistoryReadResponse> getErrorResponse(
+            @Nullable RequestHeader requestHeader,
+            Throwable exception)
+    {
+        StatusCode errorCode = StatusCode.of(StatusCodes.Bad_UnexpectedError);
+
+        if (exception instanceof UaRuntimeException)
+        {
+            errorCode = ((UaRuntimeException)exception).getStatusCode();
+        }
+
+        HistoryReadResponse response = new HistoryReadResponse();
+        ResponseHeader responseHeader = UaPayloadMapper.responseHeaderFromMilo(
+                requestHeader,
+                errorCode);
+        response.setResponseHeader(responseHeader);
+
+        return ResponseEntity.ok(response);
+    }
 }

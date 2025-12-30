@@ -14,7 +14,7 @@ public class EUInformationMapper implements StructureMapper {
         return NodeIds.EUInformation;
     }
 
-    @Override @Nullable
+    @Override
     public UaStructuredType toStructure(byte[] json) throws Exception
     {
         EUInformation euInformation = OBJECT_MAPPER.readValue(json, EUInformation.class);

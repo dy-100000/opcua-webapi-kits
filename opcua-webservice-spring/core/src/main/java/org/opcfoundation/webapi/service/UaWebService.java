@@ -68,4 +68,11 @@ public interface UaWebService {
             throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
         });
     }
+
+    default CompletableFuture<List<HistoryReadResult>> historyRead(HistoryReadContext context) throws UaRuntimeException
+    {
+        return CompletableFuture.supplyAsync(()-> {
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
 }

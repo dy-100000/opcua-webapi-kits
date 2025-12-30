@@ -15,6 +15,7 @@ public class UaServerConfigure {
     private int readRequestMaxSize;
     private int writeRequestMaxSize;
     private int callRequestMaxSize;
+    private int historyReadRequestMaxSize;
     private int translateRequestMaxSize;
 
     public UaServerConfigure()
@@ -30,6 +31,7 @@ public class UaServerConfigure {
         readRequestMaxSize = 0;
         writeRequestMaxSize = 0;
         callRequestMaxSize = 0;
+        historyReadRequestMaxSize = 0;
         translateRequestMaxSize = 0;
     }
 
@@ -107,6 +109,14 @@ public class UaServerConfigure {
 
     public void setCallRequestMaxSize(int callRequestMaxSize) {
         this.callRequestMaxSize = Math.max(callRequestMaxSize, 0);
+    }
+
+    public int getHistoryReadRequestMaxSize() {
+        return historyReadRequestMaxSize;
+    }
+
+    public void setHistoryReadRequestMaxSize(int historyReadRequestMaxSize) {
+        this.historyReadRequestMaxSize = historyReadRequestMaxSize;
     }
 
     public int getTranslateRequestMaxSize() {

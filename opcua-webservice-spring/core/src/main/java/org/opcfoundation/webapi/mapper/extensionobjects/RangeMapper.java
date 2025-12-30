@@ -12,7 +12,7 @@ public class RangeMapper implements StructureMapper {
         return NodeIds.Range;
     }
 
-    @Override @Nullable
+    @Override
     public UaStructuredType toStructure(byte[] json) throws Exception
     {
         Range range = OBJECT_MAPPER.readValue(json, Range.class);

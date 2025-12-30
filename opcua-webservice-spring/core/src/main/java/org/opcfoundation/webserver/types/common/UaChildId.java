@@ -59,14 +59,4 @@ public class UaChildId {
     public int hashCode() {
         return Objects.hash(id, subElementName);
     }
-
-    @Deprecated
-    public String getPathId() {
-        return id;
-    }
-
-    @Deprecated
-    public @Nullable String getSubElementId() {
-        return subElementName;
-    }
 }

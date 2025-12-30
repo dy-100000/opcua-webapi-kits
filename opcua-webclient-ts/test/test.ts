@@ -33,7 +33,7 @@ class Test {
             await this.testReferenceTypeDictionary();
             await this.testObjectTypeDictionary();*/
 
-            await this.testWriteValues();
+            await this.testReadNodeAttribute();
         } catch (e) {            
             console.log(e);
         }
@@ -69,7 +69,7 @@ class Test {
     async testReadNodeAttribute()
     {
         console.log("testReadNodeAttribute");
-        let nodeId = new UaNodeId("Demo.History.Historian_1",3);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUR5bmFtaWNTdWJtb2RlbFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1UZXN0RGlnaXRhbFR3aW4tRWxlbWVudExpc3RTdWJtb2RlbCJ9fQ==");
 
         let attribute = await this.client.readNodeAttributes(nodeId, true);
         console.log(attribute);
@@ -109,7 +109,7 @@ class Test {
         console.log("testReadValues");
 
         let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn0sImNpIjp7InAiOiJNZXRob2QiLCJwMiI6IklucHV0QXJndW1lbnRzIiwibW4iOnRydWV9fQ==");
-
+      
         let nodeIds : Array<UaNodeId> = [
             nodeId
         ];

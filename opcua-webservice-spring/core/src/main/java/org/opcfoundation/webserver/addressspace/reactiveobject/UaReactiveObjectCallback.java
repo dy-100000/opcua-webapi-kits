@@ -77,4 +77,20 @@ public interface UaReactiveObjectCallback {
             throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
         });
     }
+
+    // History data read of object
+    default CompletableFuture<ReadHistoryDataResponse> onReadHistoryData(ReadHistoryDataRequest request)
+    {
+        return CompletableFuture.supplyAsync(()->{
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
+
+    // History event read of object
+    default CompletableFuture<ReadHistoryEventResponse> onReadHistoryEvent(ReadHistoryEventRequest request)
+    {
+        return CompletableFuture.supplyAsync(()->{
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
 }

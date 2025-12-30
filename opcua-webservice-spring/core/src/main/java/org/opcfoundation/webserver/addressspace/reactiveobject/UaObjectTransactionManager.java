@@ -7,21 +7,12 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.IdType;
-import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
-import org.eclipse.milo.opcua.stack.core.types.structured.CallMethodRequest;
-import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
-import org.eclipse.milo.opcua.stack.core.types.structured.WriteValue;
+import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.opcfoundation.webapi.service.types.*;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManagerReactiveObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
-import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
+import org.opcfoundation.webserver.service.transactions.base.*;
 import org.opcfoundation.webserver.service.transactions.reactiveobject.*;
-import org.opcfoundation.webapi.service.types.CallContext;
-import org.opcfoundation.webapi.service.types.ReadContext;
-import org.opcfoundation.webapi.service.types.ServiceContext;
-import org.opcfoundation.webapi.service.types.WriteContext;
 import org.opcfoundation.webserver.types.common.*;
 
 import java.util.*;
@@ -409,5 +400,49 @@ public class UaObjectTransactionManager {
         }
 
         return new UaCallMethodTransaction(context, handleId, objectIdentifier, methodIdentifier, nodeManager);
+    }
+
+    public UaHistoryReadTransaction getHistoryReadTransaction(
+            HistoryReadContext context,
+            int handleId)
+    {
+        UaHistoryReadTransaction transactionNothingToDo = new UaHistoryReadTransaction(
+                context,
+                handleId);
+
+        HistoryReadValueId nodeToRead = context.getNodesToRead().get(handleId);
+        if (IdType.Opaque != nodeToRead.getNodeId().getType()) return transactionNothingToDo;
+
+        final UaInstanceIdentifier identifier = UaInstanceIdentifier.fromByteString((ByteString) nodeToRead.getNodeId().getIdentifier());
+        if (null == identifier)
+        {
+            transactionNothingToDo.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
+            return transactionNothingToDo;
+        }
+
+        // Object type
+        UaReactiveObjectType objectType = nodeManager.findObjectType(identifier.getObjectId());
+
+        if (null == objectType)
+        {
+            transactionNothingToDo.setStatusCode(StatusCode.of(StatusCodes.Bad_NodeIdUnknown));
+            return transactionNothingToDo;
+        }
+
+        if (null == identifier.getChildId())
+        {
+            if (!(context.getHistoryReadDetails() instanceof ReadEventDetails)) return transactionNothingToDo;
+
+            return new UaReadEventHistoryTransaction(context, handleId, identifier, nodeManager);
+
+        } else {
+            if (!(context.getHistoryReadDetails() instanceof ReadRawModifiedDetails) &&
+                    !(context.getHistoryReadDetails() instanceof ReadAtTimeDetails) &&
+                    !(context.getHistoryReadDetails() instanceof ReadProcessedDetails)) return transactionNothingToDo;
+
+            // To be implemented
+        }
+
+        return transactionNothingToDo;
     }
 }

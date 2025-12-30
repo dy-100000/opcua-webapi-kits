@@ -4,7 +4,6 @@ import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.springframework.lang.Nullable;
 import org.opcfoundation.webapi.mapper.UaTypeMapper;
 import org.opcfoundation.webapi.model.EnumValueType;
 
@@ -14,7 +13,7 @@ public class EnumValueTypeMapper implements StructureMapper {
         return NodeIds.EnumValueType;
     }
 
-    @Override @Nullable
+    @Override
     public UaStructuredType toStructure(byte[] json) throws Exception
     {
         EnumValueType enumValueType = OBJECT_MAPPER.readValue(json, EnumValueType.class);

@@ -3,10 +3,14 @@ package org.opcfoundation.webserver.digitaltwin.submodel;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
+import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.callback.DynamicSubmodelCallback;
+import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetObjectElementListRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetObjectElementListResponse;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeRequest;
+import org.opcfoundation.webserver.service.message.reactiveobject.ReadObjectAttributeResponse;
 import org.opcfoundation.webserver.types.digitaltwin.ObjectElementDescriptor;
 import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
@@ -24,6 +28,25 @@ public abstract class DynamicSubmodelType extends SubmodelTypeBase implements Dy
                                DigitalTwinSpace twinSpace)
     {
         super(typeId, displayName, twinSpace);
+    }
+
+    @Override
+    public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request) {
+        UaObject instanceDeclaration = request.getObjectId().getInstance();
+
+        if (null == instanceDeclaration) {
+            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+            GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
+
+            return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
+                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
+            });
+        } else {
+            return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(
+                    instanceDeclaration.browseName(),
+                    instanceDeclaration.displayName(),
+                    instanceDeclaration.description()));
+        }
     }
 
     @Override

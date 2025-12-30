@@ -5,17 +5,11 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.opcfoundation.webapi.service.types.*;
+import org.opcfoundation.webserver.service.transactions.base.*;
 import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
-import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
-import org.opcfoundation.webapi.service.types.CallContext;
-import org.opcfoundation.webapi.service.types.ReadContext;
-import org.opcfoundation.webapi.service.types.ServiceContext;
-import org.opcfoundation.webapi.service.types.WriteContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,8 +72,17 @@ public interface NodeManagerBase {
             CallContext context,
             int handleId)
     {
-       return new UaMethodCallTransaction(
+        return new UaMethodCallTransaction(
                context,
                handleId);
+    }
+
+    default UaHistoryReadTransaction getHistoryReadTransaction(
+            HistoryReadContext context,
+            int handleId)
+    {
+        return new UaHistoryReadTransaction(
+                context,
+                handleId);
     }
 }

@@ -4,6 +4,8 @@ import org.eclipse.milo.opcua.stack.core.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.BrowseDirection;
+import org.opcfoundation.webapi.mapper.extensionobjects.ExtensionObjectEncoder;
+import org.opcfoundation.webapi.model.ExtensionObject;
 import org.springframework.lang.Nullable;
 import org.opcfoundation.webapi.model.*;
 import org.opcfoundation.webapi.model.StatusCode;
@@ -293,7 +295,7 @@ public class UaPayloadMapper {
 
     public static List<org.eclipse.milo.opcua.stack.core.types.structured.CallMethodRequest> callMethodRequestsFromWebApi(List<CallMethodRequest> methodCalls) throws UaRuntimeException
     {
-        ArrayList<org.eclipse.milo.opcua.stack.core.types.structured.CallMethodRequest> results = new ArrayList<>();
+        ArrayList<org.eclipse.milo.opcua.stack.core.types.structured.CallMethodRequest> ret = new ArrayList<>();
 
         for (CallMethodRequest item: methodCalls)
         {
@@ -308,10 +310,10 @@ public class UaPayloadMapper {
                     methodId,
                     inputArguments.toArray(new org.eclipse.milo.opcua.stack.core.types.builtin.Variant[0]));
 
-            results.add(methodCall);
+            ret.add(methodCall);
         }
 
-        return results;
+        return ret;
     }
 
     public static List<CallMethodResult> callMethodResultsFromMilo(List<org.eclipse.milo.opcua.stack.core.types.structured.CallMethodResult> callResults)
@@ -336,6 +338,45 @@ public class UaPayloadMapper {
         }
 
         return results;
+    }
+
+    public static List<org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadValueId> historyReadValueIdsFromWebApi(List<HistoryReadValueId> historyReadValueIds) throws UaRuntimeException
+    {
+        ArrayList<org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadValueId> ret = new ArrayList<>();
+
+        for (HistoryReadValueId item: historyReadValueIds)
+        {
+            NodeId nodeId = UaTypeMapper.nodeIdFromWebApi(item.getNodeId());
+            ByteString continuationPoint = (null == item.getContinuationPoint()) ? ByteString.NULL_VALUE : ByteString.of(item.getContinuationPoint());
+
+            if (null == nodeId) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+
+            org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadValueId historyReadValueId = new org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadValueId(
+                    nodeId,
+                    "",
+                    QualifiedName.NULL_VALUE,
+                    continuationPoint);
+
+            ret.add(historyReadValueId);
+        }
+
+        return ret;
+    }
+
+    public static List<HistoryReadResult> historyReadResultsFromMilo(List<org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadResult> results)
+    {
+        List<HistoryReadResult> ret = new ArrayList<>();
+
+        for (org.eclipse.milo.opcua.stack.core.types.structured.HistoryReadResult item : results)
+        {
+            HistoryReadResult result = new HistoryReadResult();
+            result.setStatusCode(UaTypeMapper.statusCodeFromMilo(item.getStatusCode()));
+            result.setContinuationPoint (item.getContinuationPoint().isNull() ? null : item.getContinuationPoint().bytes());
+            result.setHistoryData(ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(item.getHistoryData()));
+            ret.add(result);
+        }
+
+        return ret;
     }
 
     public static ApplicationDescription applicationDescriptionFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.ApplicationDescription description)

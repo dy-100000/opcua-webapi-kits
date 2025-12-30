@@ -2,7 +2,7 @@ package org.opcfoundation.webapi.mapper.extensionobjects;
 
 import org.eclipse.milo.opcua.stack.core.encoding.DefaultEncodingContext;
 import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
+import org.opcfoundation.webapi.model.ExtensionObject;
 import org.springframework.lang.Nullable;
 
 import java.util.HashMap;
@@ -23,6 +23,20 @@ public class ExtensionObjectEncoder {
         add(new EUInformationMapper());
         add(new ArgumentMapper());
         add(new EnumValueTypeMapper());
+
+        add(new SimpleAttributeOperandMapper());
+        add(new ElementOperandMapper());
+        add(new LiteralOperandMapper());
+
+        add(new ReadRawModifiedDetailsMapper());
+        add(new ReadAtTimeDetailsMapper());
+        add(new ReadProcessedDetailsMapper());
+
+        add(new ReadEventDetailsMapper());
+        add(new ReadEventDetails2Mapper());
+
+        add(new HistoryDataMapper());
+        add(new HistoryEventDataMapper());
     }
 
     public DefaultEncodingContext getEncodingContext() {
@@ -35,7 +49,7 @@ public class ExtensionObjectEncoder {
     }
 
     @Nullable
-    public ExtensionObject fromExtensionObjectWebApi(org.opcfoundation.webapi.model.ExtensionObject extensionObject)
+    public org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject fromExtensionObjectWebApi(ExtensionObject extensionObject)
     {
         try
         {
@@ -46,14 +60,14 @@ public class ExtensionObjectEncoder {
 
             UaStructuredType structure = mapper.toStructure(extensionObject.getUaBody());
 
-            return ExtensionObject.encode(encodingContext, structure);
+            return org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject.encode(encodingContext, structure);
         } catch (Exception e) {
             return null;
         }
     }
 
     @Nullable
-    public org.opcfoundation.webapi.model.ExtensionObject toExtensionObjectWebApi(ExtensionObject extensionObject)
+    public ExtensionObject toExtensionObjectWebApi(org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject extensionObject)
     {
         try
         {

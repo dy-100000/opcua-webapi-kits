@@ -83,6 +83,4 @@ public class UaWriteVariableValueTransaction extends UaWriteTransaction {
             results.add(Objects.requireNonNullElseGet(result, () -> StatusCode.of(StatusCodes.Bad_NotWritable)));
         }
     }
-
-
 }

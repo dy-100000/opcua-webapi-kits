@@ -1,36 +1,37 @@
 package org.opcfoundation.webapi.mapper;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.validation.Valid;
 import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
-import org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UInteger;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.ULong;
 import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UShort;
+import org.eclipse.milo.opcua.stack.core.types.enumerated.FilterOperator;
 import org.opcfoundation.webapi.mapper.extensionobjects.ExtensionObjectEncoder;
-import org.springframework.lang.Nullable;
+import org.opcfoundation.webapi.model.*;
 import org.opcfoundation.webapi.model.DataValue;
+import org.opcfoundation.webapi.model.ExtensionObject;
 import org.opcfoundation.webapi.model.LocalizedText;
 import org.opcfoundation.webapi.model.StatusCode;
 import org.opcfoundation.webapi.model.Variant;
+import org.springframework.lang.Nullable;
 
 import java.math.BigInteger;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class UaTypeMapper {
-    private static ObjectMapper Mapper = new ObjectMapper();
+    private static final ObjectMapper Mapper = new ObjectMapper();
 
-    public static @Nullable NodeId nodeIdFromWebApi(@Nullable String nodeId)
+    @Nullable
+    public static NodeId nodeIdFromWebApi(@Nullable String nodeId)
     {
         if (null == nodeId) return null;
         return NodeId.parseOrNull(nodeId);
@@ -86,7 +87,8 @@ public class UaTypeMapper {
         return results;
     }
 
-    public static @Nullable DateTime dateTimeFromWebApi(@Nullable OffsetDateTime timestamp)
+    @Nullable
+    public static DateTime dateTimeFromWebApi(@Nullable OffsetDateTime timestamp)
     {
         if (null == timestamp) return null;
         return new DateTime(timestamp.toInstant());
@@ -95,6 +97,180 @@ public class UaTypeMapper {
     public static OffsetDateTime dateTimeFromMilo(DateTime timestamp)
     {
         return OffsetDateTime.ofInstant(timestamp.getJavaInstant(), ZoneOffset.UTC);
+    }
+
+    public static SimpleAttributeOperand simpleAttributeOperandFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand operand)
+    {
+        List<String> browsePath = new ArrayList<>();
+
+        if (null != operand.getBrowsePath())
+        {
+            for (QualifiedName item: operand.getBrowsePath())
+            {
+                browsePath.add(item.getName());
+            }
+        }
+
+        SimpleAttributeOperand simpleAttributeOperandWebApi = new SimpleAttributeOperand();
+        simpleAttributeOperandWebApi.setTypeDefinitionId(operand.getTypeDefinitionId().toParseableString());
+        simpleAttributeOperandWebApi.setBrowsePath(browsePath);
+        simpleAttributeOperandWebApi.setAttributeId(operand.getAttributeId().longValue());
+
+        return simpleAttributeOperandWebApi;
+    }
+
+    public static org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand simpleAttributeOperandFromWebApi(SimpleAttributeOperand operand) throws UaRuntimeException
+    {
+        if (null == operand.getTypeDefinitionId()) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+        NodeId typeId = NodeId.parse(operand.getTypeDefinitionId());
+
+        List<QualifiedName> browsePath = new ArrayList<>();
+        for (String item: operand.getBrowsePath())
+        {
+            browsePath.add(new QualifiedName(0, item));
+        }
+
+        return new org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand(
+                typeId,
+                browsePath.toArray(new QualifiedName[0]),
+                UInteger.valueOf(operand.getAttributeId()),
+                null);
+    }
+
+    public static ContentFilterElement contentFilterElementFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement contentFilterElement)
+    {
+        List<ExtensionObject> operands = new ArrayList<>();
+
+        if (null != contentFilterElement.getFilterOperands())
+        {
+            for (org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject item : contentFilterElement.getFilterOperands())
+            {
+                ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(item);
+                if (null != extensionObject) operands.add(extensionObject);
+            }
+        }
+
+        ContentFilterElement filterElement = new ContentFilterElement();
+        filterElement.setFilterOperator(contentFilterElement.getFilterOperator().getValue());
+        filterElement.setFilterOperands(operands);
+
+        return filterElement;
+    }
+
+    public static org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement contentFilterElementFromWebApi(ContentFilterElement contentFilterElement) throws UaRuntimeException
+    {
+        FilterOperator operator = null;
+
+        if (null != contentFilterElement.getFilterOperator())
+        {
+            operator = FilterOperator.from(contentFilterElement.getFilterOperator());
+        }
+
+        if (null == operator) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+
+        List<org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject> operands = new ArrayList<>();
+
+        for (ExtensionObject item: contentFilterElement.getFilterOperands())
+        {
+            org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(item);
+            if (null == extensionObject) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
+            operands.add(extensionObject);
+        }
+
+        return new org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement(operator, operands.toArray(new org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject[0]));
+    }
+
+    public static ContentFilter contentFilterFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.ContentFilter contentFilter)
+    {
+        List<ContentFilterElement> elements = new ArrayList<>();
+
+        if (null != contentFilter.getElements())
+        {
+            for (org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement item : contentFilter.getElements())
+            {
+                elements.add(UaTypeMapper.contentFilterElementFromMilo(item));
+            }
+        }
+
+        ContentFilter contentFilterWebApi = new ContentFilter();
+        contentFilterWebApi.setElements(elements);
+
+        return contentFilterWebApi;
+    }
+
+    public static org.eclipse.milo.opcua.stack.core.types.structured.ContentFilter contentFilterFromWebApi(ContentFilter contentFilter) throws UaRuntimeException
+    {
+        List<org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement> contentFilterElements = new ArrayList<>();
+
+        for (ContentFilterElement item : contentFilter.getElements())
+        {
+            contentFilterElements.add(UaTypeMapper.contentFilterElementFromWebApi(item));
+        }
+
+        return new org.eclipse.milo.opcua.stack.core.types.structured.ContentFilter(contentFilterElements.toArray(new org.eclipse.milo.opcua.stack.core.types.structured.ContentFilterElement[0]));
+    }
+
+    public static EventFilter eventFilterFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.EventFilter eventFilter)
+    {
+        ContentFilter contentFilter = contentFilterFromMilo(eventFilter.getWhereClause());
+        List<SimpleAttributeOperand> selectClauses = new ArrayList<>();
+
+        if (null != eventFilter.getSelectClauses())
+        {
+            for (org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand item : eventFilter.getSelectClauses())
+            {
+                selectClauses.add(UaTypeMapper.simpleAttributeOperandFromMilo(item));
+            }
+        }
+
+        EventFilter eventFilterWebApi = new EventFilter();
+        eventFilterWebApi.setSelectClauses(selectClauses);
+        eventFilterWebApi.setWhereClause(contentFilter);
+
+        return eventFilterWebApi;
+    }
+
+    public static org.eclipse.milo.opcua.stack.core.types.structured.EventFilter eventFilterFromWebApi(EventFilter eventFilter) throws UaRuntimeException
+    {
+        List<org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand> selectedElements = new ArrayList<>();
+
+        for (SimpleAttributeOperand item : eventFilter.getSelectClauses())
+        {
+            selectedElements.add(UaTypeMapper.simpleAttributeOperandFromWebApi(item));
+        }
+
+        org.eclipse.milo.opcua.stack.core.types.structured.ContentFilter contentFilter;
+        if (null == eventFilter.getWhereClause())
+        {
+            contentFilter = new org.eclipse.milo.opcua.stack.core.types.structured.ContentFilter(null);
+        } else {
+            contentFilter = UaTypeMapper.contentFilterFromWebApi(eventFilter.getWhereClause());
+        }
+
+        return new org.eclipse.milo.opcua.stack.core.types.structured.EventFilter(
+                selectedElements.toArray(new org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand[0]),
+                contentFilter);
+    }
+
+    public static HistoryEventFieldList historyEventFieldListFromMilo(org.eclipse.milo.opcua.stack.core.types.structured.HistoryEventFieldList historyEventFieldList)
+    {
+        List<Variant> fieldList = new ArrayList<>();
+
+        if (null != historyEventFieldList.getEventFields())
+        {
+            fieldList = variantsFromMilo(Arrays.asList(historyEventFieldList.getEventFields()));
+        }
+
+        HistoryEventFieldList historyEventFieldListWebApi = new HistoryEventFieldList();
+        historyEventFieldListWebApi.setEventFields(fieldList);
+
+        return historyEventFieldListWebApi;
+    }
+
+    public static org.eclipse.milo.opcua.stack.core.types.structured.HistoryEventFieldList historyEventFieldListFromWebApi(HistoryEventFieldList historyEventFieldList) throws UaRuntimeException
+    {
+        List<org.eclipse.milo.opcua.stack.core.types.builtin.Variant> fieldList = variantsFromWebApi(historyEventFieldList.getEventFields());
+        return new org.eclipse.milo.opcua.stack.core.types.structured.HistoryEventFieldList(fieldList.toArray(new org.eclipse.milo.opcua.stack.core.types.builtin.Variant[0]));
     }
 
     public static Variant variantFromMilo(org.eclipse.milo.opcua.stack.core.types.builtin.Variant value)
@@ -300,7 +476,7 @@ public class UaTypeMapper {
             if (!isArray)
             {
                 ByteString byteStringValue = (ByteString)val;
-                String stringValue = (byteStringValue.isNull()) ? "" : new String(byteStringValue.bytes());
+                String stringValue = (byteStringValue.isNull() || null == byteStringValue.bytes()) ? "" : new String(byteStringValue.bytes());
                 ret.setValue(stringValue);
             } else {
                 ByteString[] byteStringValues = (ByteString[])val;
@@ -316,8 +492,8 @@ public class UaTypeMapper {
         } else if (OpcUaDataType.ExtensionObject == dataType) {
             if (!isArray)
             {
-                ExtensionObject extensionObjectMilo = (ExtensionObject)val;
-                org.opcfoundation.webapi.model.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectMilo);
+                org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject extensionObjectMilo = (org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject)val;
+                ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectMilo);
                 if (null != extensionObject)
                 {
                     ret.setValue(extensionObject);
@@ -325,11 +501,11 @@ public class UaTypeMapper {
                     ret.setUaType(0);
                 }
             } else {
-                ExtensionObject[] extensionObjectsMilo = (ExtensionObject[])val;
-                org.opcfoundation.webapi.model.ExtensionObject[] extensionObjects = new org.opcfoundation.webapi.model.ExtensionObject[extensionObjectsMilo.length];
+                org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject[] extensionObjectsMilo = (org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject[])val;
+                ExtensionObject[] extensionObjects = new org.opcfoundation.webapi.model.ExtensionObject[extensionObjectsMilo.length];
                 for (int i=0; i<extensionObjects.length; ++i)
                 {
-                    org.opcfoundation.webapi.model.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectsMilo[i]);
+                    ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.toExtensionObjectWebApi(extensionObjectsMilo[i]);
 
                     if (null == extensionObject)
                     {
@@ -688,19 +864,19 @@ public class UaTypeMapper {
             } else if (OpcUaDataType.ExtensionObject.getTypeId() == dataType) {
                 if (!isArray)
                 {
-                    org.opcfoundation.webapi.model.ExtensionObject extensionObjectWebApi = Mapper.convertValue(val, org.opcfoundation.webapi.model.ExtensionObject.class);
-                    ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
+                    ExtensionObject extensionObjectWebApi = Mapper.convertValue(val, ExtensionObject.class);
+                    org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
                     if (null == extensionObject) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
                     ret = org.eclipse.milo.opcua.stack.core.types.builtin.Variant.ofExtensionObject(extensionObject);
                 } else {
                     List<?> objectArray = (List<?>)val;
-                    ExtensionObject[] extensionObjects = new ExtensionObject[objectArray.size()];
+                    org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject[] extensionObjects = new org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject[objectArray.size()];
 
                     int index = 0;
                     for (Object item : objectArray)
                     {
-                        org.opcfoundation.webapi.model.ExtensionObject extensionObjectWebApi = Mapper.convertValue(item, org.opcfoundation.webapi.model.ExtensionObject.class);
-                        ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
+                        ExtensionObject extensionObjectWebApi = Mapper.convertValue(item, ExtensionObject.class);
+                        org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject extensionObject = ExtensionObjectEncoder.Encoder.fromExtensionObjectWebApi(extensionObjectWebApi);
                         if (null == extensionObject) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
 
                         extensionObjects[index] = extensionObject;
@@ -819,6 +995,17 @@ public class UaTypeMapper {
         for (org.eclipse.milo.opcua.stack.core.types.builtin.DataValue item : dataValues)
         {
             ret.add(dataValueFromMilo(item));
+        }
+
+        return ret;
+    }
+
+    public static List<org.eclipse.milo.opcua.stack.core.types.builtin.DataValue> dataValuesFromWebApi(List<DataValue> dataValues) throws UaRuntimeException
+    {
+        List<org.eclipse.milo.opcua.stack.core.types.builtin.DataValue> ret = new ArrayList<>();
+        for (DataValue item : dataValues)
+        {
+            ret.add(dataValueFromWebApi(item));
         }
 
         return ret;

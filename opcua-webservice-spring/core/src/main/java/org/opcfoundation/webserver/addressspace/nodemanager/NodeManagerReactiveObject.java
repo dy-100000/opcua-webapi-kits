@@ -5,6 +5,8 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
+import org.opcfoundation.webapi.service.types.*;
+import org.opcfoundation.webserver.service.transactions.base.*;
 import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.reactiveobject.UaObjectTransactionManager;
 import org.opcfoundation.webserver.addressspace.nodes.UaDataType;
@@ -15,14 +17,6 @@ import org.opcfoundation.webserver.addressspace.reactiveobject.UaReactiveObjectT
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.common.UaInstanceIdentifier;
 import org.opcfoundation.webserver.types.common.UaObjectIdentifier;
-import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaMethodCallTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
-import org.opcfoundation.webserver.service.transactions.base.UaWriteTransaction;
-import org.opcfoundation.webapi.service.types.CallContext;
-import org.opcfoundation.webapi.service.types.ReadContext;
-import org.opcfoundation.webapi.service.types.ServiceContext;
-import org.opcfoundation.webapi.service.types.WriteContext;
 
 import java.util.*;
 
@@ -31,26 +25,6 @@ public class NodeManagerReactiveObject extends NodeManager {
     public NodeManagerReactiveObject(String namespaceUri)
     {
         super(namespaceUri);
-    }
-
-    @Deprecated
-    public final void addRootObject(String objectId, UaReactiveObjectType objectType) throws UaRuntimeException
-    {
-        UaInstanceIdentifier objectIdentifier = new UaInstanceIdentifier(
-                new UaObjectIdentifier(objectType.nodeId().toParseableString(), objectId, null),
-                null);
-
-        NodeId objectNodeId = new NodeId(nsIndex(), objectIdentifier.toByteString());
-
-        UaObject newObject = new UaObject(
-                objectNodeId,
-                objectId,
-                new LocalizedText(objectId),
-                objectType);
-
-        this.addNode(newObject);
-
-        UaObjects.ObjectsFolder.organizes(newObject);
     }
 
     public final void addObjectType(UaReactiveObjectType objectType) throws UaRuntimeException
@@ -131,5 +105,13 @@ public class NodeManagerReactiveObject extends NodeManager {
             int handleId)
     {
         return new UaObjectTransactionManager(this).getMethodCallTransaction(context, handleId);
+    }
+
+    @Override
+    public final UaHistoryReadTransaction getHistoryReadTransaction(
+            HistoryReadContext context,
+            int handleId)
+    {
+        return new UaObjectTransactionManager(this).getHistoryReadTransaction(context, handleId);
     }
 }

@@ -259,4 +259,33 @@ public abstract class UaWebServer extends UaWebServerBase {
 
         return transactionManager.execute().thenApply(UaTransactionManager::getMergedResults);
     }
+
+    @Override
+    public CompletableFuture<List<HistoryReadResult>> historyRead(HistoryReadContext context) throws UaRuntimeException
+    {
+        UaTransactionManager<HistoryReadValueId, HistoryReadResult> transactionManager = new UaTransactionManager<>();
+
+        int currentIndex = 0;
+        for (HistoryReadValueId item: context.getNodesToRead())
+        {
+            NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(
+                    item.getNodeId().getNamespaceIndex().intValue());
+
+            UaHistoryReadTransaction transaction;
+            if (null != nodeManager)
+            {
+                transaction = nodeManager.getHistoryReadTransaction(context, currentIndex);
+
+            } else {
+                transaction = new UaHistoryReadTransaction(
+                        context,
+                        currentIndex);
+            }
+
+            transactionManager.addTransaction(transaction);
+            currentIndex++;
+        }
+
+        return transactionManager.execute().thenApply(UaTransactionManager::getMergedResults);
+    }
 }
