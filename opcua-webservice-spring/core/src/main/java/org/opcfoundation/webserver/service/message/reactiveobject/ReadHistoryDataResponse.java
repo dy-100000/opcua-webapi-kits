@@ -5,8 +5,8 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import java.util.List;
 
 public class ReadHistoryDataResponse {
-    private List<DataValue> values;
-    private Boolean containsMoreData;
+    private final List<DataValue> values;
+    private final Boolean containsMoreData;
 
     public ReadHistoryDataResponse(List<DataValue> values, Boolean containsMoreData)
     {

@@ -89,6 +89,9 @@ public class NodeManagerNs0 extends NodeManager {
 
         addNode(UaReferenceTypes.HasModellingRule);
         UaReferenceTypes.HasModellingRule.setParentReferenceType(UaReferenceTypes.NonHierarchicalReferences);
+
+        addNode(UaReferenceTypes.GeneratesEvent);
+        UaReferenceTypes.GeneratesEvent.setParentReferenceType(UaReferenceTypes.NonHierarchicalReferences);
     }
 
     private void buildObjectTypes()
@@ -164,7 +167,10 @@ public class NodeManagerNs0 extends NodeManager {
         addNode(UaDataTypes.AudioDataType);
 
         addNode(UaDataTypes.Enumeration);
+
         addNode(UaDataTypes.DateTime);
+        addNode(UaDataTypes.UtcTime);
+
         addNode(UaDataTypes.NodeId);
         addNode(UaDataTypes.ExpandedNodeId);
         addNode(UaDataTypes.Guid);
@@ -234,6 +240,27 @@ public class NodeManagerNs0 extends NodeManager {
                 NodeIds.String, ValueRank.OneDimension.getValue(), AccessLevel.CurrentRead.getValue(), UaVariableTypes.PropertyType);
         UaObjects.Server.addMember(Server_NamespaceArray);
         this.addNode(Server_NamespaceArray);
+
+        // EventType
+        UaVariable BaseEventType_EventId = new UaVariable(NodeIds.BaseEventType_EventId, "EventId", new LocalizedText("EventId"),
+                NodeIds.ByteString, ValueRank.Scalar.getValue(), AccessLevel.CurrentRead.getValue(), UaVariableTypes.PropertyType);
+        UaObjectTypes.BaseEventType.addMember(BaseEventType_EventId);
+        this.addNode(BaseEventType_EventId);
+
+        UaVariable BaseEventType_EventType = new UaVariable(NodeIds.BaseEventType_EventType, "EventType", new LocalizedText("EventType"),
+                NodeIds.NodeId, ValueRank.Scalar.getValue(), AccessLevel.CurrentRead.getValue(), UaVariableTypes.PropertyType);
+        UaObjectTypes.BaseEventType.addMember(BaseEventType_EventType);
+        this.addNode(BaseEventType_EventType);
+
+        UaVariable BaseEventType_Time = new UaVariable(NodeIds.BaseEventType_Time, "Time", new LocalizedText("Time"),
+                NodeIds.UtcTime, ValueRank.Scalar.getValue(), AccessLevel.CurrentRead.getValue(), UaVariableTypes.PropertyType);
+        UaObjectTypes.BaseEventType.addMember(BaseEventType_Time);
+        this.addNode(BaseEventType_Time);
+
+        UaVariable BaseEventType_Message = new UaVariable(NodeIds.BaseEventType_Message, "Message", new LocalizedText("Message"),
+                NodeIds.LocalizedText, ValueRank.Scalar.getValue(), AccessLevel.CurrentRead.getValue(), UaVariableTypes.PropertyType);
+        UaObjectTypes.BaseEventType.addMember(BaseEventType_Message);
+        this.addNode(BaseEventType_Message);
     }
 
     @Override

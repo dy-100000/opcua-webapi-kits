@@ -21,4 +21,5 @@ public class UaObjectTypes {
     public final static BaseUaObjectType ReferenceElementType = new BaseUaObjectType(new NodeId(1,14),"ReferenceElementType", new LocalizedText("ReferenceElementType"), true, ElementType);
     public final static BaseUaObjectType ElementCollectionType = new BaseUaObjectType(new NodeId(1,15),"ElementCollectionType", new LocalizedText("ElementCollectionType"), true, ElementType);
     public final static BaseUaObjectType ElementListType = new BaseUaObjectType(new NodeId(1,16),"ElementListType", new LocalizedText("ElementListType"), true, ElementType);
+    public final static BaseUaObjectType EventElementType = new BaseUaObjectType(new NodeId(1,17),"EventElementType", new LocalizedText("EventElementType"), true, ElementType);
 }

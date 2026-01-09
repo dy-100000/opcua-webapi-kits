@@ -1,13 +1,12 @@
 package org.opcfoundation.webserver.service.message.reactiveobject;
 
-import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.structured.HistoryEventFieldList;
 
 import java.util.List;
 
 public class ReadHistoryEventResponse {
-    private List<HistoryEventFieldList> events;
-    private Boolean containsMoreData;
+    private final List<HistoryEventFieldList> events;
+    private final Boolean containsMoreData;
 
     public ReadHistoryEventResponse(List<HistoryEventFieldList> events, Boolean containsMoreData)
     {

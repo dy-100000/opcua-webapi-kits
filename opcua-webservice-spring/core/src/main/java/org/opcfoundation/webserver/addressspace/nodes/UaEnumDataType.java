@@ -36,6 +36,7 @@ public class UaEnumDataType extends UaDataType {
                 new NodeId(nodeManager.nsIndex(), enumStringsId),
                 enumString_LText);
 
+        nodeManager.addNode(this);
         nodeManager.addNode(enumStringsVariable);
     }
 

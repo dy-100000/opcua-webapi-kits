@@ -1,4 +1,4 @@
-import { Argument, ArgumentFromJSON } from "opcua-webapi";
+import { Argument, ArgumentFromJSON, ArgumentToJSONTyped } from "opcua-webapi";
 import { parseUaNodeIdOrNull, UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
 import { UaPayloadMapper } from "../mapper";
 import { DataTypeIds } from "../nodes";
@@ -20,7 +20,7 @@ export class UaArgument
     {        
         this._name = name;
         this._dataType = dataType;
-        this._valueRank = (valueRank) ? valueRank : -1;
+        this._valueRank = (undefined != valueRank) ? valueRank : -1;
         this._description = (description) ? description : null;
     }
 
@@ -44,7 +44,7 @@ export class UaArgument
         return this._description;
     }
 
-    toExtensionObject() : UaExtensionObject
+    toStruct() : Argument
     {
         let argument : Argument = { 
             Name: this._name,
@@ -53,14 +53,11 @@ export class UaArgument
             Description: (this._description) ? UaPayloadMapper.localizedTextToWebApi(this._description) : undefined
         };
 
-        return new UaExtensionObject(UaArgument.dataTypeId, argument);
-    }    
+        return argument;
+    }
 
-    static fromExtensionObject(extensionObject : UaExtensionObject) : UaArgument | null
+    static fromStruct(argument : Argument) : UaArgument | null
     {
-        if (!UaArgument.dataTypeId.equal(extensionObject.typeId)) return null;
-        let argument : Argument = ArgumentFromJSON(extensionObject.body);
-
         let name = (typeof argument.Name === "string") ? argument.Name : null;
         let dataTypeId = parseUaNodeIdOrNull(argument.DataType);        
         let valueRank = (typeof argument.ValueRank === "number") ? argument.ValueRank : -1;
@@ -69,5 +66,17 @@ export class UaArgument
         if (null == dataTypeId || null == name) return null;
 
         return new UaArgument(name, dataTypeId, valueRank, description);
+    }
+
+    toExtensionObject() : UaExtensionObject
+    {   
+        return new UaExtensionObject(UaArgument.dataTypeId, ArgumentToJSONTyped(this.toStruct()));
+    } 
+
+    static fromExtensionObject(extensionObject : UaExtensionObject) : UaArgument | null
+    {
+        if (!UaArgument.dataTypeId.equal(extensionObject.typeId)) return null;
+        let argument : Argument = ArgumentFromJSON(extensionObject.body);
+        return UaArgument.fromStruct(argument);
     }
 }

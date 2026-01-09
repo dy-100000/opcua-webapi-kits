@@ -1,4 +1,4 @@
-import { EUInformation, EUInformationFromJSON } from "opcua-webapi";
+import { EUInformation, EUInformationFromJSON, EUInformationToJSONTyped } from "opcua-webapi";
 import { UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
 import { UaPayloadMapper } from "../mapper";
 import { DataTypeIds } from "../nodes";
@@ -44,7 +44,7 @@ export class UaEUInformation
         return this._namespaceUri;
     }
 
-    toExtensionObject() : UaExtensionObject
+    toStruct() : EUInformation
     {
         let euInformation : EUInformation = { 
             UnitId: this._unitId,
@@ -52,15 +52,12 @@ export class UaEUInformation
             Description: (this._description) ? UaPayloadMapper.localizedTextToWebApi(this._description) : undefined,
             NamespaceUri: (this._namespaceUri) ? this._namespaceUri : undefined
         };
-
-        return new UaExtensionObject(UaEUInformation.dataTypeId, euInformation);
-    }    
-
-    static fromExtensionObject(extensionObject : UaExtensionObject) : UaEUInformation | null
+    
+        return euInformation;
+    }
+    
+    static fromStruct(euInformation : EUInformation) : UaEUInformation | null
     {
-        if (!UaEUInformation.dataTypeId.equal(extensionObject.typeId)) return null;      
-        let euInformation : EUInformation = EUInformationFromJSON(extensionObject.body);
-
         let unitId = (typeof euInformation.UnitId === "number") ? euInformation.UnitId : null;
         let displayName = UaPayloadMapper.localizedTextFromWebApi(euInformation.DisplayName);        
         let description = (euInformation.Description) ? UaPayloadMapper.localizedTextFromWebApi(euInformation.Description) : null;  
@@ -69,5 +66,17 @@ export class UaEUInformation
         if (null == unitId || null == displayName) return null;
 
         return new UaEUInformation(unitId, displayName, description, namespaceUri);
+    }
+
+    toExtensionObject() : UaExtensionObject
+    {       
+        return new UaExtensionObject(UaEUInformation.dataTypeId,EUInformationToJSONTyped(this.toStruct()));
+    }    
+
+    static fromExtensionObject(extensionObject : UaExtensionObject) : UaEUInformation | null
+    {
+        if (!UaEUInformation.dataTypeId.equal(extensionObject.typeId)) return null;      
+        let euInformation : EUInformation = EUInformationFromJSON(extensionObject.body);
+        return UaEUInformation.fromStruct(euInformation);
     }
 }

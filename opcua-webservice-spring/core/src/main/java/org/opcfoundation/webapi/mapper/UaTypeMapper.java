@@ -112,7 +112,11 @@ public class UaTypeMapper {
         }
 
         SimpleAttributeOperand simpleAttributeOperandWebApi = new SimpleAttributeOperand();
-        simpleAttributeOperandWebApi.setTypeDefinitionId(operand.getTypeDefinitionId().toParseableString());
+
+        if (null != operand.getTypeDefinitionId()) {
+            simpleAttributeOperandWebApi.setTypeDefinitionId(operand.getTypeDefinitionId().toParseableString());
+        }
+
         simpleAttributeOperandWebApi.setBrowsePath(browsePath);
         simpleAttributeOperandWebApi.setAttributeId(operand.getAttributeId().longValue());
 
@@ -121,8 +125,10 @@ public class UaTypeMapper {
 
     public static org.eclipse.milo.opcua.stack.core.types.structured.SimpleAttributeOperand simpleAttributeOperandFromWebApi(SimpleAttributeOperand operand) throws UaRuntimeException
     {
-        if (null == operand.getTypeDefinitionId()) throw new UaRuntimeException(StatusCodes.Bad_DecodingError);
-        NodeId typeId = NodeId.parse(operand.getTypeDefinitionId());
+        NodeId typeId = NodeId.NULL_VALUE;
+        if (null != operand.getTypeDefinitionId()) {
+            typeId = NodeId.parse(operand.getTypeDefinitionId());
+        }
 
         List<QualifiedName> browsePath = new ArrayList<>();
         for (String item: operand.getBrowsePath())

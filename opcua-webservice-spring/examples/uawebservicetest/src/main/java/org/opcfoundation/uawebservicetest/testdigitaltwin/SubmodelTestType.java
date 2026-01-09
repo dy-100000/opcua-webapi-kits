@@ -31,12 +31,14 @@ public class SubmodelTestType extends SubmodelType {
     private final UaObject ElementCollectionTestB;
     private final UaObject Reference;
     private final UaObject ElementList;
+    private final UaObject EventElement;
 
     public SubmodelTestType(
             ElementCollectionTestAType elementCollectionTestAType,
             ElementCollectionTestBType elementCollectionTestBType,
             ReferenceElementTestType referenceElementTestType,
             ElementListTestType elementListTestType,
+            EventElementTestType eventElementTestType,
             DigitalTwinSpace space)
     {
         super("SubmodelTestType", new LocalizedText("SubmodelTestType"), space);
@@ -110,6 +112,13 @@ public class SubmodelTestType extends SubmodelType {
                 new LocalizedText("ElementList"),
                 new LocalizedText("Element list member"),
                 false);
+
+        EventElement = addEventElement(
+                eventElementTestType,
+                "EventElement",
+                new LocalizedText("EventElement"),
+                new LocalizedText("EventElement member"),
+                true);
     }
 
     public CompletableFuture<ReadPropertyValuesResponse> onReadPropertyValues(ReadPropertyValuesRequest request)

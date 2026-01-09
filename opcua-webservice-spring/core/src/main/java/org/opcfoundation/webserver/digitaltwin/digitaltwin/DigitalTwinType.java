@@ -32,6 +32,7 @@ public abstract class DigitalTwinType extends UaReactiveObjectType implements Di
             DigitalTwinSpace twinSpace)
     {
         super(typeId, displayName, UaObjectTypes.DigitalTwinType, twinSpace);
+        twinSpace.addNode(this);
     }
 
     public final UaObject addSubmodel(

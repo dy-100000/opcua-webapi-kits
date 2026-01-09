@@ -34,6 +34,7 @@ public abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
                                      DigitalTwinSpace twinSpace)
     {
         super(typeId, displayName, UaObjectTypes.DigitalTwinRepositoryType, twinSpace);
+        twinSpace.addNode(this);
     }
 
     @Override

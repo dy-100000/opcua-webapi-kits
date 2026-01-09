@@ -8,6 +8,10 @@ export type UaNodeAttributes = {
     description: UaLocalizedText | null;
 }
 
+export type UaObjectAttributes = {
+    eventNotifier : number;
+}
+
 export type UaVariableAttributes = {
     dataType : UaNodeId;
     valueRank : number;

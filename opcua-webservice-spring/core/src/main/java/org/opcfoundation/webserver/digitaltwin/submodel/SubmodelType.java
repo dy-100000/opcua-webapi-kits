@@ -7,6 +7,7 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
+import org.opcfoundation.webserver.digitaltwin.element.EventElementType;
 import org.springframework.lang.Nullable;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
@@ -36,6 +37,8 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
                 typeId,
                 displayName,
                 twinSpace);
+
+        twinSpace.addNode(this);
     }
 
     public UaVariable addPropertyElement(
@@ -124,6 +127,19 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return newObject;
     }
 
+    public UaObject addEventElement(
+            EventElementType type,
+            String           name,
+            LocalizedText    displayName,
+            LocalizedText    description,
+            boolean          mandatory)
+    {
+        UaObject newObject = addObjectNode(name, displayName, type);
+        if (description.isNotNull()) newObject.setDescription(description);
+        newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newObject;
+    }
+
     public UaObject addElementList(
             ElementListType type,
             String          name,
@@ -136,6 +152,8 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
         return newObject;
     }
+
+
 
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request) {

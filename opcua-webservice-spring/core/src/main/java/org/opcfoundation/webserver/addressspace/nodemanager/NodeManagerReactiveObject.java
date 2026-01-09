@@ -27,26 +27,6 @@ public class NodeManagerReactiveObject extends NodeManager {
         super(namespaceUri);
     }
 
-    public final void addObjectType(UaReactiveObjectType objectType) throws UaRuntimeException
-    {
-        super.addNode(objectType);
-    }
-
-    public final void addDataType(UaDataType dataType) throws UaRuntimeException
-    {
-        super.addNode(dataType);
-    }
-
-    @Override
-    public final void addNode(UaNode node) throws UaRuntimeException {
-        if (node.nodeClass() == NodeClass.ObjectType ||
-                node.nodeClass() == NodeClass.DataType ||
-                node.nodeClass() == NodeClass.VariableType ||
-                node.nodeClass() == NodeClass.ReferenceType ||
-                node.nodeClass() == NodeClass.View) throw new UaRuntimeException(StatusCodes.Bad_NodeClassInvalid);
-        super.addNode(node);
-    }
-
     public final @Nullable UaReactiveObjectType findObjectType(UaObjectIdentifier objectId)
     {
         NodeId objectTypeId = NodeId.parseOrNull(objectId.getTypeId());

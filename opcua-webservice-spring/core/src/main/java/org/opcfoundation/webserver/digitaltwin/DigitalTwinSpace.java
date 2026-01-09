@@ -19,6 +19,7 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
         super(namespaceUri);
     }
 
+    /*
     public final void addDefinition(DigitalTwinType type)
     {
         addObjectType(type);
@@ -42,7 +43,7 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
     public final void addDefinition(UaEnumDataType type)
     {
         addDataType(type);
-    }
+    } */
 
     public final void addRepository(
             DigitalTwinRepositoryType repositoryType,

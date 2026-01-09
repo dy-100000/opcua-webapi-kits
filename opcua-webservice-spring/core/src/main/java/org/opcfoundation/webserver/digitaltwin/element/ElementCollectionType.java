@@ -122,6 +122,19 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         return newObject;
     }
 
+    public UaObject addEventElement(
+            EventElementType type,
+            String           name,
+            LocalizedText    displayName,
+            LocalizedText    description,
+            boolean          mandatory)
+    {
+        UaObject newObject = addObjectNode(name, displayName, type);
+        if (description.isNotNull()) newObject.setDescription(description);
+        newObject.setModellingRule((mandatory) ? UaModellingRule.Mandatory : UaModellingRule.Optional);
+        return newObject;
+    }
+
     public UaObject addElementList(
             ElementListType type,
             String          name,

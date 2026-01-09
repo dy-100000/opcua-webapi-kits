@@ -8,8 +8,6 @@ import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResp
 import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetLinkResponse;
 import org.opcfoundation.webserver.types.digitaltwin.ReferenceTargetDescriptor;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ReferenceElementTestType extends ReferenceElementType {
@@ -38,6 +36,10 @@ public class ReferenceElementTestType extends ReferenceElementType {
 
     @Override
     public CompletableFuture<GetDescriptorResponse> onGetDescriptor(GetDescriptorRequest request) {
-        return CompletableFuture.completedFuture(new GetDescriptorResponse(request.getId()));
+        return CompletableFuture.supplyAsync(() -> {
+            return new GetDescriptorResponse(
+                    new LocalizedText("ReferenceElement-" + request.getId()),
+                    new LocalizedText("ReferenceElement with id " + request.getId()));
+        });
     }
 }

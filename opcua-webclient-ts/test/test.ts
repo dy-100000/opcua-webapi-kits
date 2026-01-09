@@ -1,5 +1,5 @@
 import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText, parseUaNodeId } from "../src";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
 import { UaDataTypeDictionary, UaObjectTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
@@ -27,13 +27,19 @@ class Test {
             await this.testReadNodeAttribute();
             await this.testReadVariableAttribute(); 
             await this.testReadMethodArgument();
+            await this.testReadObjectAttribute();
             await this.testWriteValues(); 
             await this.testMethodCall(); 
+            await this.testHistoryReadRawData();
+            await this.testHistroryReadEvent();
+            await this.testGetGeneratedEvent();
             await this.testDataTypeDictionary();             
             await this.testReferenceTypeDictionary();
-            await this.testObjectTypeDictionary();*/
+            await this.testObjectTypeDictionary();            
+            */
 
-            await this.testReadNodeAttribute();
+            await this.testHistroryReadEvent();
+            
         } catch (e) {            
             console.log(e);
         }
@@ -80,12 +86,19 @@ class Test {
         console.log("testReadVariableAttribute");
         
         let nodeId = new UaNodeId("Demo.History.Historian_1",3);
-
-        console.log("readVariableAttribute");
         let attribute = await this.client.readVariableAttributes([nodeId]);
         console.log(attribute);
     }
     
+    async testReadObjectAttribute()
+    {
+        console.log("testReadObjectAttribute");
+
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUV2ZW50RWxlbWVudFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUV2ZW50RWxlbWVudCJ9fQ==");
+        let attribute = await this.client.readObjectAttributes(nodeId);
+        console.log(attribute);
+    }
+
     async testReadMethodArgument()
     {
         console.log("testReadMethodArgument");
@@ -197,6 +210,89 @@ class Test {
         for (let item of outputArguments)
         {
             console.log(item.value);
+        }
+    }   
+
+    async testHistoryReadRawData()
+    {
+        console.log("testHistoryReadRawData");
+        
+        let nodeId = new UaNodeId("Demo.History",3);
+        let startTime = new Date(Date.now());
+        let endTime = new Date(startTime.getTime() + 2 * 60 * 1000);
+
+        let historyData = await this.client.historyReadRawData(
+            nodeId,
+            startTime,
+            endTime,
+            20,
+            "abcd",            
+            true,
+            false);
+        
+        for (let item of historyData.historyData)
+        {
+            console.log(item.value.value);
+        }
+
+        if (historyData.continuationPoint)
+        {
+            console.log("cp:" + historyData.continuationPoint);
+        }
+    }
+
+    async testHistroryReadEvent()
+    {
+        console.log("testHistoryReadEvent");
+        
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUV2ZW50RWxlbWVudFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUV2ZW50RWxlbWVudCJ9fQ==");
+        let startTime = new Date(Date.now());
+        let endTime = new Date(startTime.getTime() + 2 * 60 * 1000);
+
+        let filters : Array<UaQueryFilter> = [
+            new UaQueryFilter("abc", UaQueryFilterType.Equals, UaVariant.integer(12), true),
+            new UaQueryFilter("def", UaQueryFilterType.Like, UaVariant.string("dken"), true,),
+            new UaQueryFilter("ghi", UaQueryFilterType.Between, UaVariant.doubles([100.5, 270]))
+        ];
+
+        let select = ["EventId","EventType","Time","Message","Customized"];
+        let where : UaQuery = new UaQuery(filters, true);
+
+        let historyData = await this.client.historyReadEvent(
+            nodeId,
+            startTime,
+            endTime,
+            select,
+            where,
+            15,
+            null,            
+            true);
+        
+        for (let item of historyData.historyEvents)
+        {
+            console.log("Event");
+            for (let item2 of item.eventFields)
+            {
+                console.log(item2.value);
+            }
+        }
+
+        if (historyData.continuationPoint)
+        {
+            console.log("cp:" + historyData.continuationPoint);
+        }
+    }
+
+    async testGetGeneratedEvent()
+    {
+        console.log("testGetGeneratedEvent");
+
+        let objectTypeId = new UaNodeId("EventElementTestType",2);
+        let eventTypeIds = await this.client.getGeneratedEventType(objectTypeId);
+
+        for (let item of eventTypeIds)
+        {
+            console.log(item.toString());
         }
     }
 

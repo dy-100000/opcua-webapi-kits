@@ -19,6 +19,7 @@ public class UaReferenceTypes {
 
     public final static UaReferenceType HasTypeDefinition = new UaReferenceType(NodeIds.HasTypeDefinition,"HasTypeDefinition", new LocalizedText("HasTypeDefinition"), false,new LocalizedText("TypeDefinitionOf"), false);
     public final static UaReferenceType HasModellingRule = new UaReferenceType(NodeIds.HasModellingRule,"HasModellingRule", new LocalizedText("HasModellingRule"), false,new LocalizedText("ModellingRuleOf"), false);
+    public final static UaReferenceType GeneratesEvent = new UaReferenceType(NodeIds.GeneratesEvent,"GeneratesEvent", new LocalizedText("GeneratesEvent"), false,new LocalizedText("GeneratedBy"), false);
 
     public final static UaReferenceType HasLink = new UaReferenceType(new NodeId(1,1),"HasLink", new LocalizedText("HasLink"), false,new LocalizedText("HasLink"), true);
 }

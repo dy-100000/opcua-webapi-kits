@@ -3,8 +3,7 @@ import { UaLocalizedText, UaNodeId } from "../types";
 import { UaDefintionNode } from ".";
 
 export class UaObjectType extends UaDefintionNode
-{    
-    
+{        
     constructor(
         nodeId: UaNodeId,
         browseName: string,

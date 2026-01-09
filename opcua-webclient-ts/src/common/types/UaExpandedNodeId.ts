@@ -2,23 +2,19 @@
  * @module node-opcua-nodeid
  */
 import { parseUaNodeId } from ".";
-import { UaNodeId, UaNodeIdType } from ".";
+import { UaNodeId } from ".";
 
 export class UaExpandedNodeId {
-    public static nullExpandedNodeId = new UaExpandedNodeId(0, 0, UaNodeIdType.NUMERIC);
-
     private _nodeId: UaNodeId;
     private _namespaceUri: string | null;
     private _serverIndex: number;
 
     constructor(        
-        value: number | string ,
-        namespace?: number,
-        identifierType?: UaNodeIdType | null,
-        namespaceUri?: null | string,
+        nodeId : UaNodeId,
+        namespaceUri?: string | null,
         serverIndex?: number) 
     {
-        this._nodeId = new UaNodeId(value, namespace, identifierType);
+        this._nodeId = nodeId;
         this._namespaceUri = (namespaceUri) ? namespaceUri : null;
         this._serverIndex = (serverIndex) ? serverIndex : 0;
     }
@@ -66,5 +62,5 @@ export class UaExpandedNodeId {
 
 export function parseUaExpandedNodeId(value: string): UaExpandedNodeId {
     let nodeId = parseUaNodeId(value);
-    return new UaExpandedNodeId(nodeId.value, nodeId.nsIndex, nodeId.identifierType, null, 0);
+    return new UaExpandedNodeId(nodeId, null, 0);
 }

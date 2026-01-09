@@ -9,7 +9,7 @@ export enum UaNodeIdType {
 }
 
 export class UaNodeId {
-    public static nullNodeId: UaNodeId = new UaNodeId(0, 0, UaNodeIdType.NUMERIC);
+    public static nullNodeId: UaNodeId = new UaNodeId(0, 0);
     
     private _identifierType: UaNodeIdType;
     private _value: number | string;

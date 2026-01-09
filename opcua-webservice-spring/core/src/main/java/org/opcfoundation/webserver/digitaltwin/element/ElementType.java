@@ -18,5 +18,7 @@ public abstract class ElementType extends UaReactiveObjectType {
                 displayName,
                 elementType,
                 twinSpace);
+
+        twinSpace.addNode(this);
     }
 }

@@ -41,7 +41,10 @@ public class UaDataTypes {
     public final static UaDataType AudioDataType = new UaDataType(NodeIds.AudioDataType,"AudioDataType", new LocalizedText("AudioDataType"), false, ByteString);
 
     public final static UaDataType Enumeration = new UaDataType(NodeIds.Enumeration,"Enumeration", new LocalizedText("Enumeration"), true, BaseDataType);
+
     public final static UaDataType DateTime = new UaDataType(NodeIds.DateTime,"DateTime", new LocalizedText("DateTime"), false, BaseDataType);
+    public final static UaDataType UtcTime = new UaDataType(NodeIds.UtcTime,"UtcTime", new LocalizedText("UtcTime"), false, DateTime);
+
     public final static UaDataType NodeId = new UaDataType(NodeIds.NodeId,"NodeId", new LocalizedText("NodeId"), false, BaseDataType);
     public final static UaDataType ExpandedNodeId = new UaDataType(NodeIds.ExpandedNodeId,"ExpandedNodeId", new LocalizedText("ExpandedNodeId"), false, BaseDataType);
     public final static UaDataType Guid = new UaDataType(NodeIds.Guid,"Guid", new LocalizedText("Guid"), false, BaseDataType);

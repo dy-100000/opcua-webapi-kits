@@ -13,9 +13,11 @@ public class DigitalTwinSpaceTest extends DigitalTwinSpace {
     public static ElementCollectionTestAType elementCollectionTestAType;
     public static ElementCollectionTestBType elementCollectionTestBType;
     public static ReferenceElementTestType referenceElementTestType;
+    public static EventElementTestType eventElementTestType;
     public static ElementListTestType elementListTestType;
 
     public static EnumTestDataType enumTestDataType;
+    public static EventTestType eventTestType;
 
     public DigitalTwinSpaceTest()
     {
@@ -28,31 +30,19 @@ public class DigitalTwinSpaceTest extends DigitalTwinSpace {
         System.out.println("DigitalTwinSpaceTest.onStartUp");
 
         enumTestDataType = new EnumTestDataType(this);
-        addDefinition(enumTestDataType);
+        eventTestType = new EventTestType(this);
 
         elementListTestType = new ElementListTestType(this);
-        addDefinition(elementListTestType);
-
         referenceElementTestType = new ReferenceElementTestType(this);
-        addDefinition(referenceElementTestType);
 
+        eventElementTestType = new EventElementTestType(eventTestType,this);
         elementCollectionTestAType = new ElementCollectionTestAType(enumTestDataType,this);
-        addDefinition(elementCollectionTestAType);
-
         elementCollectionTestBType = new ElementCollectionTestBType(referenceElementTestType, elementListTestType, this);
-        addDefinition(elementCollectionTestBType);
-
-        submodelTestType = new SubmodelTestType(elementCollectionTestAType, elementCollectionTestBType, referenceElementTestType, elementListTestType, this);
-        addDefinition(submodelTestType);
-
+        submodelTestType = new SubmodelTestType(elementCollectionTestAType, elementCollectionTestBType, referenceElementTestType, elementListTestType, eventElementTestType,this);
         dynamicSubmodelTestType = new DynamicSubmodelTestType(this);
-        addDefinition(dynamicSubmodelTestType);
-
         digitalTwinTestType = new DigitalTwinTestType(submodelTestType, dynamicSubmodelTestType, this);
-        addDefinition(digitalTwinTestType);
-
         digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(this);
-        addDefinition(digitalTwinDirectoryTestType);
+
         addRepository(digitalTwinDirectoryTestType, "Entry", new LocalizedText("入口"), new LocalizedText("测试用入口节点"));
     }
 }

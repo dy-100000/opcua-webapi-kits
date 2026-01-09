@@ -127,10 +127,17 @@ public class UaBrowseAdditionalInfo {
                     }
                 }
 
-                if ((description.getNodeClassMask().longValue() & NodeClass.ObjectType.getValue()) != 0 &&
-                        description.getReferenceTypeId().equals(NodeIds.HasTypeDefinition))
+                if ((description.getNodeClassMask().longValue() & NodeClass.ObjectType.getValue()) != 0)
                 {
-                    browseInfoMask = browseInfoMask | GET_DEFINITION_TASK; // Get type definition
+                    if (description.getReferenceTypeId().equals(NodeIds.HasTypeDefinition))
+                    {
+                        browseInfoMask = browseInfoMask | GET_DEFINITION_TASK; // Get type definition
+                    }
+
+                    if (description.getReferenceTypeId().equals(NodeIds.GeneratesEvent))
+                    {
+                        browseInfoMask = browseInfoMask | GET_LINK_TASK;
+                    }
                 }
             }
         }

@@ -1,5 +1,6 @@
 package org.opcfoundation.webserver.service.transactions.reactiveobject;
 
+import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.builtin.QualifiedName;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
@@ -104,6 +105,20 @@ public class UaBrowseObjectTransaction extends UaBrowseTransaction {
     {
         for (UaReferenceDescriptor item: response.getChildren())
         {
+            if (item.getNodeClass() == NodeClass.ObjectType)
+            {
+                references.add(new ReferenceDescription(
+                        item.getReferenceTypeId(),
+                        item.isForward(),
+                        item.getTypeDefinitionId().expanded(),
+                        new QualifiedName(0,item.getBrowseName()),
+                        item.getDisplayName(),
+                        item.getNodeClass(),
+                        NodeId.NULL_VALUE.expanded()));
+
+                continue;
+            }
+
             if (item.getId().isEmpty()) continue;
 
             if (item.getNodeClass() != NodeClass.Object &&

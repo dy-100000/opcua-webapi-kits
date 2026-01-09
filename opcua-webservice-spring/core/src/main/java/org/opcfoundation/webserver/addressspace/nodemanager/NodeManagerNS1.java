@@ -37,6 +37,7 @@ public class NodeManagerNS1 extends NodeManager {
         addNode(UaObjectTypes.ReferenceElementType);
         addNode(UaObjectTypes.ElementCollectionType);
         addNode(UaObjectTypes.ElementListType);
+        addNode(UaObjectTypes.EventElementType);
     }
 
     private void buildReferenceTypes() {

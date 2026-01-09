@@ -59,7 +59,6 @@ public class ExtensionObjectEncoder {
             if (null == mapper) return null;
 
             UaStructuredType structure = mapper.toStructure(extensionObject.getUaBody());
-
             return org.eclipse.milo.opcua.stack.core.types.builtin.ExtensionObject.encode(encodingContext, structure);
         } catch (Exception e) {
             return null;

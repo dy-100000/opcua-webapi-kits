@@ -4,6 +4,7 @@ import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.opcfoundation.webserver.service.message.reactiveobject.*;
 
+import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
 
 public interface UaReactiveObjectCallback {
@@ -11,7 +12,7 @@ public interface UaReactiveObjectCallback {
     default CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {
-            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+            return new BrowseObjectResponse(new ArrayList<>(),false);
         });
     }
 

@@ -1,5 +1,5 @@
-import { Range, RangeFromJSON } from "opcua-webapi";
-import { UaExtensionObject, UaNodeId, UaNodeIdType } from "../types";
+import { Range, RangeFromJSON, RangeToJSONTyped } from "opcua-webapi";
+import { UaExtensionObject, UaNodeId } from "../types";
 import { DataTypeIds } from "../nodes";
 
 export class UaRange
@@ -9,7 +9,7 @@ export class UaRange
     private _low : number | null;
     private _high : number | null;
     
-    constructor(low?: number | null, high?: number | null)
+    constructor(low: number | null, high: number | null)
     {        
         this._low = (low) ? low : Number.MIN_SAFE_INTEGER;
         this._high = (high) ? high : Number.MAX_SAFE_INTEGER;
@@ -32,20 +32,30 @@ export class UaRange
         return this._high;
     }
 
-    toExtensionObject() : UaExtensionObject
+    toStruct() : Range
     {
         let range : Range = { 
             Low: this._low,
             High: this._high
         };
 
-        return new UaExtensionObject(UaRange.dataTypeId, range);
+        return range;
+    }
+
+    static fromStruct(range : Range) : UaRange | null
+    {
+        return new UaRange(range.Low, range.High);
+    }
+
+    toExtensionObject() : UaExtensionObject
+    {
+        return new UaExtensionObject(UaRange.dataTypeId, RangeToJSONTyped(this.toStruct()));
     }    
 
     static fromExtensionObject(extensionObject : UaExtensionObject) : UaRange | null
     {
         if (!UaRange.dataTypeId.equal(extensionObject.typeId)) return null;
         let range = RangeFromJSON(extensionObject.body);       
-        return new UaRange(range.Low, range.High);
+        return UaRange.fromStruct(range);
     }
 }

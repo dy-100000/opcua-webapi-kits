@@ -5,10 +5,23 @@ import { DefaultApi, ViewDescription, BrowseDescription, RequestHeader, BrowseRe
     ApplicationDescription, NodeClass, BrowseDirection, ReferenceTypeIds, Attributes, EndpointDescription, 
     GetEndpointsRequestFromJSON, DataValue,  
     StatusCodes,
-    Variant} from "opcua-webapi";
+    Variant,
+    HistoryReadRequestFromJSON,
+    HistoryReadValueId,
+    ExtensionObject,
+    HistoryReadResult} from "opcua-webapi";
 import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttributes, UaVariableAttributes, UaNodeId, UaDataValue, 
-    UaVariantType, UaVariant, UaStatusCode, UaWriteValue, UaArgument, UaArrayType, UaExtensionObject } from "../common"
+    UaVariantType, UaVariant, UaStatusCode, UaWriteValue, UaArgument, UaArrayType, UaExtensionObject, 
+    UaHistoryDataResult,
+    UaHistoryData,
+    UaQuery,
+    UaReadEventDetails,
+    UaEventFilter,
+    UaSimpleAttributeOperand,
+    UaContentFilter,
+    UaObjectAttributes} from "../common"
 import { UaClientConfiguration, UaClientParameters } from "..";
+import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult} from "../common";
 
 export class UaWebClient
 {
@@ -46,9 +59,6 @@ export class UaWebClient
         };
 
         let results = await this.browse([ nodesToBrowse ], maxReferences);
-
-        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
-
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
         if (statusCode.isNotGood()) throw new UaError(statusCode);
 
@@ -73,9 +83,6 @@ export class UaWebClient
         };
 
         let results = await this.browse([ nodesToBrowse ], maxReferences);
-
-        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
-
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
         if (statusCode.isNotGood()) throw new UaError(statusCode);
 
@@ -85,15 +92,15 @@ export class UaWebClient
     async browseNextByCP(continuationPoint: string) : Promise<UaBrowseResult>
     {
         let results = await this.browseNext([continuationPoint], false);
-
-        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
         if (statusCode.isNotGood()) throw new UaError(statusCode);
 
         return UaPayloadMapper.browseResultFromWebApi(results[0]);
     }
 
-    async readValues(nodeIds : Array<UaNodeId>, timestampsToReturn?: number) : Promise<Array<UaDataValue>>
+    async readValues(
+        nodeIds : Array<UaNodeId>, 
+        timestampsToReturn?: number) : Promise<Array<UaDataValue>>
     {
         if (nodeIds.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
 
@@ -325,7 +332,39 @@ export class UaWebClient
         return ret;
     }
 
-    async methodCall(objectId: UaNodeId, methodId: UaNodeId, inputArguments: Array<UaVariant>) : Promise<Array<UaVariant>>
+    async readObjectAttributes(nodeId: UaNodeId) : Promise<UaObjectAttributes>
+    {
+        let nodeIdStr = nodeId.toString();
+
+        let nodesToRead: Array<ReadValueId> = [
+            {  NodeId: nodeIdStr, AttributeId: Attributes.EventNotifier }
+        ];
+
+        let results = await this.read(nodesToRead);
+
+        let dataValues : Array<UaDataValue> = [];
+                
+        for (let item of results)
+        {
+            dataValues.push(UaPayloadMapper.dataValueFromWebApi(item));
+        }          
+
+        if (dataValues[0].statusCode.isNotGood()) throw new UaError(dataValues[0].statusCode);  
+        
+        let eventNotifierValue = dataValues[0].value;
+
+        if (UaVariantType.Byte != eventNotifierValue.type) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+                
+        let ret : UaObjectAttributes = {
+                eventNotifier : eventNotifierValue.value };
+
+        return ret ;
+    }
+
+    async methodCall(
+        objectId: UaNodeId, 
+        methodId: UaNodeId, 
+        inputArguments: Array<UaVariant>) : Promise<Array<UaVariant>>
     {
         let inputs : Array<Variant> = [];
 
@@ -340,19 +379,164 @@ export class UaWebClient
 
         let results = await this.call(methodsToCall);
 
-        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
         if (statusCode.isNotGood()) throw new UaError(statusCode);
 
         let outputs : Array<UaVariant> = [];
-        for (let item of results[0].OutputArguments)
+        if (results[0].OutputArguments)
         {
-            outputs.push(UaPayloadMapper.variantFromWebApi(item));
+            for (let item of results[0].OutputArguments)
+            {
+                outputs.push(UaPayloadMapper.variantFromWebApi(item));
+            }
         }
 
         return outputs;
     }
 
+    async getGeneratedEventType(typeId: UaNodeId): Promise<Array<UaNodeId>>
+    {
+        let nodesToBrowse : BrowseDescription = {
+            NodeId: typeId.toString(),
+            BrowseDirection: BrowseDirection.Forward,
+            ReferenceTypeId: ReferenceTypeIds.GeneratesEvent,
+            IncludeSubtypes: false,
+            NodeClassMask: NodeClass.ObjectType,
+            ResultMask: 0
+        };
+
+        let results = await this.browse([ nodesToBrowse ]);        
+
+        let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
+        if (statusCode.isNotGood()) throw new UaError(statusCode);
+
+        let browseResult = UaPayloadMapper.browseResultFromWebApi(results[0]);
+
+        let ret : Array<UaNodeId> = [];
+        for (let item of browseResult.results)
+        {
+            ret.push(item.nodeId.getNodeId());
+        }       
+
+        return ret;
+    }
+
+    async historyReadRawData(
+        nodeId: UaNodeId, 
+        startTime: Date, 
+        endTime: Date, 
+        numValuesPerNode?: number | null,
+        continuationPoint?: string | null,                
+        returnBounds?: boolean | null,         
+        isReadModified?: boolean | null,
+        timestampsToReturn?: number | null,
+        releaseContinuationPoints?: boolean | null) : Promise<UaHistoryDataResult>
+    {
+        let nodeToRead : HistoryReadValueId = {
+            NodeId: nodeId.toString(),
+            ContinuationPoint: (continuationPoint) ? continuationPoint : undefined
+        };
+
+        let details = new UaReadRawModifiedDetails(startTime,endTime, numValuesPerNode,returnBounds,isReadModified);
+        let historyReadDetails: ExtensionObject = UaPayloadMapper.extensionObjectToWebApi(details.toExtensionObject());
+
+        let nodesToRead: Array<HistoryReadValueId> = [nodeToRead];
+        let results = await this.historyRead(nodesToRead, historyReadDetails, timestampsToReturn,releaseContinuationPoints);
+
+        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
+        let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
+        if (statusCode.isNotGood()) throw new UaError(statusCode);
+
+        let extensionObject = UaPayloadMapper.extensionObjectFromWebApi(results[0].HistoryData);
+        let historyData = UaHistoryData.fromExtensionObject(extensionObject);
+        if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
+        let ret = new UaHistoryDataResult(historyData.dataValues, results[0].ContinuationPoint);        
+        return ret;
+    }
+
+    async historyReadAtTime(
+        nodeId: UaNodeId, 
+        requiredTimes: Array<Date>, 
+        useSimpleBounds?: boolean | null, 
+        continuationPoint?: string | null,
+        timestampsToReturn?: number | null,
+        releaseContinuationPoints?: boolean | null) : Promise<UaHistoryDataResult>
+    {
+        if (requiredTimes.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
+
+        let nodeToRead : HistoryReadValueId = {
+            NodeId: nodeId.toString(),
+            ContinuationPoint: (continuationPoint) ? continuationPoint : undefined
+        };
+
+        let details = new UaReadAtTimeDetails(requiredTimes,useSimpleBounds);
+        let historyReadDetails: ExtensionObject = UaPayloadMapper.extensionObjectToWebApi(details.toExtensionObject());
+
+        let nodesToRead: Array<HistoryReadValueId> = [nodeToRead];
+        let results = await this.historyRead(nodesToRead, historyReadDetails, timestampsToReturn,releaseContinuationPoints);
+
+        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
+        let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
+        if (statusCode.isNotGood()) throw new UaError(statusCode);
+
+        let extensionObject = UaPayloadMapper.extensionObjectFromWebApi(results[0].HistoryData);
+        let historyData = UaHistoryData.fromExtensionObject(extensionObject);
+        if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
+        let ret = new UaHistoryDataResult(historyData.dataValues, results[0].ContinuationPoint);        
+        return ret;
+    }
+
+    async historyReadEvent(
+        nodeId: UaNodeId, 
+        startTime: Date, 
+        endTime: Date, 
+        select: Array<string>,
+        where?: UaQuery | null,
+        numValuesPerNode?: number | null,
+        continuationPoint?: string | null,        
+        releaseContinuationPoints?: boolean | null) : Promise<UaHistoryEventResult>
+    {
+        if (select.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
+
+        let nodeToRead : HistoryReadValueId = {
+            NodeId: nodeId.toString(),
+            ContinuationPoint: (continuationPoint) ? continuationPoint : undefined
+        };
+
+        let selectClauses : Array<UaSimpleAttributeOperand> = [];   
+        let whereClauses : UaContentFilter = (where) ? where.toContentFilter() : null;
+
+        for (let item of select)
+        {
+            let selectedField = new UaSimpleAttributeOperand([item]);
+            selectClauses.push(selectedField);
+        }       
+
+        let details = new UaReadEventDetails(
+            startTime,
+            endTime, 
+            new UaEventFilter(selectClauses, whereClauses), 
+            numValuesPerNode);
+
+        let historyReadDetails: ExtensionObject = UaPayloadMapper.extensionObjectToWebApi(details.toExtensionObject());
+
+        let nodesToRead: Array<HistoryReadValueId> = [nodeToRead];
+        let results = await this.historyRead(nodesToRead, historyReadDetails, TimestampsToReturn.Both,releaseContinuationPoints);
+
+        if (results.length != 1) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
+        let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[0].StatusCode);
+        if (statusCode.isNotGood()) throw new UaError(statusCode);
+
+        let extensionObject = UaPayloadMapper.extensionObjectFromWebApi(results[0].HistoryData);
+        let historyData = UaHistoryEvent.fromExtensionObject(extensionObject);
+        if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
+        let ret = new UaHistoryEventResult(historyData.events, results[0].ContinuationPoint);        
+        return ret;
+    }
+ 
     // Native APIs
     async browse(
         nodesToBrowse: Array<BrowseDescription>, 
@@ -481,6 +665,35 @@ export class UaWebClient
         return response.Results;
     }
     
+    async historyRead(
+        nodesToRead: Array<HistoryReadValueId>,
+        historyReadDetails: ExtensionObject,
+        timestampsToReturn?: number,
+        releaseContinuationPoints?: boolean,
+        additionalParameters?: UaClientParameters) : Promise<Array<HistoryReadResult>>
+    {
+        let request = HistoryReadRequestFromJSON({
+            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            HistoryReadDetails: historyReadDetails,
+            TimestampsToReturn: 
+               (timestampsToReturn && 
+                timestampsToReturn >= TimestampsToReturn.Source && 
+                timestampsToReturn < TimestampsToReturn.Invalid) ? timestampsToReturn : undefined,
+            ReleaseContinuationPoints: releaseContinuationPoints,
+            NodesToRead: nodesToRead
+        });
+
+        let response = await this.api.historyRead({historyReadRequest: request});
+
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+
+        if (!response.Results || nodesToRead.length != response.Results.length) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+        
+        return response.Results;
+    }
+
     async findServer(
         serverUris: Array<string>, 
         endpointUrl : string,

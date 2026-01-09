@@ -5,7 +5,7 @@ import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 
 public interface StructureMapper {
-    public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    public static final ObjectMapper OBJECT_MAPPER = new StructureMapperConfig().getMapper();
 
     NodeId dataTypeId();
 

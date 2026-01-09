@@ -13,7 +13,7 @@ import org.opcfoundation.webapi.model.ReadEventDetails;
 public class ReadEventDetailsMapper implements StructureMapper {
     public NodeId dataTypeId()
     {
-        return NodeIds.ReadEventDetails2;
+        return NodeIds.ReadEventDetails;
     }
 
     @Override

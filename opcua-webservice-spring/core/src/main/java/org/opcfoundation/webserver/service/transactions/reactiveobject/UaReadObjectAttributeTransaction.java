@@ -81,6 +81,8 @@ public class UaReadObjectAttributeTransaction extends UaReadTransaction {
                 } else {
                     value = new Variant(response.getDescription());
                 }
+            } else if (item.getAttributeId().intValue() == AttributeId.EventNotifier.id()) {
+                value = new Variant(response.getEventNotifier());
             } else if (item.getAttributeId().intValue() == AttributeId.NodeId.id()) {
                 value = new Variant(item.getNodeId());
             } else if (item.getAttributeId().intValue() == AttributeId.BrowseName.id()) {

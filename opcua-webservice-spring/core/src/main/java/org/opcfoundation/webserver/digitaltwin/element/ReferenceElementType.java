@@ -1,5 +1,6 @@
 package org.opcfoundation.webserver.digitaltwin.element;
 
+import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.opcfoundation.webserver.addressspace.nodes.*;
@@ -65,14 +66,13 @@ public abstract class ReferenceElementType extends ElementType implements Refere
     }
 
     @Override
-    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
+    public final CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
     {
-        return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(),false));
-    }
+        if (!NodeIds.NonHierarchicalReferences.equals(request.getBrowseDescription().getReferenceTypeId()))
+        {
+            return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
+        }
 
-    @Override
-    public CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
-    {
         ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
         GetLinkRequest getLinkRequest = new GetLinkRequest(
                 context,

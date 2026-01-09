@@ -1,4 +1,4 @@
-import { BrowseResult, ExtensionObject, ExtensionObjectFromJSON, ReferenceDescription } from "opcua-webapi";
+import { BrowseResult, DataValueToJSONTyped, ExtensionObject, ExtensionObjectFromJSON, ExtensionObjectToJSONTyped, ReferenceDescription } from "opcua-webapi";
 import { LocalizedText, Variant, StatusCode, DataValue,StatusCodes } from "opcua-webapi"
 import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaBrowseResult, UaError, UaReferenceDescriptor, UaVariantType } from "../types";
 import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionObject, UaVariant, UaDataValue } from "../types";
@@ -48,12 +48,11 @@ export class UaPayloadMapper
         }
     }
 
-    static extensionObjectToWebApi(extentionObject: UaExtensionObject) : any
+    static extensionObjectToWebApi(extentionObject: UaExtensionObject) : ExtensionObject
     {
         return {
             UaTypeId: extentionObject.typeId.toString(),
-            UaBody: btoa(JSON.stringify(extentionObject.body))
-        };
+            UaBody: btoa(JSON.stringify(extentionObject.body)) };
     }
 
     static variantFromWebApi(variant: Variant) : UaVariant
@@ -456,28 +455,41 @@ export class UaPayloadMapper
         return ret;
     }
 
+    static dataValueToWebApi(dataValue: UaDataValue) : DataValue
+    {
+        let variant = UaPayloadMapper.variantToWebApi(dataValue.value);
+
+        let ret : DataValue = {
+            Value: variant.Value,
+            UaType: variant.UaType,
+            StatusCode: UaPayloadMapper.statusCodeToWebApi(dataValue.statusCode),
+            SourceTimestamp: (null != dataValue.sourceTimestamp) ? dataValue.sourceTimestamp : undefined,
+            ServerTimestamp: (null != dataValue.serverTimestamp) ? dataValue.serverTimestamp : undefined
+        };
+
+        return ret;
+    }
+
     static referenceDescriptionFromWebApi(referenceDesc : ReferenceDescription) : UaReferenceDescriptor
     {
-        if (!referenceDesc.NodeId ||
-            !referenceDesc.NodeClass || 
-            !referenceDesc.ReferenceTypeId ||
-            undefined == referenceDesc.IsForward ||
-            undefined == referenceDesc.BrowseName ||
-            undefined == referenceDesc.DisplayName) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+        if (!referenceDesc.NodeId) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
 
         try
         {
             let nodeId = parseUaExpandedNodeId(referenceDesc.NodeId);
-            let referenceTypeId = parseUaNodeId(referenceDesc.ReferenceTypeId);
+            let nodeClass = (referenceDesc.NodeClass) ? referenceDesc.NodeClass : 0;
+            let referenceTypeId = (referenceDesc.ReferenceTypeId) ? parseUaNodeId(referenceDesc.ReferenceTypeId) : UaNodeId.nullNodeId;
+            let isForward = (referenceDesc.IsForward) ? true : false;
+            let browseName = (referenceDesc.BrowseName) ? referenceDesc.BrowseName : "";
+            let displayName = (referenceDesc.DisplayName) ? UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName) : new UaLocalizedText();       
             let typeDefinitionId = (referenceDesc.TypeDefinition) ? parseUaExpandedNodeId(referenceDesc.TypeDefinition) : undefined;
-            let displayName = UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName);       
-
+            
             return {
                     nodeId: nodeId,
-                    nodeClass: referenceDesc.NodeClass,
+                    nodeClass: nodeClass,
                     referenceTypeId: referenceTypeId,
-                    isForward: referenceDesc.IsForward,
-                    browseName: referenceDesc.BrowseName,
+                    isForward: isForward,
+                    browseName: browseName,
                     displayName: displayName,
                     typeDefinition: typeDefinitionId };
 
