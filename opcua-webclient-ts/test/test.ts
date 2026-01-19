@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4842"
+            basePath: "http://localhost:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -245,18 +245,16 @@ class Test {
     {
         console.log("testHistoryReadEvent");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUV2ZW50RWxlbWVudFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUV2ZW50RWxlbWVudCJ9fQ==");
-        let startTime = new Date(Date.now());
-        let endTime = new Date(startTime.getTime() + 2 * 60 * 1000);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUV2ZW50RWxlbWVudFR5cGUiLCJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZS1BdHRlbmRhbmNlIn19");
+        let startTime = new Date("2026-01-05T07:00:00");
+        let endTime = new Date("2026-01-07T07:00:00");
 
         let filters : Array<UaQueryFilter> = [
-            new UaQueryFilter("abc", UaQueryFilterType.Equals, UaVariant.integer(12), true),
-            new UaQueryFilter("def", UaQueryFilterType.Like, UaVariant.string("dken"), true,),
-            new UaQueryFilter("ghi", UaQueryFilterType.Between, UaVariant.doubles([100.5, 270]))
+            new UaQueryFilter("CheckIn", UaQueryFilterType.Equals, UaVariant.boolean(true))
         ];
 
-        let select = ["EventId","EventType","Time","Message","Customized"];
-        let where : UaQuery = new UaQuery(filters, true);
+        let select = ["EventId","EventType","Time","Message","CheckIn"];
+        let where : UaQuery = new UaQuery(filters);
 
         let historyData = await this.client.historyReadEvent(
             nodeId,
@@ -270,10 +268,12 @@ class Test {
         
         for (let item of historyData.historyEvents)
         {
-            console.log("Event");
-            for (let item2 of item.eventFields)
+            let data = item.getEventData(select);
+
+            console.log("-------------------------");
+            for (let item2 of data)
             {
-                console.log(item2.value);
+                console.log(item2[0] + ": " + item2[1].value)
             }
         }
 

@@ -40,16 +40,17 @@ public class EventElementTestType extends EventElementType {
             System.out.println(item);
         }
 
-        EventData data1 = new EventData("123");
-        EventData data2 = new EventData("456");
+        EventData data1 = EventTestType.generateEventData(
+                "123",
+                LocalDateTime.now(),
+                "abc",
+                "Customized field");
 
-        data1.setTime(LocalDateTime.now());
-        data1.setMessage("abc");
-        data1.setFieldData(EventTestType.Customized, Variant.ofString("Customized field"));
-
-        data2.setTime(LocalDateTime.now().plusMinutes(1));
-        data2.setMessage("def");
-        data2.setFieldData(EventTestType.Customized, Variant.ofString("Customized field"));
+        EventData data2 = EventTestType.generateEventData(
+                "456",
+                LocalDateTime.now().plusMinutes(1),
+                "def",
+                "Customized field");
 
         GetEventResponse response = new GetEventResponse();
         response.addEventData(data1);

@@ -54,6 +54,8 @@ public abstract class UaNode {
                 NodeClass.Method == nodeClass());
     }
 
+    public String name() { return browseName; }
+
     public String browseName() {
         return browseName;
     }

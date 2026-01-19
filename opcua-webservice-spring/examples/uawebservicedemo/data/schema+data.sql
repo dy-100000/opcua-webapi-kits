@@ -33,7 +33,21 @@ CREATE TABLE EmployeeInfo (
     StartTime DATETIME NOT NULL,
     Salary INT NOT NULL,
     EmployeeId INT NOT NULL,
-    CONSTRAINT FK_EmployeeInfo_Employee 
+    CONSTRAINT FK_EmployeeInfo_Employee
+        FOREIGN KEY (EmployeeId)
+        REFERENCES Employee(ID)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+CREATE TABLE EmployeeCheckIn (
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    Time DATETIME NOT NULL,
+    CheckIn boolean NOT NULL,
+    Location VARCHAR(255) NOT NULL,
+    Remark VARCHAR(500) DEFAULT NULL,
+    EmployeeId INT NOT NULL,
+    CONSTRAINT FK_EmployeeCheckIn_Employee
         FOREIGN KEY (EmployeeId)
         REFERENCES Employee(ID)
         ON DELETE CASCADE
@@ -104,7 +118,18 @@ VALUES
     (true,"1987-04-23 00:00:00","XXXXXXXXXXXX","XX,Hangzhou","2015-09-01 00:00:00",12000,3),
     (false,"1999-1-25 00:00:00","XXXXXXXXXXXX","XX,HaErBin","2024-09-01 00:00:00",13000,4),
     (true,"1997-12-19 00:00:00","XXXXXXXXXXXX","XX,Tianjin","2022-06-01 00:00:00",14000,5);
-    
+
+INSERT INTO EmployeeCheckIn(Time,CheckIn,Location,Remark,EmployeeId)
+VALUES
+	("2026-01-05 07:53:00",true,"北京",null,1),
+	("2026-01-05 17:32:00",false,"北京",null,1),
+	("2026-01-06 08:05:32",true,"北京","迟到",1),
+    ("2026-01-06 17:32:00",false,"北京",null,1),
+    ("2026-01-05 07:57:00",true,"杭州",null,2),
+    ("2026-01-05 17:32:00",false,"杭州",null,2),
+    ("2026-01-06 07:54:32",true,"杭州",null,2),
+    ("2026-01-06 17:10:00",false,"杭州","早退",2);
+
 INSERT INTO employeedepartment(EmployeeId,DepartmentId)
 values
 	(1,2),

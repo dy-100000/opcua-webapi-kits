@@ -18,6 +18,7 @@ import org.opcfoundation.webserver.service.message.digitaltwin.ReadPropertyValue
 import org.opcfoundation.webserver.service.message.digitaltwin.ReadPropertyValuesResponse;
 
 import java.time.ZoneId;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 // Defining employee information include personal data and company related information
@@ -81,32 +82,13 @@ public class PersonalDataSubmodelType extends SubmodelType {
             // Return field data
             ReadPropertyValuesResponse response = new ReadPropertyValuesResponse();
             ZoneId zoneId = ZoneId.systemDefault();
+            Sex sexValue = Sex.fromInt(employee.getSex());
+            DateTime time = new DateTime(employee.getBirthday().atZone(zoneId).toInstant());
 
-            for (String item: request.getPropertyNames())
-            {
-                // Return sex if required
-                if (sex.browseName().equals(item))
-                {
-                    Sex sex = Sex.fromInt(employee.getSex());
-                    response.setValue(item, Variant.ofInt32(sex.getCode()));
-                }
-
-                // Return birthday if required
-                if (birthday.browseName().equals(item)) {
-                    DateTime time = new DateTime(employee.getBirthday().atZone(zoneId).toInstant());
-                    response.setValue(item, Variant.ofDateTime(time));
-                }
-
-                // Return phoneNumber if required
-                if (phoneNumber.browseName().equals(item)) {
-                    response.setValue(item,Variant.ofString(employee.getPhoneNumber()));
-                }
-
-                // Return address if required
-                if (address.browseName().equals(item)) {
-                    response.setValue(item,Variant.ofString(employee.getAddress()));
-                }
-            }
+            response.setValue(sex.name(), Variant.ofInt32(sexValue.getCode()));
+            response.setValue(birthday.name(), Variant.ofDateTime(time));
+            response.setValue(phoneNumber.name(),Variant.ofString(employee.getPhoneNumber()));
+            response.setValue(address.name(),Variant.ofString(employee.getAddress()));
 
             return CompletableFuture.completedFuture(response);
         } catch (Exception e) {

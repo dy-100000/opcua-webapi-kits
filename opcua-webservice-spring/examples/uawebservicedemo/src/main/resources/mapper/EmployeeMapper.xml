@@ -18,6 +18,14 @@
         <result column="Salary" property="salary"/>
     </resultMap>
 
+    <resultMap id="EmployeeCheckInResult" type="EmployeeCheckIn">
+        <id column="Id" property="id"/>
+        <result column="Time" property="time"/>
+        <result column="CheckIn" property="checkIn"/>
+        <result column="Location" property="location"/>
+        <result column="Remark" property="remark"/>
+    </resultMap>
+
     <select id="getEmployee" resultMap="EmployeeResult">
         SELECT ID, Name FROM Employee WHERE ID = #{id}
     </select>
@@ -31,6 +39,15 @@
     <select id="getEmployeeData" resultMap="EmployeeDataResult">
         SELECT Sex,Birthday,PhoneNumber,Address,StartTime,Salary FROM employeeinfo
         WHERE EmployeeId = #{employeeId}
+    </select>
+
+    <select id="getCheckInData" resultMap="EmployeeCheckInResult">
+        SELECT ID,Time,CheckIn,Location,Remark FROM employeeCheckIn
+        WHERE EmployeeId = #{employeeId}
+        AND Time &gt;= #{startTime} AND Time &lt;= #{endTime}
+        <if test="checkIn != null">
+            AND CheckIn = #{checkIn}
+        </if>
     </select>
 
     <select id="getAllEmployee" resultMap="EmployeeResult">

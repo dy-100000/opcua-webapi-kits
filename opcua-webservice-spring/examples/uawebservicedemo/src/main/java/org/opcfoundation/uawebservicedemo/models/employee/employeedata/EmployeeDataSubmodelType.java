@@ -12,6 +12,7 @@ import org.opcfoundation.uawebservicedemo.database.entity.EmployeeData;
 import org.opcfoundation.uawebservicedemo.database.mapper.EmployeeMapper;
 import org.opcfoundation.uawebservicedemo.models.EmployeeTwinSpace;
 import org.opcfoundation.webserver.addressspace.nodes.UaMethod;
+import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
@@ -34,9 +35,12 @@ public class EmployeeDataSubmodelType extends SubmodelType {
     private final UaVariable startTime;
     private final UaVariable salary;
 
-    private UaMethod getCumulatedSalary;
+    private final UaMethod getCumulatedSalary;
+    private final UaObject employeeAttendanceEventElement;
 
-    public EmployeeDataSubmodelType(EmployeeTwinSpace twinSpace) {
+    public EmployeeDataSubmodelType(
+            EmployeeAttendanceEventElementType employeeAttendanceEventElementType,
+            EmployeeTwinSpace twinSpace) {
         super("EmployeeDataSubmodelType", new LocalizedText("EmployeeDataModel"), twinSpace);
 
         // Add start time
@@ -64,7 +68,16 @@ public class EmployeeDataSubmodelType extends SubmodelType {
                 "EngineeringUnits",
                 UaStructureUtilities.toVariant(new EUInformation(null,-1, new LocalizedText("RMB/M"), new LocalizedText("RMB per month"))));
 
-        addCumulatedSalaryOperation();
+        // Add cumulated salary operation
+        getCumulatedSalary = addCumulatedSalaryOperation();
+
+        // Add attendance
+        employeeAttendanceEventElement = addEventElement(
+                employeeAttendanceEventElementType,
+                "Attendance",
+                new LocalizedText("Attendance"),
+                new LocalizedText("Log of check in and check out"),
+                true);
     }
 
     @Override
@@ -83,20 +96,10 @@ public class EmployeeDataSubmodelType extends SubmodelType {
             // Return field data
             ReadPropertyValuesResponse response = new ReadPropertyValuesResponse();
             ZoneId zoneId = ZoneId.systemDefault();
+            DateTime time = new DateTime(employee.getStartTime().atZone(zoneId).toInstant());
 
-            for (String item: request.getPropertyNames())
-            {
-                // Return start time if required
-                if (startTime.browseName().equals(item)) {
-                    DateTime time = new DateTime(employee.getStartTime().atZone(zoneId).toInstant());
-                    response.setValue(item,Variant.ofDateTime(time));
-                }
-
-                // Return salary if required
-                if (salary.browseName().equals(item)) {
-                    response.setValue(item,Variant.ofInt32(employee.getSalary()));
-                }
-            }
+            response.setValue(startTime.name(),Variant.ofDateTime(time));
+            response.setValue(salary.name(),Variant.ofInt32(employee.getSalary()));
 
             return CompletableFuture.completedFuture(response);
         } catch (Exception e) {
@@ -116,7 +119,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
 
             if (null == employeeData) throw new UaRuntimeException(StatusCodes.Bad_MethodInvalid);
 
-            if (request.getOperationName().equals(getCumulatedSalary.browseName()))
+            if (request.getOperationName().equals(getCumulatedSalary.name()))
             {
                 Integer result = getCumulatedSalary(employeeData);
                 outputArguments.add(Variant.ofInt32(result));
@@ -129,7 +132,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
         }
     }
 
-    private void addCumulatedSalaryOperation()
+    private UaMethod addCumulatedSalaryOperation()
     {
         List<Argument> outputArguments = new ArrayList<>();
         Argument cumulatedSalary = new Argument(
@@ -141,7 +144,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
 
         outputArguments.add(cumulatedSalary);
 
-        getCumulatedSalary = addOperationElement(
+        return addOperationElement(
                 "GetCumulatedSalary",
                 new LocalizedText("GetCumulatedSalary"),
                 new LocalizedText("Calculate the cumulated salary the company gives to employee"),

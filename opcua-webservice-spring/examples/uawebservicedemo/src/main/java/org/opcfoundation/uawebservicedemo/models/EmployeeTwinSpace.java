@@ -8,7 +8,9 @@ import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentEm
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentSubmodelType;
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentType;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.SkillClassificationSubmodelType;
+import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeAttendanceEventElementType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeDataSubmodelType;
+import org.opcfoundation.uawebservicedemo.models.employee.employeedata.event.EmployeeCheckInEventType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeeskill.EmployeeSkillReferenceType;
 import org.opcfoundation.uawebservicedemo.models.employee.EmployeeRepositoryType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeeskill.EmployeeSkillSubmodelType;
@@ -26,7 +28,11 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
     public EmployeeRepositoryType employeeRepositoryType;
     public EmployeeDigitalTwinType employeeDigitalTwinType;
     public PersonalDataSubmodelType personalDataSubmodelType;
+
+    public EmployeeCheckInEventType employeeCheckInEventType;
     public EmployeeDataSubmodelType employeeDataSubmodelType;
+    public EmployeeAttendanceEventElementType employeeAttendanceEventElementType;
+
     public EmployeeSkillSubmodelType employeeSkillSubmodelType;
     public EmployeeSkillReferenceType employeeSkillReferenceType;
 
@@ -52,57 +58,33 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
 
     @Override
     public void onStartUp() throws UaRuntimeException {
-        // Employee definitions
+        // Employee
         sexEnumType = new SexEnumType(this);
-        addDefinition(sexEnumType);
-
         employeeSkillReferenceType = new EmployeeSkillReferenceType(this);
-        addDefinition(employeeSkillReferenceType);
-
         employeeSkillSubmodelType = new org.opcfoundation.uawebservicedemo.models.employee.employeeskill.EmployeeSkillSubmodelType(employeeSkillReferenceType,this);
-        addDefinition(employeeSkillSubmodelType);
 
         personalDataSubmodelType = new PersonalDataSubmodelType(sexEnumType,this);
-        addDefinition(personalDataSubmodelType);
 
-        employeeDataSubmodelType = new EmployeeDataSubmodelType(this);
-        addDefinition(employeeDataSubmodelType);
-
+        employeeCheckInEventType = new EmployeeCheckInEventType(this);
+        employeeAttendanceEventElementType = new EmployeeAttendanceEventElementType(employeeCheckInEventType, this);
+        employeeDataSubmodelType = new EmployeeDataSubmodelType(employeeAttendanceEventElementType,this);
         employeeDigitalTwinType = new EmployeeDigitalTwinType(personalDataSubmodelType, employeeDataSubmodelType, employeeSkillSubmodelType, this);
-        addDefinition(employeeDigitalTwinType);
-
         employeeRepositoryType = new EmployeeRepositoryType(this);
-        addDefinition(employeeRepositoryType);
 
         // Department
         departmentEmployeeReferenceType = new DepartmentEmployeeReferenceType(this);
-        addDefinition(departmentEmployeeReferenceType);
-
         departmentType = new DepartmentType(departmentEmployeeReferenceType, this);
-        addDefinition(departmentType);
-
         departmentSubmodelType = new DepartmentSubmodelType(this);
-        addDefinition(departmentSubmodelType);
 
         // Person skill
         skillLevelEnumType = new SkillLevelEnumType(this);
-        addDefinition(skillLevelEnumType);
-
         skillCategoryEnumType = new SkillCategoryEnumType(this);
-        addDefinition(skillCategoryEnumType);
-
         skillClassType = new SkillClassType(skillLevelEnumType, skillCategoryEnumType, this);
-        addDefinition(skillClassType);
-
         skillClassificationSubmodelType = new SkillClassificationSubmodelType(this);
-        addDefinition(skillClassificationSubmodelType);
 
         // Company resource
         companyDigitalTwinType = new CompanyDigitalTwinType(departmentSubmodelType, skillClassificationSubmodelType,this);
-        addDefinition(companyDigitalTwinType);
-
         companyRepositoryType = new CompanyRepositoryType(this);
-        addDefinition(companyRepositoryType);
 
         // Repository
         addRepository(employeeRepositoryType, "Employees", new LocalizedText("Employees"), new LocalizedText("Provides employee information"));

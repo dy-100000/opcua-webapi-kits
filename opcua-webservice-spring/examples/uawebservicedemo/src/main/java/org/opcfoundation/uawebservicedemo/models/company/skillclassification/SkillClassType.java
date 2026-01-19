@@ -2,10 +2,12 @@ package org.opcfoundation.uawebservicedemo.models.company.skillclassification;
 
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.structured.EUInformation;
 import org.opcfoundation.uawebservicedemo.database.EmployeeDatabase;
+import org.opcfoundation.uawebservicedemo.database.entity.EmployeeData;
 import org.opcfoundation.uawebservicedemo.database.entity.Skill;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.enumeration.SkillCategory;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.enumeration.SkillLevel;
@@ -13,6 +15,7 @@ import org.opcfoundation.uawebservicedemo.database.mapper.SkillMapper;
 import org.opcfoundation.uawebservicedemo.models.EmployeeTwinSpace;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.enumeration.SkillCategoryEnumType;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.enumeration.SkillLevelEnumType;
+import org.opcfoundation.uawebservicedemo.models.employee.personaldata.enumeration.Sex;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
@@ -23,6 +26,8 @@ import org.opcfoundation.webserver.service.message.digitaltwin.ReadPropertyValue
 import org.opcfoundation.webserver.service.message.digitaltwin.ReadPropertyValuesResponse;
 import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
+import java.time.ZoneId;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 public class SkillClassType extends ElementCollectionType {
@@ -110,30 +115,18 @@ public class SkillClassType extends ElementCollectionType {
             // Return field data
             ReadPropertyValuesResponse response = new ReadPropertyValuesResponse();
 
-            for (String item: request.getPropertyNames())
-            {
-                // Return level if required
-                if (level.browseName().equals(item))
-                {
-                    SkillLevel level = SkillLevel.fromInt(skill.getLevel());
-                    response.setValue(item, Variant.ofInt32(level.getCode()));
-                }
+            SkillLevel levelValue = SkillLevel.fromInt(skill.getLevel());
+            SkillCategory categoryValue = SkillCategory.fromString(skill.getCategory());
 
-                // Return category if required
-                if (category.browseName().equals(item)) {
-                    SkillCategory category = SkillCategory.fromString(skill.getCategory());
-                    response.setValue(item, Variant.ofInt32(category.getCode()));
-                }
-
-                // Return experience if required
-                if (experience.browseName().equals(item)) {
-                    response.setValue(item,Variant.ofInt32(skill.getYearOfExperience()));
-                }
-            }
+            response.setValue(level.name(), Variant.ofInt32(levelValue.getCode()));
+            response.setValue(category.name(), Variant.ofInt32(categoryValue.getCode()));
+            response.setValue(experience.name(),Variant.ofInt32(skill.getYearOfExperience()));
 
             return CompletableFuture.completedFuture(response);
         } catch (Exception e) {
             throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
         }
     }
+
+
 }

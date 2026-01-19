@@ -49,13 +49,13 @@ public class EmployeeSkillSubmodelType extends SubmodelType {
             SkillMapper shillMapper = EmployeeDatabase.getSkillMapper();
             List<Skill> skills = shillMapper.getSkillDataOfEmployee(employeeId);
 
-            if (request.getOperationName().equals(fullStackDeveloper.browseName()))
+            if (request.getOperationName().equals(fullStackDeveloper.name()))
             {
                 Boolean result = isFullStackDeveloper(skills);
                 outputArguments.add(Variant.ofBoolean(result));
                 return CompletableFuture.completedFuture(new InvokeOperationResponse(outputArguments));
 
-            } else if (request.getOperationName().equals(expertTester.browseName())) {
+            } else if (request.getOperationName().equals(expertTester.name())) {
                 Boolean result = isExpertTester(skills);
                 outputArguments.add(Variant.ofBoolean(result));
                 return CompletableFuture.completedFuture(new InvokeOperationResponse(outputArguments));
