@@ -8,7 +8,7 @@ import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentEm
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentSubmodelType;
 import org.opcfoundation.uawebservicedemo.models.company.department.DepartmentType;
 import org.opcfoundation.uawebservicedemo.models.company.skillclassification.SkillClassificationSubmodelType;
-import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeAttendanceEventElementType;
+import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeAttendanceEventType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeedata.EmployeeDataSubmodelType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeedata.event.EmployeeCheckInEventType;
 import org.opcfoundation.uawebservicedemo.models.employee.employeeskill.EmployeeSkillReferenceType;
@@ -31,7 +31,7 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
 
     public EmployeeCheckInEventType employeeCheckInEventType;
     public EmployeeDataSubmodelType employeeDataSubmodelType;
-    public EmployeeAttendanceEventElementType employeeAttendanceEventElementType;
+    public EmployeeAttendanceEventType employeeAttendanceEventType;
 
     public EmployeeSkillSubmodelType employeeSkillSubmodelType;
     public EmployeeSkillReferenceType employeeSkillReferenceType;
@@ -66,8 +66,8 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
         personalDataSubmodelType = new PersonalDataSubmodelType(sexEnumType,this);
 
         employeeCheckInEventType = new EmployeeCheckInEventType(this);
-        employeeAttendanceEventElementType = new EmployeeAttendanceEventElementType(employeeCheckInEventType, this);
-        employeeDataSubmodelType = new EmployeeDataSubmodelType(employeeAttendanceEventElementType,this);
+        employeeAttendanceEventType = new EmployeeAttendanceEventType(employeeCheckInEventType, this);
+        employeeDataSubmodelType = new EmployeeDataSubmodelType(employeeAttendanceEventType,this);
         employeeDigitalTwinType = new EmployeeDigitalTwinType(personalDataSubmodelType, employeeDataSubmodelType, employeeSkillSubmodelType, this);
         employeeRepositoryType = new EmployeeRepositoryType(this);
 

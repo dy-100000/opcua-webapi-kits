@@ -37,8 +37,6 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
                 typeId,
                 displayName,
                 twinSpace);
-
-        twinSpace.addNode(this);
     }
 
     public UaVariable addPropertyElement(

@@ -121,14 +121,14 @@ VALUES
 
 INSERT INTO EmployeeCheckIn(Time,CheckIn,Location,Remark,EmployeeId)
 VALUES
-	("2026-01-05 07:53:00",true,"北京",null,1),
-	("2026-01-05 17:32:00",false,"北京",null,1),
-	("2026-01-06 08:05:32",true,"北京","迟到",1),
-    ("2026-01-06 17:32:00",false,"北京",null,1),
-    ("2026-01-05 07:57:00",true,"杭州",null,2),
-    ("2026-01-05 17:32:00",false,"杭州",null,2),
-    ("2026-01-06 07:54:32",true,"杭州",null,2),
-    ("2026-01-06 17:10:00",false,"杭州","早退",2);
+	("2026-01-05 07:53:00",true,"Beijing",null,1),
+	("2026-01-05 17:32:00",false,"Beijing",null,1),
+	("2026-01-06 08:05:32",true,"Beijing","Late",1),
+    ("2026-01-06 17:32:00",false,"Beijing",null,1),
+    ("2026-01-05 07:57:00",true,"ShangHai",null,2),
+    ("2026-01-05 17:32:00",false,"ShangHai",null,2),
+    ("2026-01-06 07:54:32",true,"ShangHai",null,2),
+    ("2026-01-06 17:10:00",false,"ShangHai","Leave early",2);
 
 INSERT INTO employeedepartment(EmployeeId,DepartmentId)
 values

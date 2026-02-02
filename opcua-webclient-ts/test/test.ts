@@ -33,12 +33,13 @@ class Test {
             await this.testHistoryReadRawData();
             await this.testHistroryReadEvent();
             await this.testGetGeneratedEvent();
-            await this.testDataTypeDictionary();             
+            await this.testDataTypeDictionary();    
             await this.testReferenceTypeDictionary();
-            await this.testObjectTypeDictionary();            
+            await this.testObjectTypeDictionary();       
+             
             */
 
-            await this.testHistroryReadEvent();
+            await this.testHistroryReadEvent();             
             
         } catch (e) {            
             console.log(e);
@@ -245,7 +246,7 @@ class Test {
     {
         console.log("testHistoryReadEvent");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUV2ZW50RWxlbWVudFR5cGUiLCJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZS1BdHRlbmRhbmNlIn19");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUV2ZW50VHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEYXRhU3VibW9kZWxUeXBlLUF0dGVuZGFuY2UifX0=");
         let startTime = new Date("2026-01-05T07:00:00");
         let endTime = new Date("2026-01-07T07:00:00");
 
@@ -253,7 +254,7 @@ class Test {
             new UaQueryFilter("CheckIn", UaQueryFilterType.Equals, UaVariant.boolean(true))
         ];
 
-        let select = ["EventId","EventType","Time","Message","CheckIn"];
+        let select = ["EventId","EventType","Time","Message",];
         let where : UaQuery = new UaQuery(filters);
 
         let historyData = await this.client.historyReadEvent(
@@ -303,23 +304,19 @@ class Test {
         let dataTypeDictionary = new UaDataTypeDictionary();
         await dataTypeDictionary.read(this.client);
         
-        let dataTypes = dataTypeDictionary.getDataTypeIds();       
+        let dataTypes = dataTypeDictionary.getDataTypes();       
         
         for (let item of dataTypes)
         {
-            let dataType = dataTypeDictionary.getDataType(item);
-            if (dataType)
-            {
-                console.log(`Id: ${dataType.nodeId.toString()} Name: ${dataType.browseName} Abstract: ${dataType.isAbstract} ValueType: ${dataType.valueType}`)
+            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName} Abstract: ${item.isAbstract} ValueType: ${item.valueType}`)
             
-                if (DataTypeIds.Enumeration == dataType.valueType && dataType.enumValues)
+            if (DataTypeIds.Enumeration == item.valueType && item.enumValues)
+            {
+                for (let itemL2 of item.enumValues)
                 {
-                    for (let itemL2 of dataType.enumValues)
-                    {
-                        console.log(`Name: ${itemL2[1]} Value: ${itemL2[0]}`);
-                    }
+                    console.log(`Name: ${itemL2[1]} Value: ${itemL2[0]}`);
                 }
-            }
+            }            
         }
     }
 
@@ -330,15 +327,11 @@ class Test {
         let referenceTypeDictionary = new UaReferenceTypeDictionary();
         await referenceTypeDictionary.read(this.client);
         
-        let referenceTypeIds = referenceTypeDictionary.getReferenceTypeIds();       
+        let referenceTypes = referenceTypeDictionary.getReferenceTypes();       
         
-        for (let item of referenceTypeIds)
+        for (let item of referenceTypes)
         {
-            let referenceType = referenceTypeDictionary.getReferenceType(item);
-            if (referenceType)
-            {
-                console.log(`Id: ${referenceType.nodeId.toString()} Name: ${referenceType.browseName} Abstract: ${referenceType.isAbstract}`)
-            }
+            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName} Abstract: ${item.isAbstract}`)
         }
     }
 
@@ -349,15 +342,11 @@ class Test {
         let objectTypeDictionary = new UaObjectTypeDictionary();
         await objectTypeDictionary.read(this.client);
         
-        let objectTypeIds = objectTypeDictionary.getObjectTypeIds();       
+        let objectTypes = objectTypeDictionary.getObjectTypes();       
         
-        for (let item of objectTypeIds)
+        for (let item of objectTypes)
         {
-            let objectType = objectTypeDictionary.getObjectType(item);
-            if (objectType)
-            {
-                console.log(`Id: ${objectType.nodeId.toString()} Name: ${objectType.browseName}`)
-            }
+            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName}`)            
         }
     }
 }

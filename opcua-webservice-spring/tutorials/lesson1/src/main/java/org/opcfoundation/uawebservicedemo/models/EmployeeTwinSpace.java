@@ -26,19 +26,10 @@ public class EmployeeTwinSpace extends DigitalTwinSpace {
     public void onStartUp() throws UaRuntimeException {
         // Employee definitions
         sexEnumType = new SexEnumType(this);
-        addDefinition(sexEnumType);
-
         personalDataSubmodelType = new PersonalDataSubmodelType(sexEnumType,this);
-        addDefinition(personalDataSubmodelType);
-
         employeeDataSubmodelType = new EmployeeDataSubmodelType(this);
-        addDefinition(employeeDataSubmodelType);
-
         employeeDigitalTwinType = new EmployeeDigitalTwinType(personalDataSubmodelType, employeeDataSubmodelType, this);
-        addDefinition(employeeDigitalTwinType);
-
         employeeRepositoryType = new EmployeeRepositoryType(this);
-        addDefinition(employeeRepositoryType);
 
         // Repository
         addRepository(employeeRepositoryType, "Employees", new LocalizedText("Employees"), new LocalizedText("Provides employee information"));

@@ -39,7 +39,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
     private final UaObject employeeAttendanceEventElement;
 
     public EmployeeDataSubmodelType(
-            EmployeeAttendanceEventElementType employeeAttendanceEventElementType,
+            EmployeeAttendanceEventType employeeAttendanceEventType,
             EmployeeTwinSpace twinSpace) {
         super("EmployeeDataSubmodelType", new LocalizedText("EmployeeDataModel"), twinSpace);
 
@@ -73,7 +73,7 @@ public class EmployeeDataSubmodelType extends SubmodelType {
 
         // Add attendance
         employeeAttendanceEventElement = addEventElement(
-                employeeAttendanceEventElementType,
+                employeeAttendanceEventType,
                 "Attendance",
                 new LocalizedText("Attendance"),
                 new LocalizedText("Log of check in and check out"),

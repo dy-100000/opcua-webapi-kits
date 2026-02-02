@@ -1,6 +1,7 @@
 import { NodeClass } from "opcua-webapi";
-import { UaLocalizedText, UaNodeId } from "../types";
-import { UaDefintionNode, DataTypeIds } from ".";
+import { UaLocalizedText, UaNodeId, UaVariant, UaVariantType } from "../types";
+import { UaDefintionNode, DataTypeIds, UaVariable } from ".";
+import { UaEnumValueType } from "../structure";
 
 export class UaDataType extends UaDefintionNode
 {
@@ -20,7 +21,7 @@ export class UaDataType extends UaDefintionNode
         this._enumValues = null;
     }
 
-    get nodeClass(): NodeClass 
+    get nodeClass(): NodeClass
     {
         return NodeClass.DataType;
     }
@@ -35,9 +36,45 @@ export class UaDataType extends UaDefintionNode
         return this._enumValues;
     }
 
-    setEnumValues(enumValues : Map<number, UaLocalizedText>)
+    setEnumVariable(node : UaVariable)
     {
-        this._enumValues = enumValues;
+        if ("EnumStrings" == node.browseName ||
+            "EnumValues" == node.browseName)
+        {            
+            this.setEnumValues(node.value);
+        }
+    }
+
+    setEnumValues(value : UaVariant)
+    {
+        if (UaVariantType.LocalizedText == value.type)
+        {
+            let enumStrings = value.toLocalizedTexts();
+            if (null == enumStrings) return;
+
+            this._enumValues = new Map;            
+            let index = 0;
+
+            for (let item of enumStrings)
+            {
+                this._enumValues.set(index, item);
+                index++;
+            }
+        } else if (UaVariantType.ExtensionObject == value.type) {
+            let extensionObjects = value.toExtensionObjects();
+            if (null == extensionObjects) return;
+
+            let enumValues = new Map;
+
+            for (let item of extensionObjects)
+            {
+                let enumValue = UaEnumValueType.fromExtensionObject(item);
+                if (!enumValue) return;
+                enumValues.set(enumValue.value, enumValue.displayName);
+            }
+
+            this._enumValues = enumValues;
+        }
     }
 
     classify()
@@ -56,7 +93,7 @@ export class UaDataType extends UaDefintionNode
         {
             this._valueType = this._nodeId.numericId();
         } else {
-            this._valueType = (this._parentType) ? (this._parentType as UaDataType)._valueType : 0;
+            this._valueType = (this.parentType()) ? (this.parentType() as UaDataType)._valueType : 0;
         }
     }
 }

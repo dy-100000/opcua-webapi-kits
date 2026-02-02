@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!-- namespace：必须与 Mapper 接口全类名一致 -->
+<mapper namespace="org.opcfoundation.uawebservicedemo.database.mapper.EmployeeMapper">
+
+    <resultMap id="EmployeeResult" type="Employee">
+        <id column="Id" property="id"/>
+        <result column="Name" property="name"/>
+    </resultMap>
+
+    <resultMap id="EmployeeDataResult" type="EmployeeData">
+        <result column="Sex" property="sex"/>
+        <result column="Birthday" property="birthday"/>
+        <result column="PhoneNumber" property="phoneNumber"/>
+        <result column="Address" property="address"/>
+        <result column="StartTime" property="startTime"/>
+        <result column="Salary" property="salary"/>
+    </resultMap>
+
+    <resultMap id="EmployeeCheckInResult" type="EmployeeCheckIn">
+        <id column="Id" property="id"/>
+        <result column="Time" property="time"/>
+        <result column="CheckIn" property="checkIn"/>
+        <result column="Location" property="location"/>
+        <result column="Remark" property="remark"/>
+    </resultMap>
+
+    <select id="getEmployee" resultMap="EmployeeResult">
+        SELECT ID, Name FROM Employee WHERE ID = #{id}
+    </select>
+
+    <select id="getEmployeeOfDepartment" resultMap="EmployeeResult">
+        SELECT e.ID, e.Name FROM employeedepartment ed
+        INNER JOIN Employee e ON ed.EmployeeId = e.ID
+        WHERE ed.DepartmentId = #{departmentId}
+    </select>
+
+    <select id="getEmployeeData" resultMap="EmployeeDataResult">
+        SELECT Sex,Birthday,PhoneNumber,Address,StartTime,Salary FROM employeeinfo
+        WHERE EmployeeId = #{employeeId}
+    </select>
+
+    <select id="getCheckInData" resultMap="EmployeeCheckInResult">
+        SELECT ID,Time,CheckIn,Location,Remark FROM employeeCheckIn
+        WHERE EmployeeId = #{employeeId}
+        AND Time &gt;= #{startTime} AND Time &lt;= #{endTime}
+        <if test="checkIn != null">
+            AND CheckIn = #{checkIn}
+        </if>
+    </select>
+
+    <select id="getAllEmployee" resultMap="EmployeeResult">
+        SELECT ID, Name FROM Employee
+    </select>
+</mapper>

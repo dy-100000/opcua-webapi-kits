@@ -5,7 +5,7 @@ import { UaWebClient } from "../UaWebClient"
 export class UaDataTypeDictionary
 {
     private static _abstractDataTypeIds : Set<number> = null;
-    private _dataTypes : Map<UaNodeId, UaDataType>;
+    private _dataTypes : Map<string, UaDataType>;
     private _remainingNodesToBrowse : Array<UaNodeId>;
     private _remainingEnumerationToRead : Array<UaNodeId>;
 
@@ -26,7 +26,7 @@ export class UaDataTypeDictionary
 
         let baseDataTypeId = new UaNodeId(DataTypeIds.BaseDataType);
         this._dataTypes.set(
-            baseDataTypeId, 
+            baseDataTypeId.toString(), 
             new UaDataType(baseDataTypeId, "BaseDataType", new UaLocalizedText("BaseDataType"), true));
 
         this._remainingNodesToBrowse = [ new UaNodeId(DataTypeIds.BaseDataType) ];
@@ -41,13 +41,13 @@ export class UaDataTypeDictionary
 
     public getDataType(nodeId: UaNodeId) : UaDataType | null
     {
-        let dataType = this._dataTypes.get(nodeId);
+        let dataType = this._dataTypes.get(nodeId.toString());
         return (dataType) ? dataType : null;
     }
 
-    public getDataTypeIds() : Array<UaNodeId>
+    public getDataTypes() : Array<UaDataType>
     {
-        return [...this._dataTypes.keys()];
+        return [...this._dataTypes.values()];
     }
 
     private async __browseDataTypes(client : UaWebClient)
@@ -79,7 +79,7 @@ export class UaDataTypeDictionary
             let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
             if (statusCode.isNotGood() || !results[i].References) continue;
 
-            let parentType = this._dataTypes.get(nodeIds[i]);
+            let parentType = this._dataTypes.get(nodeIds[i].toString());
 
             for (let item of results[i].References)
             {
@@ -97,7 +97,7 @@ export class UaDataTypeDictionary
                     UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
                     isAbstract);              
                 
-                this._dataTypes.set(dataTypeId, dataType);
+                this._dataTypes.set(dataTypeId.toString(), dataType);
                 this._remainingNodesToBrowse.push(dataTypeId);
                 if (parentType) dataType.setParentType(parentType);
                 
@@ -166,35 +166,10 @@ export class UaDataTypeDictionary
                 if (values[i].statusCode.isNotGood() || 
                     values[i].value.arrayType != UaArrayType.Array) continue;
 
-                let dataType = this._dataTypes.get(enumDataTypeIds[i]);
-                if (!dataType) continue;
+                let dataType = this._dataTypes.get(enumDataTypeIds[i].toString());
+                if (!dataType) continue;               
 
-                let enumValues: Map<number, UaLocalizedText> = null;
-
-                if (UaVariantType.LocalizedText == values[i].value.type)
-                {
-                    enumValues = new Map();
-                    let localizedTexts = values[i].value.value as Array<UaLocalizedText>;
-
-                    for (let j=0; j<localizedTexts.length; ++j)
-                    {
-                        enumValues.set(j, localizedTexts[j]);
-                    }
-
-                    dataType.setEnumValues(enumValues);
-                    
-                } else if (UaVariantType.ExtensionObject == values[i].value.type) {
-                    enumValues = new Map();
-
-                    let extensionObjects = values[i].value.value as Array<UaExtensionObject>;                    
-                    for (let item of extensionObjects)
-                    {
-                        let enumValue = UaEnumValueType.fromExtensionObject(item);
-                        if (enumValue) enumValues.set(enumValue.value, enumValue.displayName);
-                    }
-
-                    dataType.setEnumValues(enumValues);
-                }                
+                dataType.setEnumValues(values[i].value);            
             }
         }
 

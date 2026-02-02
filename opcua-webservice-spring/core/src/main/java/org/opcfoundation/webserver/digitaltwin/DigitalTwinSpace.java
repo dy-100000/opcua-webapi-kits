@@ -19,32 +19,6 @@ public class DigitalTwinSpace extends NodeManagerReactiveObject {
         super(namespaceUri);
     }
 
-    /*
-    public final void addDefinition(DigitalTwinType type)
-    {
-        addObjectType(type);
-    }
-
-    public final void addDefinition(DigitalTwinRepositoryType type)
-    {
-        addObjectType(type);
-    }
-
-    public final void addDefinition(SubmodelTypeBase type)
-    {
-        addObjectType(type);
-    }
-
-    public final void addDefinition(ElementType type)
-    {
-        addObjectType(type);
-    }
-
-    public final void addDefinition(UaEnumDataType type)
-    {
-        addDataType(type);
-    } */
-
     public final void addRepository(
             DigitalTwinRepositoryType repositoryType,
             String id,

@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-public class EmployeeAttendanceEventElementType extends EventElementType {
-    public EmployeeAttendanceEventElementType(EmployeeCheckInEventType eventType, DigitalTwinSpace space) {
-        super("EmployeeAttendanceEventElementType",new LocalizedText("EmployeeAttendanceEventElementType"), eventType, space);
+public class EmployeeAttendanceEventType extends EventElementType {
+    public EmployeeAttendanceEventType(EmployeeCheckInEventType eventType, DigitalTwinSpace space) {
+        super("EmployeeAttendanceEventType",new LocalizedText("EmployeeAttendanceEventType"), eventType, space);
     }
 
     @Override
@@ -42,8 +42,6 @@ public class EmployeeAttendanceEventElementType extends EventElementType {
 
                 checkIn = (Boolean) item.getValue().getValue();
                 if (item.getNot()) checkIn = !checkIn;
-            } else {
-                throw new UaRuntimeException(StatusCodes.Bad_EventFilterInvalid);
             }
         }
 

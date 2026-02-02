@@ -6,7 +6,10 @@ export abstract class UaNode
     protected _nodeId: UaNodeId;
     protected _browseName: string;
     protected _displayName: UaLocalizedText;
+    protected _description: UaLocalizedText | undefined;
     protected _writeMask: number;
+    protected _parent : UaNode | null;
+    protected _children : Array<UaNode>;
 
     constructor(
         nodeId: UaNodeId,
@@ -18,6 +21,8 @@ export abstract class UaNode
         this._browseName = browseName;
         this._displayName = displayName;
         this._writeMask = (writeMask) ? writeMask : 0;
+        this._parent = null;
+        this._children = [];
     }
 
     abstract get nodeClass() : NodeClass;
@@ -41,13 +46,21 @@ export abstract class UaNode
     {
         return this._writeMask;
     }
+
+    get description() : UaLocalizedText | null
+    {
+        return (this._description) ? this._description : null;
+    }
+
+    set description(description: UaLocalizedText)
+    {
+        this._description = description;
+    }
 }
 
 export abstract class UaDefintionNode extends UaNode
 {
     protected _isAbstract : boolean;
-    protected _parentType : UaDefintionNode | null;
-    protected _childTypes : Array<UaDefintionNode>;
 
     constructor(
         nodeId: UaNodeId,
@@ -58,8 +71,6 @@ export abstract class UaDefintionNode extends UaNode
     {
         super(nodeId, browseName, displayName, writeMask);
         this._isAbstract = isAbstract;
-        this._parentType = null;
-        this._childTypes = [];
     }
 
     get isAbstract() : boolean
@@ -70,16 +81,58 @@ export abstract class UaDefintionNode extends UaNode
     setParentType(parentType : UaDefintionNode)
     {
         if (parentType.nodeClass != this.nodeClass ||
-            null != this._parentType) return;
+            null != this._parent) return;
 
-        this._parentType = parentType;
-        parentType._childTypes.push(this);
+        this._parent = parentType;
+        parentType._children.push(this);
     }
 
     isSubtypeOf(typeId : UaNodeId) : boolean
     {     
         if (typeId.equal(this._nodeId)) return true;
-        if (null == this._parentType) return false;
-        return this._parentType.isSubtypeOf(typeId);
+        if (null == this._parent) return false;
+        return (this._parent as UaDefintionNode).isSubtypeOf(typeId);
+    }
+
+    parentType() : UaDefintionNode | null
+    {
+        return this._parent as UaDefintionNode;
+    }
+
+    childTypes() : Array<UaDefintionNode>
+    {
+        let ret : Array<UaDefintionNode> = [];
+
+        for (let item of this._children)
+        {
+            if (item.nodeClass == this.nodeClass) ret.push(item as UaDefintionNode);
+        }
+
+        return ret;
+    }
+}
+
+export abstract class UaInstanceNode extends UaNode
+{
+    constructor(
+        nodeId: UaNodeId,
+        browseName: string,
+        displayName: UaLocalizedText,
+        writeMask?: number | null)
+    {
+        super(nodeId, browseName, displayName, writeMask);
+    }
+
+    getMembers(nodeClass? : NodeClass) : Array<UaInstanceNode>
+    {
+        let ret : Array<UaInstanceNode> = [];
+
+        for (let item of this._children)
+        {
+            if (nodeClass && nodeClass != item.nodeClass) continue;
+            ret.push(item as UaInstanceNode);
+        }
+        
+        return ret;
     }
 }

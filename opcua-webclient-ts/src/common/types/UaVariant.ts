@@ -36,6 +36,160 @@ export class UaVariant {
         return (UaVariantType.Null == this._type) ? true : false;
     } 
 
+    public toBoolean() : boolean | null
+    {
+        if (this._type == UaVariantType.Boolean &&
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toNumber() : number | null
+    {        
+        if (this._type >= UaVariantType.SByte &&
+            this._type <= UaVariantType.Double && 
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toString() : string | null
+    {
+        if (this._arrayType != UaArrayType.Scalar) return null;       
+
+        if (this._type == UaVariantType.String ||
+            this._type == UaVariantType.ByteString || 
+            this._type == UaVariantType.QualifiedName ||
+            this._type == UaVariantType.Guid) return this._value;
+
+        return null;
+    }
+
+    public toDateTime() : Date | null
+    {
+        if (this._type == UaVariantType.DateTime &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toNodeId() : UaNodeId | null
+    {
+        if (this._type == UaVariantType.NodeId &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toExpandedNodeId() : UaExpandedNodeId | null
+    {
+        if (this._type == UaVariantType.ExpandedNodeId &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toStatusCode() : UaStatusCode | null
+    {
+        if (this._type == UaVariantType.StatusCode &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toLocalizedText() : UaLocalizedText | null
+    {
+        if (this._type == UaVariantType.LocalizedText &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toExtensionObject() : UaExtensionObject | null
+    {
+        if (this._type == UaVariantType.ExtensionObject &&            
+            this._arrayType == UaArrayType.Scalar) return this._value;
+
+        return null;
+    }
+
+    public toBooleans() : Array<boolean> | null
+    {
+        if (this._type == UaVariantType.Boolean &&
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toNumbers() : Array<number> | null
+    {        
+        if (this._type >= UaVariantType.SByte &&
+            this._type <= UaVariantType.Double && 
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toStrings() : Array<string> | null
+    {
+        if (this._arrayType != UaArrayType.Array && this._arrayType != UaArrayType.Matrix) return null;       
+
+        if (this._type == UaVariantType.String ||
+            this._type == UaVariantType.ByteString || 
+            this._type == UaVariantType.QualifiedName ||
+            this._type == UaVariantType.Guid) return this._value;
+
+        return null;
+    }
+
+    public toDateTimes() : Array<Date> | null
+    {
+        if (this._type == UaVariantType.DateTime &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toNodeIds() : Array<UaNodeId> | null
+    {
+        if (this._type == UaVariantType.NodeId &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toExpandedNodeIds() : Array<UaExpandedNodeId> | null
+    {
+        if (this._type == UaVariantType.ExpandedNodeId &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toStatusCodes() : Array<UaStatusCode> | null
+    {
+        if (this._type == UaVariantType.StatusCode &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toLocalizedTexts() : Array<UaLocalizedText> | null
+    {
+        if (this._type == UaVariantType.LocalizedText &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
+    public toExtensionObjects() : Array<UaExtensionObject> | null
+    {
+        if (this._type == UaVariantType.ExtensionObject &&            
+            (this._arrayType == UaArrayType.Array || this._arrayType == UaArrayType.Matrix)) return this._value;
+
+        return null;
+    }
+
     public static null() : UaVariant
     {
         return new UaVariant();

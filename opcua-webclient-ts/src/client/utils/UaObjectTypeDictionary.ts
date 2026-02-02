@@ -1,11 +1,10 @@
 import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
-import { parseUaNodeIdOrNull, UaLocalizedText, UaNodeId, UaPayloadMapper, ReferenceTypeIds, ObjectTypeIds } from "../../common"
+import { parseUaNodeIdOrNull, UaLocalizedText, UaNodeId, UaPayloadMapper, ReferenceTypeIds, ObjectTypeIds, UaObjectType } from "../../common"
 import { UaWebClient } from "../UaWebClient"
-import { UaObjectType } from "../../common/nodes/UaObjectType";
 
 export class UaObjectTypeDictionary
 {
-    private _objectTypes : Map<UaNodeId, UaObjectType>;
+    private _objectTypes : Map<string, UaObjectType>;
     private _remainingNodesToBrowse : Array<UaNodeId>;
 
     constructor()
@@ -14,7 +13,7 @@ export class UaObjectTypeDictionary
     
         let baseObjectTypeId = new UaNodeId(ObjectTypeIds.BaseObjectType);
         this._objectTypes.set(
-                baseObjectTypeId, 
+                baseObjectTypeId.toString(), 
                 new UaObjectType(
                     baseObjectTypeId, 
                     "BaseObjectType", 
@@ -31,13 +30,13 @@ export class UaObjectTypeDictionary
 
     public getObjectType(nodeId: UaNodeId) : UaObjectType | null
     {
-        let objectType = this._objectTypes.get(nodeId);
+        let objectType = this._objectTypes.get(nodeId.toString());
         return (objectType) ? objectType : null;
     }
 
-    public getObjectTypeIds() : Array<UaNodeId>
+    public getObjectTypes() : Array<UaObjectType>
     {
-        return [...this._objectTypes.keys()];
+        return [...this._objectTypes.values()];
     }
 
     private async __browseObjectTypes(client : UaWebClient)
@@ -69,7 +68,7 @@ export class UaObjectTypeDictionary
             let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
             if (statusCode.isNotGood() || !results[i].References) continue;
 
-            let parentType = this._objectTypes.get(nodeIds[i]);
+            let parentType = this._objectTypes.get(nodeIds[i].toString());
 
             for (let item of results[i].References)
             {
@@ -83,7 +82,7 @@ export class UaObjectTypeDictionary
                     UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
                     false);
                 
-                this._objectTypes.set(objectTypeId, objectType);
+                this._objectTypes.set(objectTypeId.toString(), objectType);
                 this._remainingNodesToBrowse.push(objectTypeId);
                 if (parentType) objectType.setParentType(parentType);
             }

@@ -34,6 +34,7 @@ public abstract class UaReactiveObjectType extends BaseUaObjectType implements U
         if (objectTypeId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
         this.nodeManager = nodeManager;
+        nodeManager.addNode(this);
     }
 
     public boolean isGetParentSupported() { return false; }

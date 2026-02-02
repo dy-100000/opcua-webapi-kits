@@ -195,11 +195,11 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
                 if (!request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK)) continue;
 
                 NodeId variableTypeId = ((UaVariable) item).typeDefinition().nodeId();
-                if (referenceTypeId.equals(NodeIds.HasProperty))
+                if (variableTypeId.equals(NodeIds.PropertyType))
                 {
-                    if (!variableTypeId.equals(NodeIds.PropertyType)) continue;
-                } else if (referenceTypeId.equals(NodeIds.HasComponent)) {
-                    if (variableTypeId.equals(NodeIds.PropertyType)) continue;
+                    if (referenceTypeId.equals(NodeIds.HasComponent)) continue;
+                } else {
+                    if (referenceTypeId.equals(NodeIds.HasProperty)) continue;
                 }
             }
 

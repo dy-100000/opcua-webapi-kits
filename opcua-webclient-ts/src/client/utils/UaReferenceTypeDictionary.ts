@@ -4,7 +4,7 @@ import { UaWebClient } from "../UaWebClient"
 
 export class UaReferenceTypeDictionary
 {
-    private _referenceTypes : Map<UaNodeId, UaReferenceType>;
+    private _referenceTypes : Map<string, UaReferenceType>;
     private _remainingNodesToBrowse : Array<UaNodeId>;
 
     constructor()     
@@ -13,7 +13,7 @@ export class UaReferenceTypeDictionary
     
         let referencesId = new UaNodeId(ReferenceTypeIds.References);
         this._referenceTypes.set(
-                referencesId, 
+                referencesId.toString(), 
                 new UaReferenceType(
                     referencesId, 
                     "References", 
@@ -33,13 +33,13 @@ export class UaReferenceTypeDictionary
 
     public getReferenceType(nodeId: UaNodeId) : UaReferenceType | null
     {
-        let referenceType = this._referenceTypes.get(nodeId);
+        let referenceType = this._referenceTypes.get(nodeId.toString());
         return (referenceType) ? referenceType : null;
     }
 
-    public getReferenceTypeIds() : Array<UaNodeId>
+    public getReferenceTypes() : Array<UaReferenceType>
     {
-        return [...this._referenceTypes.keys()];
+        return [...this._referenceTypes.values()];
     }
 
     private async __browseReferenceTypes(client : UaWebClient)
@@ -71,7 +71,7 @@ export class UaReferenceTypeDictionary
             let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
             if (statusCode.isNotGood() || !results[i].References) continue;
 
-            let parentType = this._referenceTypes.get(nodeIds[i]);
+            let parentType = this._referenceTypes.get(nodeIds[i].toString());
 
             for (let item of results[i].References)
             {
@@ -87,7 +87,7 @@ export class UaReferenceTypeDictionary
                     new UaLocalizedText(),
                     false);              
                 
-                this._referenceTypes.set(referenceTypeId, referenceType);
+                this._referenceTypes.set(referenceTypeId.toString(), referenceType);
                 this._remainingNodesToBrowse.push(referenceTypeId);
                 if (parentType) referenceType.setParentType(parentType);
             }

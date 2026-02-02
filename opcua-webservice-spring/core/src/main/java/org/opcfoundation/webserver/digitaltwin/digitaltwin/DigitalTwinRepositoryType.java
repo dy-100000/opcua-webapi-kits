@@ -34,14 +34,15 @@ public abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
                                      DigitalTwinSpace twinSpace)
     {
         super(typeId, displayName, UaObjectTypes.DigitalTwinRepositoryType, twinSpace);
-        twinSpace.addNode(this);
     }
 
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
-        if (request.getBrowseDescription().getReferenceTypeId().equals(NodeIds.HasComponent) ||
-                request.getBrowseDescription().getReferenceTypeId().equals(NodeIds.Aggregates) ||
+        NodeId referenceTypeId = request.getBrowseDescription().getReferenceTypeId();
+
+        if (referenceTypeId.equals(NodeIds.HasComponent) ||
+                referenceTypeId.equals(NodeIds.Aggregates) ||
                 !request.getAdditionalInfo().isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK))
             return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
 

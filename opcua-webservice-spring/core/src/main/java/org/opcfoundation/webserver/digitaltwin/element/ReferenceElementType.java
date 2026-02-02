@@ -68,7 +68,8 @@ public abstract class ReferenceElementType extends ElementType implements Refere
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
     {
-        if (!NodeIds.NonHierarchicalReferences.equals(request.getBrowseDescription().getReferenceTypeId()))
+        if (!NodeIds.References.equals(request.getBrowseDescription().getReferenceTypeId()) &&
+                !NodeIds.NonHierarchicalReferences.equals(request.getBrowseDescription().getReferenceTypeId()))
         {
             return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(), false));
         }
