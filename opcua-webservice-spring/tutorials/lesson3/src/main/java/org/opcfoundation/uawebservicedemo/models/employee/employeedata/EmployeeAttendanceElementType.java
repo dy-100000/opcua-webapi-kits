@@ -26,6 +26,7 @@ public class EmployeeAttendanceElementType extends EventElementType {
     @Override
     public CompletableFuture<GetEventResponse> onGetEvent(GetEventRequest request) {
 
+
         EmployeeMapper employeeMapper = EmployeeDatabase.getEmployeeMapper();
 
         Integer employeeId = Integer.parseInt(request.getId());

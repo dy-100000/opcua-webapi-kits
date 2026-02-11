@@ -77,4 +77,27 @@ export class UaObject extends UaInstanceNode
         
         return ret;
     }
+
+    toJson() : any
+    {
+        let children = [];
+
+        for (let item of this._children)
+        {
+            children.push(item.toJson());
+        }
+
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.Object,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            typeDefinition: this._typeDefinitionId.toString(),
+            eventNotifier : this._eventNotifier,
+            children: (children.length != 0) ? children : undefined
+        }
+
+        return ret;
+    }
 }

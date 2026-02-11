@@ -79,4 +79,16 @@ export class UaArgument
         let argument : Argument = ArgumentFromJSON(extensionObject.body);
         return UaArgument.fromStruct(argument);
     }
+
+    toJson() : any
+    {
+        let ret = {
+            name: this._name,
+            dataType: this._dataType.toString(),
+            valueRank: this._valueRank,
+            description: (this._description) ? this._description.text : undefined
+        }
+
+        return ret;
+    }
 }

@@ -96,4 +96,32 @@ export class UaDataType extends UaDefintionNode
             this._valueType = (this.parentType()) ? (this.parentType() as UaDataType)._valueType : 0;
         }
     }
+
+    toJson() : any
+    {
+        let enumValues = [];
+
+        if (this._enumValues)
+        {
+            for (let item of this._enumValues)
+            {                
+                enumValues.push({
+                    value: item[0],
+                    text: item[1].text
+                });
+            } 
+        }       
+
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.DataType,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            isAbstract: this._isAbstract,
+            enumValues: (enumValues.length == 0) ? enumValues : undefined
+        }
+
+        return ret;
+    }
 }

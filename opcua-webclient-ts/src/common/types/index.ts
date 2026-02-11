@@ -6,6 +6,7 @@ export * from "./UaHistoryDataResult"
 export * from "./UaHistoryEventFieldList"
 export * from "./UaHistoryEventResult"
 export * from "./UaLocalizedText";
+export * from "./UaLink";
 export * from "./UaNodeId";
 export * from "./UaQuery";
 export * from "./UaQueryFilter";
@@ -13,4 +14,5 @@ export * from "./UaRequestPatameters"
 export * from "./UaServiceTypes"
 export * from "./UaStatusCode";
 export * from "./UaVariant";
+
 

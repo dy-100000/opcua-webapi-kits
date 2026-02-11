@@ -481,7 +481,7 @@ export class UaPayloadMapper
             let referenceTypeId = (referenceDesc.ReferenceTypeId) ? parseUaNodeId(referenceDesc.ReferenceTypeId) : UaNodeId.nullNodeId;
             let isForward = (referenceDesc.IsForward) ? true : false;
             let browseName = (referenceDesc.BrowseName) ? referenceDesc.BrowseName : "";
-            let displayName = (referenceDesc.DisplayName) ? UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName) : new UaLocalizedText();       
+            let displayName = (referenceDesc.DisplayName) ? UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName) : UaLocalizedText.nullText;       
             let typeDefinitionId = (referenceDesc.TypeDefinition) ? parseUaExpandedNodeId(referenceDesc.TypeDefinition) : undefined;
             
             return {

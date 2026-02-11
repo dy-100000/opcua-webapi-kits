@@ -9,7 +9,8 @@ export abstract class UaNode
     protected _description: UaLocalizedText | undefined;
     protected _writeMask: number;
     protected _parent : UaNode | null;
-    protected _children : Array<UaNode>;
+    protected _children : Array<UaNode>;   
+    protected _refToParent : UaNodeId | undefined; 
 
     constructor(
         nodeId: UaNodeId,
@@ -56,11 +57,23 @@ export abstract class UaNode
     {
         this._description = description;
     }
+
+    get refToParent() : UaNodeId | null
+    {
+        return (this._refToParent) ? this._refToParent : null;
+    }
+
+    set refToParent(referenceTypeId: UaNodeId)
+    {
+        this._refToParent = referenceTypeId;
+    }
+
+    abstract toJson() : any
 }
 
 export abstract class UaDefintionNode extends UaNode
 {
-    protected _isAbstract : boolean;
+    protected _isAbstract : boolean;    
 
     constructor(
         nodeId: UaNodeId,
@@ -76,6 +89,16 @@ export abstract class UaDefintionNode extends UaNode
     get isAbstract() : boolean
     {
         return this._isAbstract;
+    }
+
+    get refToParent() : UaNodeId | null
+    {
+        return (this._refToParent) ? this._refToParent : null;
+    }
+
+    set refToParent(referenceTypeId: UaNodeId)
+    {
+        this._refToParent = referenceTypeId;
     }
 
     setParentType(parentType : UaDefintionNode)

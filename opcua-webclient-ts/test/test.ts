@@ -1,8 +1,8 @@
 import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType } from "../src";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaNodeIdType, UaVariant, UaVariantType, UaExtensionObject, makeUaStatusCode, DataTypeIds, UaWriteValue, UaExpandedNodeId, UaLocalizedText, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaDataTypeDictionary, UaObjectTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
+import { UaDataTypeDictionary, UaNodeChildReader, UaNodeLinkReader, UaNodeReader, UaObjectTypeDictionary, UaReferenceTypeDictionary } from "../src/client/utils";
 
 class Test {
     private client : UaWebClient;
@@ -36,11 +36,12 @@ class Test {
             await this.testDataTypeDictionary();    
             await this.testReferenceTypeDictionary();
             await this.testObjectTypeDictionary();       
-             
+            await this.testHistroryReadEvent();  
+            await this.testReaderNode();
+            await this.testNodeChildReader();            
             */
 
-            await this.testHistroryReadEvent();             
-            
+            await this.testNodeLinkReader();
         } catch (e) {            
             console.log(e);
         }
@@ -246,7 +247,7 @@ class Test {
     {
         console.log("testHistoryReadEvent");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUV2ZW50VHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEYXRhU3VibW9kZWxUeXBlLUF0dGVuZGFuY2UifX0=");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUVsZW1lbnRUeXBlIiwiaSI6IjEiLCJpZCI6Im5zPTI7cz1FbXBsb3llZURhdGFTdWJtb2RlbFR5cGUtQXR0ZW5kYW5jZSJ9fQ==");
         let startTime = new Date("2026-01-05T07:00:00");
         let endTime = new Date("2026-01-07T07:00:00");
 
@@ -262,7 +263,7 @@ class Test {
             startTime,
             endTime,
             select,
-            where,
+            null,
             15,
             null,            
             true);
@@ -348,6 +349,96 @@ class Test {
         {
             console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName}`)            
         }
+    }
+
+    async testReaderNode()
+    {
+        let nodeIds : Array<UaNodeId> = [
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlIiwiaSI6IjEifX0=")
+        ];
+
+        let reader = new UaNodeReader(nodeIds);
+        await this._testNodeReader(reader);
+
+        let nodes = reader.getResults();
+        for (let item of nodes)
+        {
+            console.dir(item.toJson(), { depth: null });
+        }
+    }
+
+    async testNodeChildReader()
+    {
+        let nodeIds : Array<UaNodeId> = [
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn19")
+        ];
+
+        let reader = new UaNodeChildReader(nodeIds);
+        await this._testNodeChildReader(reader);
+
+        let childNodes = reader.getResults();
+        for (let item of childNodes)
+        {
+            console.log("--- " + item.nodeId.toString() + " ---");
+
+            for (let item2 of item.children)
+            {
+                console.dir(item2.toJson(), { depth: null });
+            }
+        }
+    }
+
+    async testNodeLinkReader()
+    {
+        let nodeIds : Array<UaNodeId> = [
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPURlcGFydG1lbnRFbXBsb3llZVJlZmVyZW5jZVR5cGUiLCJpIjoiMyIsImlkIjoibnM9MjtzPURlcGFydG1lbnRUeXBlLUVtcGxveWVlcyJ9fQ==")
+        ];
+
+        let reader = new UaNodeLinkReader(nodeIds);
+        await this._testNodeLinkReader(reader);
+
+        let links = reader.getResults();
+        for (let item of links)
+        {
+            console.log("--- " + item.nodeId.toString() + " ---");
+
+            for (let item2 of item.links)
+            {
+                console.log({
+                    target: item2.targetId.toString(),
+                    reference: item2.referenceTypeId.toString(),
+                    isForward: (item2.isForward) ? undefined : false
+                });
+            }
+        }
+    }
+
+    async _testNodeReader(reader: UaNodeReader)
+    {
+        if (!reader.isFinish())
+        {            
+            await reader.read(this.client);
+            await this._testNodeReader(reader);
+        }
+    }
+
+    async _testNodeChildReader(reader: UaNodeChildReader)
+    {
+        if (!reader.isFinish())
+        {
+            await reader.read(this.client);
+            await this._testNodeChildReader(reader);
+        }        
+    }
+
+    async _testNodeLinkReader(reader: UaNodeLinkReader)
+    {
+        if (!reader.isFinish())
+        {
+            console.log("_testNodeLinkReader");
+            await reader.read(this.client);
+            await this._testNodeLinkReader(reader);
+        }        
     }
 }
 

@@ -19,7 +19,7 @@
 
 测试
 
-1.浏览器打开opcua-webbrowser-tool，网址(http://opcua-webbrowser-tool.opcfoundation.cn/)
+1.浏览器打开opcua-webbrowser-tool，网址(https://opcua-webbrowser-tool.opcfoundation.cn/)
 
 2.在Servers下点击add添加连接，并指定名称和URL(http://locahost:4840)
 

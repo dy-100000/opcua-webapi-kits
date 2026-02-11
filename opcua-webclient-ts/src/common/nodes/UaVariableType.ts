@@ -22,7 +22,7 @@ export class UaVariableType extends UaDefintionNode
     
     get nodeClass() : NodeClass 
     {
-        return NodeClass.Object;
+        return NodeClass.VariableType;
     }
 
     get dataType() : UaNodeId
@@ -49,6 +49,29 @@ export class UaVariableType extends UaDefintionNode
             ret.push(item as UaVariable);
         }
         
+        return ret;
+    }
+
+    toJson() : any
+    {
+        let children = [];
+
+        for (let item of this._children)
+        {
+            if (item.nodeClass != NodeClass.Variable) continue;
+            children.push(item.toJson());
+        }
+
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.VariableType,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            isAbstract: this._isAbstract,
+            children: (children.length != 0) ? children : undefined
+        }
+
         return ret;
     }
 }

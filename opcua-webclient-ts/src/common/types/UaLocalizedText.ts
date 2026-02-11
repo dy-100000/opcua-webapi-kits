@@ -1,5 +1,7 @@
 export class UaLocalizedText
 {
+    public static nullText: UaLocalizedText = new UaLocalizedText();
+
     private _text : string;
     private _locale : string | null;
 

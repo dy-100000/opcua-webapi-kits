@@ -21,8 +21,7 @@ export class UaVariable extends UaInstanceNode
         accessLevel : number,
         userAccessLevel : number,
         historizing : boolean,
-        typeDefinitionId: UaNodeId,
-        value: UaVariant | undefined)
+        typeDefinitionId: UaNodeId)
     {
         super(nodeId, browseName, displayName);
         this._dataType = dataType;
@@ -30,13 +29,13 @@ export class UaVariable extends UaInstanceNode
         this._accessLevel = accessLevel;
         this._userAccessLevel = userAccessLevel;
         this._historizing = historizing;
-        this._value = (value) ? value : UaVariant.null(),
+        this._value = UaVariant.null();
         this._typeDefinitionId = typeDefinitionId;
     }
     
     get nodeClass() : NodeClass 
     {
-        return NodeClass.Object;
+        return NodeClass.Variable;
     }
 
     get dataType() : UaNodeId
@@ -69,6 +68,11 @@ export class UaVariable extends UaInstanceNode
         return this._value;
     }
 
+    set value(val: UaVariant)
+    {
+        this._value = val;
+    }
+
     get typeDefinitionId() : UaNodeId
     {
         return this._typeDefinitionId;
@@ -88,6 +92,31 @@ export class UaVariable extends UaInstanceNode
             ret.push(item as UaVariable);
         }
         
+        return ret;
+    }
+
+    toJson() : any
+    {
+        let children = [];
+
+        for (let item of this._children)
+        {
+            if (item.nodeClass != NodeClass.Variable) continue;
+            children.push(item.toJson());
+        }
+
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.Variable,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            typeDefinition: this._typeDefinitionId.toString(),
+            dataType: this._dataType.toString(),
+            valueRank: this._valueRank,
+            accessLevel: this._accessLevel,
+            children: (children.length != 0) ? children : undefined
+        }
+
         return ret;
     }
 }

@@ -31,8 +31,22 @@ export class UaReferenceType extends UaDefintionNode
         return this._inverseName;
     }
 
-    get symmetric() : boolean 
+    get symmetric() : boolean
     {
         return this._symmetric;
+    }
+
+    toJson() : any
+    {
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.ReferenceType,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            isAbstract: this._isAbstract
+        }
+
+        return ret;
     }
 }

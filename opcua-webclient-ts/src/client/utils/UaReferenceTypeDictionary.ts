@@ -19,7 +19,7 @@ export class UaReferenceTypeDictionary
                     "References", 
                     new UaLocalizedText("References"), 
                     true,
-                    new UaLocalizedText(),
+                    UaLocalizedText.nullText,
                     true 
                 ));
     
@@ -84,7 +84,7 @@ export class UaReferenceTypeDictionary
                     item.BrowseName, 
                     UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
                     false,
-                    new UaLocalizedText(),
+                    UaLocalizedText.nullText,
                     false);              
                 
                 this._referenceTypes.set(referenceTypeId.toString(), referenceType);
