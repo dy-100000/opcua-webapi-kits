@@ -64,8 +64,8 @@ public class CallApiController implements CallApi {
 
             CallContext callContext = new CallContext(
                     methodsToCall,
-                    UaPayloadMapper.requestHeaderFromWebApi(callRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(callRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.call(callContext)

@@ -14,11 +14,11 @@ public class BrowseNextContext extends ServiceContext {
     public BrowseNextContext(
             List<ByteString> continuationPoints,
             boolean releaseContinuationPoints,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.continuationPoints = continuationPoints;
         this.releaseContinuationPoints = releaseContinuationPoints;
     }

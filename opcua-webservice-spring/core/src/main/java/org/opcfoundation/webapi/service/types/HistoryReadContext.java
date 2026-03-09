@@ -20,11 +20,11 @@ public class HistoryReadContext extends ServiceContext {
             UaStructuredType historyReadDetails,
             Boolean releaseContinuationPoints,
             TimestampsToReturn timestampsToReturn,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.nodesToRead = nodesToRead;
         this.historyReadDetails = historyReadDetails;
         this.releaseContinuationPoints = releaseContinuationPoints;

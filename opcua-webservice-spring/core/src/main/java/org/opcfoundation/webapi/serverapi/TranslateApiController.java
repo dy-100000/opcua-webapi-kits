@@ -63,8 +63,8 @@ public class TranslateApiController implements TranslateApi {
 
             TranslateContext translateContext = new TranslateContext(
                     nodesToTranslate,
-                    UaPayloadMapper.requestHeaderFromWebApi(translateRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(translateRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.translate(translateContext)

@@ -63,8 +63,8 @@ public class WriteApiController implements WriteApi {
 
             WriteContext writeContext = new WriteContext(
                     nodesToWrite,
-                    UaPayloadMapper.requestHeaderFromWebApi(writeRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(writeRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.write(writeContext)

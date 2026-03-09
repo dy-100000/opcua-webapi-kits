@@ -15,11 +15,11 @@ public class FindServersContext extends ServiceContext {
             String endpointUrl,
             List<String> serverUris,
             List<String> localeIds,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.endpointUrl = endpointUrl;
         this.serverUris = serverUris;
         this.localeIds = localeIds;

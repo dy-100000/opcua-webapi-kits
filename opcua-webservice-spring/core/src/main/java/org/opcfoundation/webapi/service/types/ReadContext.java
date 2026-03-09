@@ -18,11 +18,11 @@ public class ReadContext extends ServiceContext {
             List<ReadValueId> nodesToRead,
             Double maxAge,
             TimestampsToReturn timestampsToReturn,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.nodesToRead = nodesToRead;
         this.maxAge = maxAge;
         this.timestampsToReturn = timestampsToReturn;

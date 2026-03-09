@@ -20,9 +20,9 @@ public class UaServerConfigure {
 
     public UaServerConfigure()
     {
-        applicationUri = "";
-        applicationName = LocalizedText.NULL_VALUE;
-        productUri = "";
+        applicationUri = "Unknown";
+        applicationName = new LocalizedText("Unknown");
+        productUri = "Unknown";
         applicationType = ApplicationType.Server;
 
         supportServerUriPath = false;
@@ -116,7 +116,7 @@ public class UaServerConfigure {
     }
 
     public void setHistoryReadRequestMaxSize(int historyReadRequestMaxSize) {
-        this.historyReadRequestMaxSize = historyReadRequestMaxSize;
+        this.historyReadRequestMaxSize = Math.max(historyReadRequestMaxSize,0);
     }
 
     public int getTranslateRequestMaxSize() {

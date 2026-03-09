@@ -59,8 +59,8 @@ public class FindserversApiController implements FindserversApi {
                     (null == findServersRequest.getEndpointUrl()) ? "" : findServersRequest.getEndpointUrl(),
                     findServersRequest.getServerUris(),
                     findServersRequest.getLocaleIds(),
-                    UaPayloadMapper.requestHeaderFromWebApi(findServersRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(findServersRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.findServers(findServersContext)

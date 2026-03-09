@@ -58,8 +58,8 @@ public class GetendpointsApiController implements GetendpointsApi {
                     getEndpointsRequest.getEndpointUrl(),
                     getEndpointsRequest.getLocaleIds(),
                     getEndpointsRequest.getProfileUris(),
-                    UaPayloadMapper.requestHeaderFromWebApi(getEndpointsRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(getEndpointsRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.getEndpoints(getEndpointContext)

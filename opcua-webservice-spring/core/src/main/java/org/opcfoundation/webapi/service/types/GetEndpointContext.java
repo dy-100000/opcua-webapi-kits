@@ -15,11 +15,11 @@ public class GetEndpointContext extends ServiceContext {
             @Nullable String endpointUrl,
             List<String> localeIds,
             List<String> profileUris,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header, serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.endpointUrl = (null == endpointUrl) ? "" : endpointUrl;
         this.localeIds = localeIds;
         this.profileUris = profileUris;

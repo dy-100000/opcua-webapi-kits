@@ -18,11 +18,11 @@ public class BrowseContext extends ServiceContext {
             List<BrowseDescription> nodesToBrowse,
             ViewDescription view,
             UInteger requestedMaxReferencesPerNode,
-            RequestHeader header,
             @Nullable String serverUri,
+            @Nullable RequestHeader header,
             NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.nodesToBrowse = nodesToBrowse;
         this.view = view;
         this.requestedMaxReferencesPerNode = requestedMaxReferencesPerNode;

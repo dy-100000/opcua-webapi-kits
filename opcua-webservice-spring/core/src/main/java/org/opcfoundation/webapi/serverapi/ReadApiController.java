@@ -76,8 +76,8 @@ public class ReadApiController implements ReadApi {
                     nodesToRead,
                     readRequest.getMaxAge(),
                     timestampsToReturn,
-                    UaPayloadMapper.requestHeaderFromWebApi(readRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(readRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.read(readContext)

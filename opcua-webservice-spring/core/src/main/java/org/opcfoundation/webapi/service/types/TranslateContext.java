@@ -12,11 +12,11 @@ public class TranslateContext extends ServiceContext {
 
     public TranslateContext(
             List<BrowsePath> nodesToTranslate,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.nodesToTranslate = nodesToTranslate;
     }
 

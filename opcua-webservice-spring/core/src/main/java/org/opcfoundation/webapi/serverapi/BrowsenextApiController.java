@@ -62,8 +62,8 @@ public class BrowsenextApiController implements BrowsenextApi {
             BrowseNextContext browseNextContext = new BrowseNextContext(
                     UaTypeMapper.byteStringsFromWebApi(browseNextRequest.getContinuationPoints()),
                     browseNextRequest.getReleaseContinuationPoints(),
-                    UaPayloadMapper.requestHeaderFromWebApi(browseNextRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(browseNextRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.browseNext(browseNextContext)

@@ -15,35 +15,30 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 public class UaPayloadMapper {
+    @Nullable
     public static org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader requestHeaderFromWebApi(@Nullable RequestHeader header)
     {
-        NodeId authenticationToken = NodeId.NULL_VALUE;
-        DateTime timestamp = DateTime.NULL_VALUE;
+        if (null == header) return null;
+
+        NodeId authenticationToken = UaTypeMapper.nodeIdFromWebApi(header.getAuthenticationToken());
+        DateTime timestamp = UaTypeMapper.dateTimeFromWebApi(header.getTimestamp());
         UInteger requestHandle = UInteger.MIN;
         UInteger timeoutHint = UInteger.valueOf(0);
 
-        if (null != header)
+
+        if (null == authenticationToken) authenticationToken = NodeId.NULL_VALUE;
+        if (null == timestamp) timestamp = DateTime.MIN_VALUE;
+
+        if (null != header.getRequestHandle()) requestHandle = UInteger.valueOf(header.getRequestHandle());
+
+        if (header.getTimeoutHint() <= 0)
         {
-            authenticationToken = UaTypeMapper.nodeIdFromWebApi(header.getAuthenticationToken());
-            if (null == authenticationToken) authenticationToken = NodeId.NULL_VALUE;
-
-            timestamp = UaTypeMapper.dateTimeFromWebApi(header.getTimestamp());
-            if (null == timestamp) timestamp = DateTime.MIN_VALUE;
-
-            if (null != header.getRequestHandle())
-            {
-                requestHandle = UInteger.valueOf(header.getRequestHandle());
-            }
-
-            if (header.getTimeoutHint() <= 0)
-            {
-                timeoutHint = UInteger.valueOf(5000L);
-            } else if (header.getTimeoutHint() < 1000L)
-            {
-                timeoutHint = UInteger.valueOf(1000L);
-            } else {
-                timeoutHint = UInteger.valueOf(header.getTimeoutHint());
-            }
+            timeoutHint = UInteger.valueOf(5000L);
+        } else if (header.getTimeoutHint() < 1000L)
+        {
+            timeoutHint = UInteger.valueOf(1000L);
+        } else {
+            timeoutHint = UInteger.valueOf(header.getTimeoutHint());
         }
 
         return new org.eclipse.milo.opcua.stack.core.types.structured.RequestHeader(

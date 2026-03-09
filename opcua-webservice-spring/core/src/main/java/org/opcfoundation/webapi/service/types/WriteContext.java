@@ -12,11 +12,11 @@ public class WriteContext extends ServiceContext {
 
     public WriteContext(
             List<WriteValue> nodesToWrite,
-            RequestHeader header,
             @Nullable String serverUri,
-            NativeWebRequest webRequest)
+            @Nullable RequestHeader header,
+            @Nullable NativeWebRequest webRequest)
     {
-        super(header,serverUri,webRequest);
+        super(serverUri,header,webRequest);
         this.nodesToWrite = nodesToWrite;
     }
 

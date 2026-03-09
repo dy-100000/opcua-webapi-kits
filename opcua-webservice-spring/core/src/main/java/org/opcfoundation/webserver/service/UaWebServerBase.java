@@ -22,12 +22,11 @@ public abstract class UaWebServerBase implements UaWebService {
 
     public UaWebServerBase()
     {
-        configure = null;
+        configure = new UaServerConfigure();
     }
 
     @Override
     public UaServerConfigure getServerConfigure() {
-        if (null == configure) configure = new UaServerConfigure();
         return configure;
     }
 

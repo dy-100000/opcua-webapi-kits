@@ -85,8 +85,8 @@ public class HistoryreadApiController implements HistoryreadApi {
                     detailsStruct,
                     historyReadRequest.getReleaseContinuationPoints(),
                     timestampsToReturn,
-                    UaPayloadMapper.requestHeaderFromWebApi(historyReadRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(historyReadRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.historyRead(historyReadContext)

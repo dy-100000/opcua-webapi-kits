@@ -70,8 +70,8 @@ public class BrowseApiController implements BrowseApi {
                     nodesToBrowse,
                     viewDescription,
                     UInteger.valueOf(browseRequest.getRequestedMaxReferencesPerNode()),
-                    UaPayloadMapper.requestHeaderFromWebApi(browseRequest.getRequestHeader()),
                     serverUri,
+                    UaPayloadMapper.requestHeaderFromWebApi(browseRequest.getRequestHeader()),
                     (getRequest().isPresent()) ? getRequest().get() : null);
 
             return service.browse(browseContext)
