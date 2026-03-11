@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -38,10 +38,10 @@ class Test {
             await this.testObjectTypeDictionary();       
             await this.testHistroryReadEvent();  
             await this.testReaderNode();
-            await this.testNodeChildReader();            
+            await this.testNodeChildReader();   
+            await this.testNodeLinkReader();         
             */
-
-            await this.testNodeLinkReader();
+            await this.testFindServer();
         } catch (e) {            
             console.log(e);
         }
@@ -214,6 +214,13 @@ class Test {
             console.log(item.value);
         }
     }   
+
+    async testFindServer()
+    {
+        console.log("testFindServer"); 
+        let results = await this.client.find();
+        console.log(results);
+    }
 
     async testHistoryReadRawData()
     {

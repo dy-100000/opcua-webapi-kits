@@ -2,7 +2,7 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import * as OpenApiValidator from 'express-openapi-validator';
 import path from 'path';
-import { getEndpoints } from './controllers/DefaultController';
+import { getEndpoints, read } from './controllers/DefaultController';
 
 export class UaExpressServer {
     private _app : Express;
@@ -51,6 +51,7 @@ export class UaExpressServer {
     protected initializeRouters()
     {
         this._app.post("/getEndpoints", getEndpoints);
+        this._app.post(["/read","/:path/read"], read);
     }
 
     private initializeErrorHandlers()

@@ -551,6 +551,13 @@ export class UaNodeReader extends UaNodeReaderBase
         }        
     }
 
+    async readAll(client : UaWebClient)
+    {
+        if (this.isFinish()) return;
+        await this.read(client);
+        await this.readAll(client);
+    }
+
     async read(client : UaWebClient)
     {
         if (this._finished) return;
@@ -694,7 +701,7 @@ export class UaNodeReader extends UaNodeReaderBase
 
         this._browseResults = Array.from(browseResults.values());
         this._isRootNodeRead = true;
-    } 
+    }
 }
 
 export class UaNodeChildReader extends UaNodeReaderBase
@@ -720,6 +727,13 @@ export class UaNodeChildReader extends UaNodeReaderBase
                 nodeClassToReturn: NodeClass.Object | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.DataType
             });
         }
+    }
+
+    async readAll(client : UaWebClient)
+    {
+        if (this.isFinish()) return;
+        await this.read(client);
+        await this.readAll(client);
     }
 
     async read(client : UaWebClient)
@@ -779,6 +793,13 @@ export class UaNodeLinkReader
         this._nodesToBrowse = nodeIds;
         this._continuationPointToBrowse = [];
         this._browseResults = [];
+    }
+
+    async readAll(client : UaWebClient)
+    {
+        if (this.isFinish()) return;
+        await this.read(client);
+        await this.readAll(client);
     }
 
     async read(client : UaWebClient)

@@ -39,4 +39,9 @@ export class UaDataValue
     {
         return this._serverTimestamp;
     }
+
+    static dataValue(value: UaVariant, timeStamp?: Date) : UaDataValue
+    {
+        return new UaDataValue(value,undefined,timeStamp,timeStamp);
+    }
 }

@@ -25,7 +25,7 @@ public class UaServerConfigure {
         productUri = "Unknown";
         applicationType = ApplicationType.Server;
 
-        supportServerUriPath = false;
+        supportServerUriPath = true;
 
         browseRequestMaxSize = 0;
         readRequestMaxSize = 0;

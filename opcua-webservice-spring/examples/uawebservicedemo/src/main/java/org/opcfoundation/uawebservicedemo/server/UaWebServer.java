@@ -1,9 +1,15 @@
 package org.opcfoundation.uawebservicedemo.server;
 
+import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.eclipse.milo.opcua.stack.core.types.structured.ApplicationDescription;
 import org.opcfoundation.webapi.service.UaServerConfigure;
 import org.opcfoundation.uawebservicedemo.models.EmployeeTwinSpace;
+import org.opcfoundation.webapi.service.types.FindServersContext;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class UaWebServer extends org.opcfoundation.webserver.service.UaWebServer {
@@ -27,6 +33,11 @@ public class UaWebServer extends org.opcfoundation.webserver.service.UaWebServer
     public void onShutDown()
     {
         System.out.println("Shut down server with NodeManager");
+    }
+
+    @Override
+    public CompletableFuture<List<ApplicationDescription>> findServers(FindServersContext context) throws UaRuntimeException {
+
     }
 
     private void configureServer()

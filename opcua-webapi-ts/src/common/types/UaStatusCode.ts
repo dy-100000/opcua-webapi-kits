@@ -7,7 +7,7 @@ export class UaStatusCode {
     
     constructor(code? : number)
     {
-        this._code = (code) ? code : 0;
+        this._code = (code) ? code : StatusCodes.Good;
     }  
 
     public get value(): number

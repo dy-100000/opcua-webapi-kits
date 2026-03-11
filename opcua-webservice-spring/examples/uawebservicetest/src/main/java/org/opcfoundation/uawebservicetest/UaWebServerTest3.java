@@ -19,6 +19,7 @@ public class UaWebServerTest3 extends UaWebServer {
         System.out.println("Start up server with NodeManager ");
 
         configureServer();
+        setDiscoveryService(new TestDiscoveryService());
         addNodeManager(new DigitalTwinSpaceTest());
     }
 

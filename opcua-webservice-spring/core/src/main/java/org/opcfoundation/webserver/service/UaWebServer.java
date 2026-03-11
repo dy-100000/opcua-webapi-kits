@@ -14,6 +14,7 @@ import org.opcfoundation.webapi.service.types.*;
 import org.opcfoundation.webserver.service.transactions.base.*;
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
 import org.opcfoundation.webserver.types.common.UaBrowseContinuationPoint;
+import org.springframework.lang.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +23,23 @@ import java.util.TreeSet;
 import java.util.concurrent.CompletableFuture;
 
 public abstract class UaWebServer extends UaWebServerBase {
+    @Nullable
+    private UaDiscoveryService discoveryService;
+
     public UaWebServer()
     {
         super();
+        discoveryService = null;
     }
 
     public void addNodeManager(NodeManager nodeManager)
     {
         NodeManagerList.nodeManagerList.addNodeManager(nodeManager);
+    }
+
+    public void setDiscoveryService(UaDiscoveryService service)
+    {
+        discoveryService = service;
     }
 
     @Override
@@ -76,6 +86,16 @@ public abstract class UaWebServer extends UaWebServerBase {
         }
 
         onShutDown();
+    }
+
+    @Override
+    public CompletableFuture<List<ApplicationDescription>> findServers(FindServersContext context) throws UaRuntimeException
+    {
+        if (null == discoveryService || null != context.getServerUri()) throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        if (context.getEndpointUrl().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
+
+        return discoveryService.find(context.getEndpointUrl(), context.getServerUris()).
+                thenApply(results -> UaDiscoveryService.complete(results, getServerConfigure()));
     }
 
     @Override

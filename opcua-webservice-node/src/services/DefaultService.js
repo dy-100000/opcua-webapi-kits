@@ -64,12 +64,12 @@ const browseNext = ({ browseNextRequest }) => new Promise(
 * callRequest CallRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2). (optional)
 * returns CallResponse
 * */
-const call = ({ callRequest }) => new Promise(
+const call = ({ path, callRequest, callRequestWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        callRequest,
-      }));
+      const req = callRequest || callRequestWithPathRequest;
+      const responseData = await uaServerApi.call(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -219,9 +219,8 @@ const deleteSubscriptions = ({ deleteSubscriptionsRequest }) => new Promise(
 const findServers = ({ findServersRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        findServersRequest,
-      }));
+      const responseData = await uaServerApi.findServers(findServersRequest);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -238,7 +237,7 @@ const findServers = ({ findServersRequest }) => new Promise(
 const getEndpoints = ({ getEndpointsRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      const responseData = await uaServerApi.getEndpoint(getEndpointsRequest);
+      const responseData = await uaServerApi.getEndpoints(getEndpointsRequest);
       resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
@@ -246,19 +245,19 @@ const getEndpoints = ({ getEndpointsRequest }) => new Promise(
         e.status || 405,
       ));
     }
-  },
+  }
 );
 /**
 *
 * historyReadRequest HistoryReadRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.3/#5.11.3.2). (optional)
 * returns HistoryReadResponse
 * */
-const historyRead = ({ historyReadRequest }) => new Promise(
+const historyRead = ({ path, historyReadRequest, historyReadWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        historyReadRequest,
-      }));
+      const req = historyReadRequest || historyReadWithPathRequest;
+      const responseData = await uaServerApi.historyRead(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -272,12 +271,12 @@ const historyRead = ({ historyReadRequest }) => new Promise(
 * historyUpdateRequest HistoryUpdateRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.5/#5.11.5.2). (optional)
 * returns HistoryUpdateResponse
 * */
-const historyUpdate = ({ historyUpdateRequest }) => new Promise(
+const historyUpdate = ({ path, historyUpdateRequest, historyUpdateWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        historyUpdateRequest,
-      }));
+      const req = historyUpdateRequest || historyUpdateWithPathRequest;
+      const responseData = await uaServerApi.historyUpdate(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -348,19 +347,19 @@ const publish = ({ publishRequest }) => new Promise(
 * readRequest ReadRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2). (optional)
 * returns ReadResponse
 * */
-const read = ({ readRequest }) => new Promise(
+const read = ({ path, readRequest, readWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        readRequest,
-      }));
+      const req = readRequest || readWithPathRequest;
+      const responseData = await uaServerApi.read(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
         e.status || 405,
       ));
     }
-  },
+  }
 );
 /**
 *

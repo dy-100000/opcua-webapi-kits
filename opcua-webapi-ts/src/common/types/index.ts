@@ -1,3 +1,4 @@
+export * from "./UaTypes"
 export * from "./UaDataValue"
 export * from "./UaError";
 export * from "./UaExpandedNodeId";

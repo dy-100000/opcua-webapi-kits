@@ -19,7 +19,9 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaEventFilter,
     UaSimpleAttributeOperand,
     UaContentFilter,
-    UaObjectAttributes} from "../common"
+    UaObjectAttributes,
+    UaMethodArguments,
+    UaApplicationDescriptor} from "../common"
 import { UaClientConfiguration, UaClientParameters } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult} from "../common";
 
@@ -37,12 +39,37 @@ export class UaWebClient
         this.requestHandle = 1;
     }
 
+    getUrl() : string
+    {
+        return this.clientConfig.apiConfig.basePath;
+    }
+
     getNativeApi() : DefaultApi
     {
         return this.api;
+    }   
+
+    async find(applicationUris?: Array<string>) : Promise<Array<UaApplicationDescriptor>>
+    {
+        let results = await this.findServer(
+            this.clientConfig.apiConfig.basePath, 
+            (applicationUris) ? applicationUris : []);
+
+        let ret : Array<UaApplicationDescriptor> = [];
+
+        for (let item of results)
+        {
+            ret.push({
+                applicationUri: (item.ApplicationUri) ? item.ApplicationUri : "",
+                applicationName: UaPayloadMapper.localizedTextFromWebApi(item.ApplicationName),
+                productUri: (item.ProductUri) ? item.ProductUri : "",
+                urls: (item.DiscoveryUrls) ? item.DiscoveryUrls : []
+            });
+        }
+
+        return ret;
     }
 
-    // API wrappers by use cases
     async browseChild(
         nodeId: UaNodeId, 
         nodeClass?: number,
@@ -694,9 +721,9 @@ export class UaWebClient
         return response.Results;
     }
 
-    async findServer(
-        serverUris: Array<string>, 
+    async findServer(         
         endpointUrl : string,
+        serverUris: Array<string>,
         localeIds?: Array<string>,
         additionalParameters?: UaClientParameters) : Promise<Array<ApplicationDescription>>
     {
@@ -758,10 +785,5 @@ export class UaWebClient
         if (0xFFFFFFFF == this.requestHandle) this.requestHandle = 1;
         return ret;
     }
-}
-
-export type UaMethodArguments = {
-    inputArguments : Array<UaArgument>;
-    outputArguments : Array<UaArgument>;
 }
 

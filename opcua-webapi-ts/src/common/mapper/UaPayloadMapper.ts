@@ -1,4 +1,4 @@
-import { BrowseResult, DataValueToJSONTyped, ExtensionObject, ExtensionObjectFromJSON, ExtensionObjectToJSONTyped, ReferenceDescription } from "opcua-webapi";
+import { BrowseResult, ExtensionObject, ExtensionObjectFromJSON, ReferenceDescription } from "opcua-webapi";
 import { LocalizedText, Variant, StatusCode, DataValue,StatusCodes } from "opcua-webapi"
 import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaBrowseResult, UaError, UaReferenceDescriptor, UaVariantType } from "../types";
 import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionObject, UaVariant, UaDataValue } from "../types";
@@ -26,7 +26,7 @@ export class UaPayloadMapper
     {
         return {
             Text: text.text, 
-            Locale: text.locale};
+            Locale: (text.locale) ? text.locale : undefined };
     }  
 
     static extensionObjectFromWebApi(json: any) : UaExtensionObject
@@ -447,9 +447,9 @@ export class UaPayloadMapper
         let value = UaPayloadMapper.variantFromWebApi(variant);
 
         let ret = new UaDataValue(
-            value, 
+            value,
             UaPayloadMapper.statusCodeFromWebApi(dataValue.StatusCode),
-            dataValue.SourceTimestamp, 
+            dataValue.SourceTimestamp,
             dataValue.ServerTimestamp);
                 
         return ret;
@@ -462,7 +462,7 @@ export class UaPayloadMapper
         let ret : DataValue = {
             Value: variant.Value,
             UaType: variant.UaType,
-            StatusCode: UaPayloadMapper.statusCodeToWebApi(dataValue.statusCode),
+            StatusCode: (dataValue.statusCode.value == 0) ? undefined : UaPayloadMapper.statusCodeToWebApi(dataValue.statusCode),
             SourceTimestamp: (null != dataValue.sourceTimestamp) ? dataValue.sourceTimestamp : undefined,
             ServerTimestamp: (null != dataValue.serverTimestamp) ? dataValue.serverTimestamp : undefined
         };

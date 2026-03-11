@@ -1,10 +1,8 @@
-import { ApplicationDescription, DataValue, EndpointDescription, MessageSecurityMode, StatusCodes } from "opcua-webapi";
-import { UaWebService } from "./server/service/UaWebService";
-import { GetEndpointContext } from "./server/types/contexts/GetEndpointContext";
-import { UaServerConfigure } from "./server/types/common/UaServerConfigure";
+import { ApplicationDescription, BrowsePathResult, BrowseResult, CallMethodResult, DataValue, EndpointDescription, HistoryReadResult, HistoryUpdateResult, MessageSecurityMode, StatusCode, StatusCodes } from "opcua-webapi";
+import { UaWebService , UaServerConfigure, HistoryReadContext, HistoryUpdateContext} from "./server";
 import { UaExpressServer } from "./UaExpressServer";
 import { makeUaStatusCode, UaError, UaPayloadMapper } from "opcua-webclient-ts";
-import { ReadContext, uaServerApi } from "./server";
+import { GetEndpointContext, BrowseContext, BrowseNextContext, CallContext, FindServerContext, ReadContext, TranslateContext, uaServerApi, WriteContext } from "./server";
 
 export class UaWebServerBase implements UaWebService {
 
@@ -54,7 +52,47 @@ export class UaWebServerBase implements UaWebService {
         return [ this._endpointDescription() ];
     }
 
-    async read(context : ReadContext) : Promise<Array<DataValue>>
+    findServers(context : FindServerContext) : Promise<Array<ApplicationDescription>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    browse(context : BrowseContext) : Promise<Array<BrowseResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    browseNext(context : BrowseNextContext) : Promise<Array<BrowseResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    translate(context : TranslateContext) : Promise<Array<BrowsePathResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    read(context : ReadContext) : Promise<Array<DataValue>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    write(context : WriteContext) : Promise<Array<StatusCode>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    call(context : CallContext) : Promise<Array<CallMethodResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    historyRead(context : HistoryReadContext) : Promise<Array<HistoryReadResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    historyUpdate(context : HistoryUpdateContext) : Promise<Array<HistoryUpdateResult>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
@@ -79,10 +117,4 @@ export class UaWebServerBase implements UaWebService {
 
         return ret;
     }
-
-
-
-   
-
-
 }
