@@ -55,7 +55,7 @@ public class CallApiController implements CallApi {
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
 
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
             if (callRequest.getMethodsToCall().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
             if (serverConfig.getCallRequestMaxSize() != 0 && callRequest.getMethodsToCall().size() > serverConfig.getCallRequestMaxSize())
                 throw new UaRuntimeException(StatusCodes.Bad_RequestTooLarge);

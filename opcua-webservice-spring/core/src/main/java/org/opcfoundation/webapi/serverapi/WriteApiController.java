@@ -53,7 +53,7 @@ public class WriteApiController implements WriteApi {
     {
         try {
             UaServerConfigure serverConfig = service.getServerConfigure();
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
 
             if (writeRequest.getNodesToWrite().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
             if (serverConfig.getWriteRequestMaxSize() != 0 && writeRequest.getNodesToWrite().size() > serverConfig.getWriteRequestMaxSize())

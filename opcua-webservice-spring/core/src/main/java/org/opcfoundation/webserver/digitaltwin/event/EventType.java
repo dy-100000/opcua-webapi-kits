@@ -7,7 +7,7 @@ import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.addressspace.nodes.BaseUaObjectType;
+import org.opcfoundation.webserver.addressspace.nodes.UaObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.UaDataType;
 import org.opcfoundation.webserver.addressspace.nodes.UaVariable;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
@@ -15,7 +15,7 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.springframework.lang.Nullable;
 
-public class EventType extends BaseUaObjectType {
+public class EventType extends UaObjectType {
     protected final NodeManager nodeManager;
 
     public EventType(

@@ -16,13 +16,13 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 
 import java.util.List;
 
-public abstract class UaReactiveObjectType extends BaseUaObjectType implements UaReactiveObjectCallback {
+public abstract class UaReactiveObjectType extends UaObjectType implements UaReactiveObjectCallback {
     protected final NodeManager nodeManager;
 
     public UaReactiveObjectType(
             String objectTypeId,
             LocalizedText displayName,
-            @Nullable BaseUaObjectType parentType,
+            @Nullable UaObjectType parentType,
             NodeManager nodeManager)
     {
         super(new NodeId(nodeManager.nsIndex(),objectTypeId),

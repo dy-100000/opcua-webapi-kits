@@ -35,11 +35,6 @@ public class UaWebServer extends org.opcfoundation.webserver.service.UaWebServer
         System.out.println("Shut down server with NodeManager");
     }
 
-    @Override
-    public CompletableFuture<List<ApplicationDescription>> findServers(FindServersContext context) throws UaRuntimeException {
-
-    }
-
     private void configureServer()
     {
         UaServerConfigure configure = new UaServerConfigure();

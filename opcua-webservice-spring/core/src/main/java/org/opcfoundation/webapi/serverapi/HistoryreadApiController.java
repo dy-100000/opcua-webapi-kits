@@ -55,7 +55,7 @@ public class HistoryreadApiController implements HistoryreadApi {
         try
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
 
             org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn timestampsToReturn = org.eclipse.milo.opcua.stack.core.types.enumerated.TimestampsToReturn.Neither;
             if (null != historyReadRequest.getTimestampsToReturn())

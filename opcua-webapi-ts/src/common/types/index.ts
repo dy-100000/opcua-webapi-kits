@@ -15,5 +15,7 @@ export * from "./UaRequestPatameters"
 export * from "./UaServiceTypes"
 export * from "./UaStatusCode";
 export * from "./UaVariant";
+export * from "./UaAccessLevel";
+export * from "./UaWriteMask";
 
 

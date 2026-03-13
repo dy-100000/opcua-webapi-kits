@@ -7,7 +7,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.unsigned.UByte;
 import org.eclipse.milo.opcua.stack.core.types.structured.EventNotifierType;
 import org.eclipse.milo.opcua.stack.core.types.structured.HistoryEventFieldList;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadEventDetails;
-import org.opcfoundation.webserver.addressspace.nodes.BaseUaObjectType;
+import org.opcfoundation.webserver.addressspace.nodes.UaObjectType;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.addressspace.nodes.UaReference;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;
@@ -29,7 +29,7 @@ import java.util.concurrent.CompletableFuture;
 public class EventElementType extends ElementType implements EventElementCallback {
     private final static Set<String> DefaultEventField = new HashSet<>();
 
-    private final BaseUaObjectType eventType;
+    private final UaObjectType eventType;
 
     public EventElementType(
             String typeId,

@@ -9,14 +9,14 @@
   },
   "dependencies": {
     "body-parser": "^2.2.2",
+    "camelcase": "^5.3.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.2",
     "opcua-webapi": "^1.504.2",
-    "opcua-webclient-ts": "^1.0.18",
-    "winston": "^3.19.0",
-    "camelcase": "^5.3.1"
+    "opcua-webapi-ts": "^1.0.22",
+    "winston": "^3.19.0"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

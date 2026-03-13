@@ -5,13 +5,13 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.springframework.lang.Nullable;
 
-public class BaseUaObjectType extends UaDefinitionNode {
-    public BaseUaObjectType(
+public class UaObjectType extends UaDefinitionNode {
+    public UaObjectType(
             NodeId nodeId,
             String browseName,
             LocalizedText displayName,
             boolean isAbstract,
-            @Nullable BaseUaObjectType parentType)
+            @Nullable UaObjectType parentType)
     {
         super(nodeId,browseName,displayName,isAbstract);
         if (null != parentType) setParentType(parentType);

@@ -54,7 +54,7 @@ public class BrowsenextApiController implements BrowsenextApi {
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
 
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
             if (browseNextRequest.getContinuationPoints().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
             if (serverConfig.getBrowseRequestMaxSize() != 0 && browseNextRequest.getContinuationPoints().size() > serverConfig.getBrowseRequestMaxSize())
                 throw new UaRuntimeException(StatusCodes.Bad_RequestTooLarge);

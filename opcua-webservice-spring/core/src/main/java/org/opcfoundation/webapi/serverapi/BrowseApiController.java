@@ -55,7 +55,7 @@ public class BrowseApiController implements BrowseApi {
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
 
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
             if (browseRequest.getNodesToBrowse().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
             if (serverConfig.getBrowseRequestMaxSize() != 0 && browseRequest.getNodesToBrowse().size() > serverConfig.getBrowseRequestMaxSize())
                 throw new UaRuntimeException(StatusCodes.Bad_RequestTooLarge);

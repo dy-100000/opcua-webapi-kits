@@ -1,6 +1,6 @@
-## opcua-webclient-ts
+## opcua-webapi-ts
 
-This TypeScript/JavaScript client is based on opcua-webapi-typescript(the offical release from OPC foundation), opcua-webclient-ts is to provide an easy to use library to call OPC UA WebService. 
+This TypeScript/JavaScript client is based on opcua-webapi-typescript(the offical release from OPC foundation), opcua-webapi-ts is an wrapper to easier use OPC UA WebApi, including basical type and web client. 
 
 This module can be used in the following environments:
 
@@ -29,6 +29,6 @@ npm run build
 First build the package then run `npm publish`
 
 ### Consuming
-npm install opcua-webclient-ts
+npm install opcua-webapi-ts
 
 !Note: Currently, the source code of this module is on AtomGit platform, and it will be available on GitHub soon.

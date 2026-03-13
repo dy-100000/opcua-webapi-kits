@@ -1,7 +1,7 @@
 import { ApplicationDescription, BrowseNextRequestFromJSON, BrowsePathResult, BrowseRequestFromJSON, BrowseResponse, BrowseResult, CallMethodResult, CallRequestFromJSON, CallResponse, DataValue, EndpointDescription, FindServersRequestFromJSON, FindServersResponse, GetEndpointsRequestFromJSON, GetEndpointsResponse, GetEndpointsResponseToJSONTyped, HistoryReadRequestFromJSON, HistoryReadResponse, HistoryReadResult, ReadRequestFromJSON, ReadResponse, ResponseHeader, StatusCode, StatusCodeFromJSON, StatusCodes, TranslateBrowsePathsToNodeIdsRequestFromJSON, TranslateBrowsePathsToNodeIdsResponse, WriteRequestFromJSON, WriteResponse } from "opcua-webapi";
 import { GetEndpointContext } from "../types/contexts/GetEndpointContext";
 import { UaWebService } from "./UaWebService";
-import { makeUaStatusCode, UaError } from "opcua-webclient-ts";
+import { makeUaStatusCode, UaError } from "opcua-webapi-ts";
 import { BrowseContext, CallContext, FindServerContext, HistoryReadContext, ReadContext, TranslateContext, WriteContext } from "../types";
 
 export class UaWebServerApi {

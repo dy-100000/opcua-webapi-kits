@@ -53,7 +53,7 @@ public class TranslateApiController implements TranslateApi {
         try
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
-            if (serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
+            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
 
             if (translateRequest.getBrowsePaths().isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NothingToDo);
             if (serverConfig.getTranslateRequestMaxSize() != 0 && translateRequest.getBrowsePaths().size() > serverConfig.getTranslateRequestMaxSize())

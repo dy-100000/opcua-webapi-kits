@@ -41,6 +41,11 @@ export class UaNodeId {
         }
     }
 
+    static from(id: number)
+    {
+        return new UaNodeId(id);
+    }
+
     get nsIndex() 
     {
         return this._nsIndex;

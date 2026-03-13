@@ -14,13 +14,13 @@ import org.opcfoundation.webserver.addressspace.nodes.builtin.UaReferenceTypes;
 import java.util.List;
 
 public class UaObject extends UaInstanceNode {
-    private final BaseUaObjectType typeDefinition;
+    private final UaObjectType typeDefinition;
 
     public UaObject(
             NodeId nodeId,
             String browseName,
             LocalizedText displayName,
-            BaseUaObjectType typeDefinition)
+            UaObjectType typeDefinition)
     {
         super(nodeId, browseName, displayName);
 
@@ -33,7 +33,7 @@ public class UaObject extends UaInstanceNode {
         return NodeClass.Object;
     }
 
-    public BaseUaObjectType typeDefinition() {
+    public UaObjectType typeDefinition() {
         return typeDefinition;
     }
 
