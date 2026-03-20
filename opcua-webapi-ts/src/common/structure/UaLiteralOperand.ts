@@ -1,6 +1,6 @@
 import { LiteralOperand, LiteralOperandFromJSON, LiteralOperandToJSONTyped } from "opcua-webapi";
 import { UaExtensionObject, UaNodeId, UaVariant } from "../types";
-import { UaPayloadMapper } from "../mapper";
+import { UaPayloadMapper } from "../payload";
 import { DataTypeIds } from "../nodes";
 
 export class UaLiteralOperand

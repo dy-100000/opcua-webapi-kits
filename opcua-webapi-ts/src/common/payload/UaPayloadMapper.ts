@@ -1,6 +1,6 @@
 import { BrowseResult, ExtensionObject, ExtensionObjectFromJSON, ReferenceDescription } from "opcua-webapi";
 import { LocalizedText, Variant, StatusCode, DataValue,StatusCodes } from "opcua-webapi"
-import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaBrowseResult, UaError, UaReferenceDescriptor, UaVariantType } from "../types";
+import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaError, UaVariantType } from "../types";
 import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionObject, UaVariant, UaDataValue } from "../types";
 
 export class UaPayloadMapper
@@ -468,50 +468,5 @@ export class UaPayloadMapper
         };
 
         return ret;
-    }
-
-    static referenceDescriptionFromWebApi(referenceDesc : ReferenceDescription) : UaReferenceDescriptor
-    {
-        if (!referenceDesc.NodeId) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
-
-        try
-        {
-            let nodeId = parseUaExpandedNodeId(referenceDesc.NodeId);
-            let nodeClass = (referenceDesc.NodeClass) ? referenceDesc.NodeClass : 0;
-            let referenceTypeId = (referenceDesc.ReferenceTypeId) ? parseUaNodeId(referenceDesc.ReferenceTypeId) : UaNodeId.nullNodeId;
-            let isForward = (referenceDesc.IsForward) ? true : false;
-            let browseName = (referenceDesc.BrowseName) ? referenceDesc.BrowseName : "";
-            let displayName = (referenceDesc.DisplayName) ? UaPayloadMapper.localizedTextFromWebApi(referenceDesc.DisplayName) : UaLocalizedText.nullText;       
-            let typeDefinitionId = (referenceDesc.TypeDefinition) ? parseUaExpandedNodeId(referenceDesc.TypeDefinition) : undefined;
-            
-            return {
-                    nodeId: nodeId,
-                    nodeClass: nodeClass,
-                    referenceTypeId: referenceTypeId,
-                    isForward: isForward,
-                    browseName: browseName,
-                    displayName: displayName,
-                    typeDefinition: typeDefinitionId };
-
-        } catch (e) {
-            throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
-        }
-    }
-
-    static browseResultFromWebApi(browseResult : BrowseResult) : UaBrowseResult
-    {
-        let results : Array<UaReferenceDescriptor> = [];
-
-        if (browseResult.References)
-        {
-            for (let item of browseResult.References)
-            {
-                results.push(UaPayloadMapper.referenceDescriptionFromWebApi(item));
-            }
-        }
-
-        return {
-                results: results, 
-                continuationPoint: browseResult.ContinuationPoint };
     }
 }

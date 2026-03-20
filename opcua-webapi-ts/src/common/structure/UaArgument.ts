@@ -1,6 +1,6 @@
 import { Argument, ArgumentFromJSON, ArgumentToJSONTyped } from "opcua-webapi";
 import { parseUaNodeIdOrNull, UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
-import { UaPayloadMapper } from "../mapper";
+import { UaPayloadMapper } from "../payload";
 import { DataTypeIds } from "../nodes";
 
 export class UaArgument

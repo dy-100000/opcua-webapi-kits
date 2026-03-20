@@ -64,3 +64,13 @@ export function parseUaExpandedNodeId(value: string): UaExpandedNodeId {
     let nodeId = parseUaNodeId(value);
     return new UaExpandedNodeId(nodeId, null, 0);
 }
+
+export function parseUaExpandedNodeIdOrNull(value: string | null | undefined): UaExpandedNodeId | null {
+    if (!value) return null;
+    try
+    {
+        return parseUaExpandedNodeId(value);
+    } catch(e) {
+        return null;
+    }    
+}

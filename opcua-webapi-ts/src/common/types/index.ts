@@ -12,7 +12,6 @@ export * from "./UaNodeId";
 export * from "./UaQuery";
 export * from "./UaQueryFilter";
 export * from "./UaRequestPatameters"
-export * from "./UaServiceTypes"
 export * from "./UaStatusCode";
 export * from "./UaVariant";
 export * from "./UaAccessLevel";

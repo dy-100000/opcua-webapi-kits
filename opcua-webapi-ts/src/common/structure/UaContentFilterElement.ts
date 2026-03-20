@@ -1,7 +1,7 @@
 import { ContentFilterElement, ExtensionObject } from "opcua-webapi";
 import { UaExtensionObject, UaNodeId } from "../types";
 import { DataTypeIds } from "../nodes";
-import { UaPayloadMapper } from "../mapper";
+import { UaPayloadMapper } from "../payload";
 
 export class UaContentFilterElement
 {

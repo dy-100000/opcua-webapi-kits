@@ -1,6 +1,6 @@
 import { EUInformation, EUInformationFromJSON, EUInformationToJSONTyped } from "opcua-webapi";
 import { UaExtensionObject, UaLocalizedText, UaNodeId } from "../types";
-import { UaPayloadMapper } from "../mapper";
+import { UaPayloadMapper } from "../payload";
 import { DataTypeIds } from "../nodes";
 
 export class UaEUInformation

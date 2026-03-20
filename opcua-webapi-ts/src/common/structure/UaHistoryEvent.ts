@@ -1,6 +1,6 @@
 import { DataValue,HistoryData, HistoryDataFromJSON, HistoryEvent, HistoryEventFieldList, HistoryEventFromJSON, HistoryEventToJSONTyped, Variant } from "opcua-webapi";
 import { UaDataValue, UaExtensionObject, UaHistoryEventFieldList, UaNodeId, UaVariant } from "../types";
-import { UaPayloadMapper } from "../mapper";
+import { UaPayloadMapper } from "../payload";
 import { DataTypeIds } from "../nodes";
 
 export class UaHistoryEvent
