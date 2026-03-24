@@ -69,8 +69,11 @@ export class UaCallMethodResult
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(callMethodResult.StatusCode);
         
         let outputArguments: Array<UaVariant> = [];
-        for (let item of callMethodResult.OutputArguments) {
-            outputArguments.push(UaPayloadMapper.variantFromWebApi(item));
+
+        if (callMethodResult.OutputArguments) {
+            for (let item of callMethodResult.OutputArguments) {
+                outputArguments.push(UaPayloadMapper.variantFromWebApi(item));
+            }
         }
 
         let inputArgumentResults: Array<UaStatusCode> | undefined = undefined;

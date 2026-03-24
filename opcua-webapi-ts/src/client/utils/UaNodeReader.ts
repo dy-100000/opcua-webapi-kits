@@ -1,5 +1,5 @@
-import { Attributes, BrowseDescription, BrowseDirection, NodeClass, ReadValueId, ReferenceTypeIds, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaDataType, UaDataValue, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaPayloadMapper, UaReferenceDescriptor, UaReferenceType, UaVariable, VariableIds, VariableTypeIds, parseUaNodeId, UaMethod, UaLink } from "../../common";
+import { Attributes, BrowseDescription, BrowseDirection, NodeClass, StatusCodes } from "opcua-webapi";
+import { makeUaStatusCode, UaDataType, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaPayloadMapper, UaReferenceType, UaVariable, VariableTypeIds, parseUaNodeId, UaMethod, UaLink, UaBrowseDescription, UaReferenceDescription, UaReadValueId, ReferenceTypeIds } from "../../common";
 import { UaWebClient } from "../UaWebClient"
 
 type NodeToBrowse = {
@@ -20,7 +20,7 @@ type BrowseResult = {
     displayName : UaLocalizedText;
     referenceTypeId : UaNodeId;
     isForward: boolean;
-    typeDefinitionId?: UaNodeId;
+    typeDefinitionId?: UaNodeId | null;
 }
 
 type ReadResult = {
@@ -86,18 +86,20 @@ export abstract class UaNodeReaderBase
     protected async _browseNodes(client : UaWebClient)
     {
         let nodesToBrowse = this._nodesToBrowse.splice(0, 50);
-        let browseDescriptions: Array<BrowseDescription> = [];
+        let browseDescriptions: Array<UaBrowseDescription> = [];
 
         for (let item of nodesToBrowse)
         {           
-            browseDescriptions.push({
-                NodeId: item.nodeId.toString(),
-                BrowseDirection: BrowseDirection.Forward,
-                ReferenceTypeId: ReferenceTypeIds.HierarchicalReferences,
-                IncludeSubtypes: true,
-                NodeClassMask: item.nodeClassToReturn,
-                ResultMask: 63
-            });
+            let browseDescription = new UaBrowseDescription(
+                item.nodeId,
+                BrowseDirection.Forward,
+                UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
+                true,
+                item.nodeClassToReturn,
+                63
+            );
+
+            browseDescriptions.push(browseDescription);
         }
 
         let results = await client.browse(browseDescriptions, 50);
@@ -107,34 +109,33 @@ export abstract class UaNodeReaderBase
             let currentNode = nodesToBrowse[i];
             let currentResult = results[i];
 
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(currentResult.StatusCode);
-            if (statusCode.isNotGood()) throw new UaError(statusCode);
+            if (currentResult.statusCode.isNotGood()) throw new UaError(currentResult.statusCode);
 
-            if (!currentResult.References) continue;
-
-            for (let item of currentResult.References)
+            for (let item of currentResult.references)
             {
-                let reference = UaPayloadMapper.referenceDescriptionFromWebApi(item);
+                let nodeId = item.nodeId.getNodeId();
+                let typeDefinition = item.typeDefinition?.getNodeId();
+                if (null == nodeId || null == typeDefinition) continue;
 
                 this._browseResults.push({ 
                     fromNodeId: currentNode.nodeId,
-                    nodeId: reference.nodeId.getNodeId(),
-                    nodeClass: reference.nodeClass,
-                    browseName: reference.browseName,
-                    displayName: reference.displayName,
-                    referenceTypeId: reference.referenceTypeId,
-                    isForward: reference.isForward,
-                    typeDefinitionId: reference.typeDefinition?.getNodeId()
+                    nodeId: nodeId,
+                    nodeClass: item.nodeClass,
+                    browseName: item.browseName,
+                    displayName: item.displayName,
+                    referenceTypeId: item.referenceTypeId,
+                    isForward: item.isForward,
+                    typeDefinitionId: (typeDefinition) ? typeDefinition : undefined
                 });
 
-                this._updateNodesToBrowse(reference);
+                this._updateNodesToBrowse(item);
             }
 
-            if (currentResult.ContinuationPoint && currentResult.ContinuationPoint.length != 0)
+            if (currentResult.continuationPoint)
             {
                 this._continuationPointToBrowse.push({
                     nodeId: currentNode.nodeId,
-                    continuationPoint: currentResult.ContinuationPoint
+                    continuationPoint: currentResult.continuationPoint
                 });
             }
         }       
@@ -157,33 +158,33 @@ export abstract class UaNodeReaderBase
             let currentNode = cpsToBrowse[i];
             let currentResult = results[i];
 
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(currentResult.StatusCode);
-            if (statusCode.isNotGood()) throw new UaError(statusCode);
+            if (currentResult.statusCode.isNotGood()) throw new UaError(currentResult.statusCode);
 
-            if (!currentResult.References) continue;
-
-            for (let item of currentResult.References)
+            for (let item of currentResult.references)
             {
-                let reference = UaPayloadMapper.referenceDescriptionFromWebApi(item);
+                let nodeId = item.nodeId.getNodeId();
+                let typeDefinition = item.typeDefinition ? item.typeDefinition.getNodeId() : undefined;
+                if (null == nodeId) continue;
+
                 this._browseResults.push({ 
                     fromNodeId: currentNode.nodeId,
-                    nodeId: reference.nodeId.getNodeId(),
-                    nodeClass: reference.nodeClass,
-                    browseName: reference.browseName,
-                    displayName: reference.displayName,
-                    referenceTypeId: reference.referenceTypeId,
-                    isForward: reference.isForward,
-                    typeDefinitionId: reference.typeDefinition?.getNodeId()
+                    nodeId: nodeId,
+                    nodeClass: item.nodeClass,
+                    browseName: item.browseName,
+                    displayName: item.displayName,
+                    referenceTypeId: item.referenceTypeId,
+                    isForward: item.isForward,
+                    typeDefinitionId: (typeDefinition) ? typeDefinition : undefined
                 });
 
-                this._updateNodesToBrowse(reference);
+                this._updateNodesToBrowse(item);
             }
 
-            if (currentResult.ContinuationPoint && currentResult.ContinuationPoint.length != 0)
+            if (currentResult.continuationPoint && currentResult.continuationPoint.length != 0)
             {
                 this._continuationPointToBrowse.push({
                     nodeId: currentNode.nodeId,
-                    continuationPoint: currentResult.ContinuationPoint
+                    continuationPoint: currentResult.continuationPoint
                 });
             }
         } 
@@ -279,33 +280,29 @@ export abstract class UaNodeReaderBase
 
         if (0 == typesToRead.length) return;
               
-        let nodesToRead: Array<ReadValueId> = [];
-        
+        let nodesToRead: Array<UaReadValueId> = [];    
+
         for (let item of typesToRead)
         {
-            nodesToRead.push({ 
-                NodeId: item.nodeId.toString(), 
-                AttributeId: Attributes.IsAbstract });
+            let nodeToRead = new UaReadValueId(
+                item.nodeId,
+                Attributes.IsAbstract);
+
+            nodesToRead.push(nodeToRead);
 
             if (item.nodeClass == NodeClass.VariableType)
             {
-                nodesToRead.push({ 
-                NodeId: item.nodeId.toString(), 
-                AttributeId: Attributes.DataType });
+                nodesToRead.push(new UaReadValueId(
+                    item.nodeId,
+                    Attributes.DataType));
 
-                nodesToRead.push({ 
-                NodeId: item.nodeId.toString(), 
-                AttributeId: Attributes.ValueRank });
+                nodesToRead.push(new UaReadValueId(
+                    item.nodeId,
+                    Attributes.ValueRank));
             }
         }
 
-        let results = await client.read(nodesToRead);
-        
-        let dataValues : Array<UaDataValue> = [];                        
-        for (let item of results)
-        {
-            dataValues.push(UaPayloadMapper.dataValueFromWebApi(item));
-        }          
+        let dataValues = await client.read(nodesToRead);
         
         for (let i=0; i<typesToRead.length; ++i)
         {
@@ -386,23 +383,19 @@ export abstract class UaNodeReaderBase
 
         if (0 == objectsToRead.length) return;
               
-        let nodesToRead: Array<ReadValueId> = [];
+        let nodesToRead: Array<UaReadValueId> = [];
         
         for (let item of objectsToRead)
         {
-            nodesToRead.push({ 
-                NodeId: item.nodeId.toString(), 
-                AttributeId: Attributes.EventNotifier })
+            let nodeToRead = new UaReadValueId(
+                item.nodeId,
+                Attributes.EventNotifier);
+
+            nodesToRead.push(nodeToRead);
         }
 
-        let results = await client.read(nodesToRead);
-        
-        let dataValues : Array<UaDataValue> = [];                        
-        for (let item of results)
-        {
-            dataValues.push(UaPayloadMapper.dataValueFromWebApi(item));
-        }          
-        
+        let dataValues = await client.read(nodesToRead);     
+              
         for (let i=0; i<objectsToRead.length; ++i)
         {
             if (dataValues[i].statusCode.isNotGood()) throw new UaError(dataValues[i].statusCode);
@@ -499,7 +492,7 @@ export abstract class UaNodeReaderBase
         }
     }
 
-    private _updateNodesToBrowse(reference: UaReferenceDescriptor)
+    private _updateNodesToBrowse(reference: UaReferenceDescription)
     {
         let nodeClassToReturn : number = NodeClass.Unspecified;
 
@@ -509,7 +502,7 @@ export abstract class UaNodeReaderBase
             nodeClassToReturn = this._nodeClassToReturn;
         } else if (reference.nodeClass == NodeClass.Variable) {
             if (reference.typeDefinition && 
-                !UaNodeReaderBase.s_variableTypeWithoutMember.has(reference.typeDefinition.getNodeId().toString()))
+                !UaNodeReaderBase.s_variableTypeWithoutMember.has(reference.typeDefinition.toString()))
             {
                 nodeClassToReturn = NodeClass.Variable;
             }
@@ -598,33 +591,27 @@ export class UaNodeReader extends UaNodeReaderBase
         if (this._isRootNodeRead) return;
 
         let nodeIds : UaNodeId[] = [];
-        let nodesToRead: Array<ReadValueId> = [];
+        let nodesToRead: Array<UaReadValueId> = [];
         
         for (let item of this._nodeIds)
         {  
-            nodeIds.push(parseUaNodeId(item));
+            let nodeId = parseUaNodeId(item);
+            nodeIds.push(nodeId);
 
-            nodesToRead.push({
-                NodeId: item, 
-                AttributeId: Attributes.NodeClass });
+            nodesToRead.push(new UaReadValueId(
+                nodeId,
+                Attributes.NodeClass));
 
-            nodesToRead.push({ 
-                NodeId: item, 
-                AttributeId: Attributes.BrowseName });
+            nodesToRead.push(new UaReadValueId(
+                nodeId,
+                Attributes.BrowseName));
         
-            nodesToRead.push({ 
-                NodeId: item, 
-                AttributeId: Attributes.DisplayName });
+            nodesToRead.push(new UaReadValueId(
+                nodeId,
+                Attributes.DisplayName));
         }
 
-        let results = await client.read(nodesToRead);
-        
-        let dataValues : Array<UaDataValue> = [];                        
-        for (let item of results)
-        {
-            dataValues.push(UaPayloadMapper.dataValueFromWebApi(item));
-        }          
-        
+        let dataValues = await client.read(nodesToRead);           
         let browseResults : Map<string,BrowseResult> = new Map;
 
         for (let i=0; i<nodeIds.length; ++i)
@@ -660,24 +647,28 @@ export class UaNodeReader extends UaNodeReaderBase
                     displayName: displayName,
                     referenceTypeId: UaNodeId.nullNodeId,   
                     isForward: true,
-                    typeDefinitionId: UaNodeId.nullNodeId});
+                    typeDefinitionId: UaNodeId.nullNodeId
+                });
         }
 
-        let browseDescriptions: Array<BrowseDescription> = [];
+        let browseDescriptions: Array<UaBrowseDescription> = [];
 
         for (let item of browseResults)
         {           
-            if (item[1].nodeClass != NodeClass.Object &&
-                item[1].nodeClass != NodeClass.Variable) continue;
+            let currentNode = item[1];
 
-            browseDescriptions.push({
-                NodeId: item[0],
-                BrowseDirection: BrowseDirection.Forward,
-                ReferenceTypeId: ReferenceTypeIds.HasTypeDefinition,
-                IncludeSubtypes: false,
-                NodeClassMask: NodeClass.ObjectType | NodeClass.VariableType,
-                ResultMask: 0
-            });
+            if (currentNode.nodeClass != NodeClass.Object &&
+                currentNode.nodeClass != NodeClass.Variable) continue;
+
+            let browseDescription = new UaBrowseDescription(
+                currentNode.nodeId,
+                BrowseDirection.Forward,
+                UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
+                false,
+                NodeClass.ObjectType | NodeClass.VariableType,
+                0);
+
+            browseDescriptions.push(browseDescription);
         }
 
         if (browseDescriptions.length != 0)
@@ -686,16 +677,13 @@ export class UaNodeReader extends UaNodeReaderBase
 
             for (let i=0; i<browseDescriptions.length; ++i)
             {
-                let browseResult = browseResults.get(browseDescriptions[i].NodeId);
+                let browseResult = browseResults.get(browseDescriptions[i].nodeId.toString());
                 if (undefined == browseResult) throw new UaError(makeUaStatusCode(StatusCodes.BadUnexpectedError));
 
-                let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
-                if (statusCode.isNotGood()) throw new UaError(statusCode);
+                if (results[i].statusCode.isNotGood()) throw new UaError(results[i].statusCode);
+                if (results[i].references.length != 1) continue;
 
-                if (!results[i].References || results[i].References.length != 1) continue;
-
-                let reference = UaPayloadMapper.referenceDescriptionFromWebApi(results[i].References[0]);
-                browseResult.typeDefinitionId = reference.nodeId.getNodeId();
+                browseResult.typeDefinitionId = results[i].references[0].nodeId.getNodeId();
             }
         }
 
@@ -852,18 +840,20 @@ export class UaNodeLinkReader
         if (this._nodesToBrowse.length == 0) return;
 
         let nodesToBrowse = this._nodesToBrowse.splice(0, 50);
-        let browseDescriptions: Array<BrowseDescription> = [];
+        let browseDescriptions: Array<UaBrowseDescription> = [];
 
         for (let item of nodesToBrowse)
         {           
-            browseDescriptions.push({
-                NodeId: item.toString(),
-                BrowseDirection: BrowseDirection.Both,
-                ReferenceTypeId: ReferenceTypeIds.NonHierarchicalReferences,
-                IncludeSubtypes: true,
-                NodeClassMask: NodeClass.Object | NodeClass.Variable | NodeClass.Method,
-                ResultMask: 7
-            });
+            let browseDescription = new UaBrowseDescription(
+                item,
+                BrowseDirection.Both,
+                UaNodeId.from(ReferenceTypeIds.NonHierarchicalReferences),
+                true,
+                NodeClass.Object | NodeClass.Variable | NodeClass.Method,
+                7
+            );
+
+            browseDescriptions.push(browseDescription);
         }
 
         let results = await client.browse(browseDescriptions, 50);
@@ -873,31 +863,31 @@ export class UaNodeLinkReader
             let currentNodeId = nodesToBrowse[i];
             let currentResult = results[i];
 
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(currentResult.StatusCode);
-            if (statusCode.isNotGood()) throw new UaError(statusCode);
-
-            if (!currentResult.References) continue;
+            if (currentResult.statusCode.isNotGood()) throw new UaError(currentResult.statusCode);
             
-            for (let item of currentResult.References)
+            for (let item of currentResult.references)
             {
-                let reference = UaPayloadMapper.referenceDescriptionFromWebApi(item);
+                let nodeId = item.nodeId.getNodeId();
+                let typeDefinition = item.typeDefinition?.getNodeId();
+                if (null == nodeId || null == typeDefinition) continue;
+
                 this._browseResults.push({
                     fromNodeId: currentNodeId,
-                    nodeId: reference.nodeId.getNodeId(),
-                    nodeClass: reference.nodeClass,
-                    browseName: reference.browseName,
-                    displayName: reference.displayName,
-                    referenceTypeId: reference.referenceTypeId,
-                    isForward: reference.isForward,
-                    typeDefinitionId: reference.typeDefinition?.getNodeId()
+                    nodeId: nodeId,
+                    nodeClass: item.nodeClass,
+                    browseName: item.browseName,
+                    displayName: item.displayName,
+                    referenceTypeId: item.referenceTypeId,
+                    isForward: item.isForward,
+                    typeDefinitionId: typeDefinition
                 });
             }
 
-            if (currentResult.ContinuationPoint && currentResult.ContinuationPoint.length != 0)
+            if (currentResult.continuationPoint)
             {
                 this._continuationPointToBrowse.push({
                     nodeId: currentNodeId,
-                    continuationPoint: currentResult.ContinuationPoint
+                    continuationPoint: currentResult.continuationPoint
                 });
             }
         }       
@@ -920,31 +910,31 @@ export class UaNodeLinkReader
             let currentNodeId = cpsToBrowse[i].nodeId;
             let currentResult = results[i];
 
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(currentResult.StatusCode);
-            if (statusCode.isNotGood()) throw new UaError(statusCode);
-
-            if (!currentResult.References) continue;
+            if (currentResult.statusCode.isNotGood()) throw new UaError(currentResult.statusCode);
             
-            for (let item of currentResult.References)
+            for (let item of currentResult.references)
             {
-                let reference = UaPayloadMapper.referenceDescriptionFromWebApi(item);
+                let nodeId = item.nodeId.getNodeId();
+                let typeDefinition = item.typeDefinition?.getNodeId();
+                if (null == nodeId || null == typeDefinition) continue;
+
                 this._browseResults.push({
                     fromNodeId: currentNodeId,
-                    nodeId: reference.nodeId.getNodeId(),
-                    nodeClass: reference.nodeClass,
-                    browseName: reference.browseName,
-                    displayName: reference.displayName,
-                    referenceTypeId: reference.referenceTypeId,
-                    isForward: reference.isForward,
-                    typeDefinitionId: reference.typeDefinition?.getNodeId()
+                    nodeId: nodeId,
+                    nodeClass: item.nodeClass,
+                    browseName: item.browseName,
+                    displayName: item.displayName,
+                    referenceTypeId: item.referenceTypeId,
+                    isForward: item.isForward,
+                    typeDefinitionId: typeDefinition
                 });
             }
 
-            if (currentResult.ContinuationPoint && currentResult.ContinuationPoint.length != 0)
+            if (currentResult.continuationPoint)
             {
                 this._continuationPointToBrowse.push({
                     nodeId: currentNodeId,
-                    continuationPoint: currentResult.ContinuationPoint
+                    continuationPoint: currentResult.continuationPoint
                 });
             }
         }

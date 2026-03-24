@@ -1,5 +1,5 @@
 import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
-import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType, ReferenceTypeIds } from "../../common"
+import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType, ReferenceTypeIds, UaBrowseDescription } from "../../common"
 import { UaWebClient } from "../UaWebClient"
 
 export class UaDataTypeDictionary
@@ -56,36 +56,35 @@ export class UaDataTypeDictionary
 
         let nodeIds = this._remainingNodesToBrowse.splice(0,15);
 
-        let nodesToBrowse: Array<BrowseDescription> = [];
+        let nodesToBrowse: Array<UaBrowseDescription> = [];
 
         for (let item of nodeIds)
         {
-            nodesToBrowse.push(
-                {
-                    NodeId: item.toString(),
-                    BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasSubtype).toString(),
-                    IncludeSubtypes: false,
-                    NodeClassMask: NodeClass.DataType,
-                    ResultMask: 31
-                }
-            );
+            let browseDescription = new UaBrowseDescription(
+                    item,
+                    BrowseDirection.Forward,
+                    new UaNodeId(ReferenceTypeIds.HasSubtype),
+                    false,
+                    NodeClass.DataType,
+                    31);
+
+            nodesToBrowse.push(browseDescription);
         }
 
         let results = await client.browse(nodesToBrowse);
 
         for (let i=0; i<nodeIds.length; ++i)
         {
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
-            if (statusCode.isNotGood() || !results[i].References) continue;
+            if (results[i].statusCode.isNotGood()) continue;
 
             let parentType = this._dataTypes.get(nodeIds[i].toString());
 
-            for (let item of results[i].References)
+            for (let item of results[i].references)
             {
-                let dataTypeId = parseUaNodeIdOrNull(item.NodeId);
-                if (!dataTypeId || NodeClass.DataType != item.NodeClass ||
-                    !item.BrowseName || !item.DisplayName) continue;
+                let dataTypeId = item.nodeId.getNodeId();
+                if (null == dataTypeId ||
+                    NodeClass.DataType != item.nodeClass ||
+                    !item.browseName || !item.displayName) continue;
 
                 let isAbstract = false;
                 if (dataTypeId.nsIndex == 0 &&
@@ -93,8 +92,8 @@ export class UaDataTypeDictionary
 
                 let dataType = new UaDataType(
                     dataTypeId, 
-                    item.BrowseName, 
-                    UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
+                    item.browseName, 
+                    item.displayName,
                     isAbstract);              
                 
                 this._dataTypes.set(dataTypeId.toString(), dataType);
@@ -122,20 +121,19 @@ export class UaDataTypeDictionary
 
         let nodeIds = this._remainingEnumerationToRead.splice(0, 20);
 
-        let nodesToBrowse: Array<BrowseDescription> = [];
+        let nodesToBrowse: Array<UaBrowseDescription> = [];
 
         for (let item of nodeIds)
         {
-            nodesToBrowse.push(
-                {
-                    NodeId: item.toString(),
-                    BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasProperty).toString(),
-                    IncludeSubtypes: false,
-                    NodeClassMask: NodeClass.Variable,
-                    ResultMask: 8
-                }
-            );
+            let browseDescription = new UaBrowseDescription(
+                    item,
+                    BrowseDirection.Forward,
+                    new UaNodeId(ReferenceTypeIds.HasProperty),
+                    false,
+                    NodeClass.Variable,
+                    8);
+
+            nodesToBrowse.push(browseDescription);
         }
 
         let results = await client.browse(nodesToBrowse);
@@ -144,12 +142,13 @@ export class UaDataTypeDictionary
         let enumValueIds : Array<UaNodeId> = [];
 
         for (let i=0; i<nodeIds.length; ++i)
-        {
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);            
-            if (statusCode.isNotGood() || !results[i].References || results[i].References.length == 0) continue;
-            if (results[i].References[0].BrowseName == "EnumStrings" || results[i].References[0].BrowseName == "EnumValues")
+        {                
+            if (results[i].statusCode.isNotGood() ||
+                results[i].references.length == 0) continue;
+
+            if (results[i].references[0].browseName == "EnumStrings" || results[i].references[0].browseName == "EnumValues")
             {
-                let enumValueId = parseUaNodeIdOrNull(results[i].References[0].NodeId);
+                let enumValueId = results[i].references[0].nodeId.getNodeId();
                 if (enumValueId)
                 {
                     enumDataTypeIds.push(nodeIds[i]);

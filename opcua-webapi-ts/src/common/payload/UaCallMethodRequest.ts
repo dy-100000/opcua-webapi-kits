@@ -61,9 +61,11 @@ export class UaCallMethodRequest
         
         if (null == objectId || null == methodId) return null;
 
-        for (let item of callMethodRequest.InputArguments) {
-            let variant = UaPayloadMapper.variantFromWebApi(item);
-            inputArguments.push(variant);
+        if (callMethodRequest.InputArguments) {
+            for (let item of callMethodRequest.InputArguments) {
+                let variant = UaPayloadMapper.variantFromWebApi(item);
+                inputArguments.push(variant);
+            }
         }
 
         return new UaCallMethodRequest(

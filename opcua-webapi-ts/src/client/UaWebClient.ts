@@ -1,9 +1,9 @@
 import { DefaultApi, ViewDescription, BrowseDescription, RequestHeader, BrowseRequestFromJSON, 
-    BrowseResult, ReadValueId, ReadRequestFromJSON, TimestampsToReturn, BrowseNextRequestFromJSON, 
+    ReadValueId, ReadRequestFromJSON, TimestampsToReturn, BrowseNextRequestFromJSON, 
     WriteValue, WriteRequestFromJSON, CallMethodRequest, CallRequestFromJSON, 
     FindServersRequestFromJSON, 
     ApplicationDescription, NodeClass, BrowseDirection, Attributes, EndpointDescription, 
-    GetEndpointsRequestFromJSON, DataValue,  
+    GetEndpointsRequestFromJSON,   
     StatusCodes,
     Variant,
     HistoryReadRequestFromJSON,
@@ -136,7 +136,7 @@ export class UaWebClient
             nodesToRead.push(nodeToRead);
         }
 
-        let results = await this.read(nodesToRead, timestampsToReturn);
+        let results = await this.read(nodesToRead, (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Neither);
         return results;
     }
 
@@ -468,7 +468,7 @@ export class UaWebClient
             endTime, 
             new UaEventFilter(selectClauses, whereClauses), 
             numValuesPerNode);
-
+        
         let historyReadDetails = details.toExtensionObject();
 
         let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
@@ -514,11 +514,14 @@ export class UaWebClient
             throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
         
         let results: Array<UaBrowseResult> = [];
-        for (let item of response.Results) 
+        if (response.Results)
         {
-            let result = UaBrowseResult.fromStruct(item);
-            if (null == result) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
-            results.push(result);
+            for (let item of response.Results) 
+            {
+                let result = UaBrowseResult.fromStruct(item);
+                if (null == result) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                results.push(result);
+            }
         }
         
         return results;
@@ -571,12 +574,12 @@ export class UaWebClient
 
         let request = ReadRequestFromJSON({
             RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
-            NodesToRead: nodesToRead,
+            NodesToRead: NodesToRead,
             MaxAge: (maxAge && maxAge > 0) ? maxAge : undefined,
             TimestampsToReturn: 
                (timestampsToReturn && 
                 timestampsToReturn >= TimestampsToReturn.Source && 
-                timestampsToReturn < TimestampsToReturn.Invalid) ? timestampsToReturn : undefined }); 
+                timestampsToReturn < TimestampsToReturn.Invalid) ? timestampsToReturn : TimestampsToReturn.Neither }); 
 
         let response = await this.api.read({readRequest: request});
 

@@ -1,4 +1,3 @@
-import { NodeClass } from "opcua-webapi";
 import { UaNodeId } from "./UaNodeId";
 
 export class UaLink

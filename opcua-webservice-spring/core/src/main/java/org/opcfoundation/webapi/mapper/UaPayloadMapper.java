@@ -166,13 +166,13 @@ public class UaPayloadMapper {
     {
         ReferenceDescription ret = new ReferenceDescription();
 
-        ret.setReferenceTypeId(description.getReferenceTypeId().toParseableString());
-        ret.setIsForward(description.getIsForward());
         ret.setNodeId(description.getNodeId().toParseableString());
         ret.setNodeClass(description.getNodeClass().getValue());
-        ret.setBrowseName(description.getBrowseName().getName());
-        ret.setDisplayName(UaTypeMapper.localizedTextFromMilo(description.getDisplayName()));
-        ret.setTypeDefinition(description.getTypeDefinition().toParseableString());
+        ret.setIsForward(description.getIsForward());
+        if (!description.getReferenceTypeId().isNull()) ret.setReferenceTypeId(description.getReferenceTypeId().toParseableString());
+        if (!description.getBrowseName().isNull()) ret.setBrowseName(description.getBrowseName().getName());
+        if (!description.getDisplayName().isNull()) ret.setDisplayName(UaTypeMapper.localizedTextFromMilo(description.getDisplayName()));
+        if (!description.getTypeDefinition().isNull()) ret.setTypeDefinition(description.getTypeDefinition().toParseableString());
 
         return ret;
     }

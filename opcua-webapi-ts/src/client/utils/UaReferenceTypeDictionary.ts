@@ -1,5 +1,5 @@
-import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
-import { parseUaNodeIdOrNull, UaReferenceType, UaLocalizedText, UaNodeId, UaPayloadMapper, ReferenceTypeIds } from "../../common"
+import { BrowseDirection, NodeClass } from "opcua-webapi";
+import { UaReferenceType, UaLocalizedText, UaNodeId, ReferenceTypeIds, UaBrowseDescription } from "../../common"
 import { UaWebClient } from "../UaWebClient"
 
 export class UaReferenceTypeDictionary
@@ -48,41 +48,39 @@ export class UaReferenceTypeDictionary
 
         let nodeIds = this._remainingNodesToBrowse.splice(0,15);
 
-        let nodesToBrowse: Array<BrowseDescription> = [];
+        let nodesToBrowse: Array<UaBrowseDescription> = [];
 
         for (let item of nodeIds)
         {
-            nodesToBrowse.push(
-                {
-                    NodeId: item.toString(),
-                    BrowseDirection: BrowseDirection.Forward,
-                    ReferenceTypeId: new UaNodeId(ReferenceTypeIds.HasSubtype).toString(),
-                    IncludeSubtypes: false,
-                    NodeClassMask: NodeClass.ReferenceType,
-                    ResultMask: 31
-                }
-            );
+            let browseDescription = new UaBrowseDescription(
+                    item,
+                    BrowseDirection.Forward,
+                    new UaNodeId(ReferenceTypeIds.HasSubtype),
+                    false,
+                    NodeClass.ReferenceType,
+                    31);
+
+            nodesToBrowse.push(browseDescription);
         }
 
         let results = await client.browse(nodesToBrowse);
 
         for (let i=0; i<nodeIds.length; ++i)
         {
-            let statusCode = UaPayloadMapper.statusCodeFromWebApi(results[i].StatusCode);
-            if (statusCode.isNotGood() || !results[i].References) continue;
+            if (results[i].statusCode.isNotGood()) continue;
 
             let parentType = this._referenceTypes.get(nodeIds[i].toString());
 
-            for (let item of results[i].References)
+            for (let item of results[i].references)
             {
-                let referenceTypeId = parseUaNodeIdOrNull(item.NodeId);
-                if (!referenceTypeId || NodeClass.ReferenceType != item.NodeClass ||
-                    !item.BrowseName || !item.DisplayName) continue;
+                let referenceTypeId = item.nodeId.getNodeId();
+                if (null == referenceTypeId || NodeClass.ReferenceType != item.nodeClass ||
+                    !item.browseName || !item.displayName) continue;
 
                 let referenceType = new UaReferenceType(
                     referenceTypeId, 
-                    item.BrowseName, 
-                    UaPayloadMapper.localizedTextFromWebApi(item.DisplayName),
+                    item.browseName, 
+                    item.displayName,
                     false,
                     UaLocalizedText.nullText,
                     false);              

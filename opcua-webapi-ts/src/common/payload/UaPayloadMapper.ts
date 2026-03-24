@@ -18,8 +18,10 @@ export class UaPayloadMapper
 
     static localizedTextFromWebApi(text?: LocalizedText | null) : UaLocalizedText | null
     {
-        if (!text || !text.Text) return null;
-        return new UaLocalizedText(text.Text, text.Locale);
+        if (!text) return null;
+        return new UaLocalizedText(
+            (text.Text) ? text.Text : "", 
+            (text.Locale) ? text.Locale : undefined);
     }
 
     static localizedTextToWebApi(text: UaLocalizedText) : LocalizedText

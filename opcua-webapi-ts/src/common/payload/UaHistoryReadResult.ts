@@ -8,12 +8,12 @@ export class UaHistoryReadResult
     static dataTypeId : UaNodeId = new UaNodeId(DataTypeIds.HistoryReadResult);
 
     private _statusCode: UaStatusCode;
-    private _historyData: UaExtensionObject;
+    private _historyData?: UaExtensionObject;
     private _continuationPoint?: string;    
 
     constructor(
         statusCode: UaStatusCode, 
-        historyData: UaExtensionObject,
+        historyData?: UaExtensionObject,
         continuationPoint?: string)
     {
         this._statusCode = statusCode;
@@ -26,7 +26,7 @@ export class UaHistoryReadResult
         return this._statusCode;
     }
 
-    get historyData() : UaExtensionObject
+    get historyData() : UaExtensionObject | undefined
     {
         return this._historyData;
     }
@@ -51,9 +51,13 @@ export class UaHistoryReadResult
     static fromStruct(historyReadResult : HistoryReadResult) : UaHistoryReadResult | null
     {
         let statusCode = UaPayloadMapper.statusCodeFromWebApi(historyReadResult.StatusCode);
-        let historyData = UaPayloadMapper.extensionObjectFromWebApi(historyReadResult.HistoryData);
+        let historyData = undefined;
         let continuationPoint = historyReadResult.ContinuationPoint;
-
+        
+        if (historyReadResult.HistoryData) {
+            historyData = UaPayloadMapper.extensionObjectFromWebApi(historyReadResult.HistoryData);
+        }
+        
         return new UaHistoryReadResult(
             statusCode,
             historyData,

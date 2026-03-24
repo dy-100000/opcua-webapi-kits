@@ -20,15 +20,16 @@ class Test {
     async run()
     {
         try
-        {                    
-            /*    
-            await this.testReadValues();             
+        {
+            await this.testFindServer();
+            /*
+            await this.testReadValues();
             await this.testBrowse();
             await this.testReadNodeAttribute();
-            await this.testReadVariableAttribute(); 
+            await this.testReadVariableAttribute();
             await this.testReadMethodArgument();
             await this.testReadObjectAttribute();
-            await this.testWriteValues(); 
+            await this.testWriteValues();
             await this.testMethodCall(); 
             await this.testHistoryReadRawData();
             await this.testHistroryReadEvent();
@@ -39,9 +40,10 @@ class Test {
             await this.testHistroryReadEvent();  
             await this.testReaderNode();
             await this.testNodeChildReader();   
-            await this.testNodeLinkReader();         
+            await this.testNodeLinkReader();   
+            await this.testFindServer();      
             */
-            await this.testFindServer();
+            
         } catch (e) {            
             console.log(e);
         }
@@ -51,7 +53,7 @@ class Test {
     {
         console.log("testBrowse");
 
-        let nodeId = new UaNodeId("BuildingAutomation",4,UaNodeIdType.STRING);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSIsImkiOiJFbnRyeSJ9fQ==");
         let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method);
 
         console.log("browseChild");
@@ -59,7 +61,7 @@ class Test {
 
         for (let item of children.results)
         {
-            console.log(item.displayName.toString());
+            console.log(item.displayName?.toString());
         }       
  
         if (children.continuationPoint)
@@ -69,7 +71,7 @@ class Test {
             children = await this.client.browseNextByCP(children.continuationPoint);
             for (let item of children.results)
             {
-                console.log(item.displayName.toString());
+                console.log(item.displayName?.toString());
             }
         }
     }
@@ -77,7 +79,7 @@ class Test {
     async testReadNodeAttribute()
     {
         console.log("testReadNodeAttribute");
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUR5bmFtaWNTdWJtb2RlbFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1UZXN0RGlnaXRhbFR3aW4tRWxlbWVudExpc3RTdWJtb2RlbCJ9fQ==");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbiIsImkiOiIwIn19");
 
         let attribute = await this.client.readNodeAttributes(nodeId, true);
         console.log(attribute);
@@ -87,7 +89,7 @@ class Test {
     {
         console.log("testReadVariableAttribute");
         
-        let nodeId = new UaNodeId("Demo.History.Historian_1",3);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
         let attribute = await this.client.readVariableAttributes([nodeId]);
         console.log(attribute);
     }
@@ -96,7 +98,7 @@ class Test {
     {
         console.log("testReadObjectAttribute");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUV2ZW50RWxlbWVudFRlc3RUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUV2ZW50RWxlbWVudCJ9fQ==");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn19");
         let attribute = await this.client.readObjectAttributes(nodeId);
         console.log(attribute);
     }
@@ -105,16 +107,18 @@ class Test {
     {
         console.log("testReadMethodArgument");
 
-        let nodeId = new UaNodeId("Demo.Method.Multiply",3);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
         let methodArgs = await this.client.readMethodArguments(nodeId);
         
         for (let item of methodArgs.inputArguments)
         {
+            console.log("InputArgument:");
             console.log(item);
         }
         
         for (let item of methodArgs.outputArguments)
         {
+            console.log("OutputArgument:");
             console.log(item);
         }
     }
@@ -123,10 +127,14 @@ class Test {
     {
         console.log("testReadValues");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn0sImNpIjp7InAiOiJNZXRob2QiLCJwMiI6IklucHV0QXJndW1lbnRzIiwibW4iOnRydWV9fQ==");
+        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVBlcnNvbmFsRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtUGVyc29uYWxEYXRhIn0sImNpIjp7InAiOiJTZXgifX0=");
+        let nodeId2 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVBlcnNvbmFsRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtUGVyc29uYWxEYXRhIn0sImNpIjp7InAiOiJBZGRyZXNzIn19");
+        let nodeId3 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn0sImNpIjp7InAiOiJTYWxhcnkiLCJwMiI6IkVuZ2luZWVyaW5nVW5pdHMifX0=");
       
         let nodeIds : Array<UaNodeId> = [
-            nodeId
+            nodeId1,
+            nodeId2,
+            nodeId3
         ];
 
         let values = await this.client.readValues(nodeIds);
@@ -179,34 +187,23 @@ class Test {
     {
         console.log("testWriteValues");
 
-        let value = UaVariant.extensionObject(new UaRange(15,50).toExtensionObject())
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
+        let value = UaVariant.double(20);
+        //let value = UaVariant.extensionObject(new UaRange(15,50).toExtensionObject())
 
-        let nodesToWrite : Array<UaWriteValue> = [
-            { 
-                nodeId: parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn0sImNpIjp7InAiOiJSYW5nZSJ9fQ=="),
-                value: value
-            }
-        ];
-
-        let results = await this.client.writeValues(nodesToWrite);
-
-        for (let item of results)
-        {
-            console.log(item.value);
-        }
+        await this.client.writeValue(nodeId, value);
     }
 
     async testMethodCall()
     {
         console.log("testMethodCall");
 
-        let objectId = new UaNodeId("Demo.Method",3);
-        let methodId = new UaNodeId("Demo.Method.Multiply",3);
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ==");
+        let methodId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
 
-        let inputA = UaVariant.double(15);
-        let inputB = UaVariant.double(20);
+        let input = UaVariant.string("Hello");
 
-        let inputArguments : Array<UaVariant> = [inputA, inputB];
+        let inputArguments : Array<UaVariant> = [input];
         let outputArguments = await this.client.methodCall(objectId, methodId, inputArguments);
 
         for (let item of outputArguments)
@@ -254,7 +251,9 @@ class Test {
     {
         console.log("testHistoryReadEvent");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUVsZW1lbnRUeXBlIiwiaSI6IjEiLCJpZCI6Im5zPTI7cz1FbXBsb3llZURhdGFTdWJtb2RlbFR5cGUtQXR0ZW5kYW5jZSJ9fQ==");
+        StatusCodes
+
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlQXR0ZW5kYW5jZUV2ZW50VHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEYXRhU3VibW9kZWxUeXBlLUF0dGVuZGFuY2UifX0=");
         let startTime = new Date("2026-01-05T07:00:00");
         let endTime = new Date("2026-01-07T07:00:00");
 
@@ -270,7 +269,7 @@ class Test {
             startTime,
             endTime,
             select,
-            null,
+            where,
             15,
             null,            
             true);
@@ -296,7 +295,7 @@ class Test {
     {
         console.log("testGetGeneratedEvent");
 
-        let objectTypeId = new UaNodeId("EventElementTestType",2);
+        let objectTypeId = parseUaNodeId("ns=2;s=EmployeeAttendanceEventType");
         let eventTypeIds = await this.client.getGeneratedEventType(objectTypeId);
 
         for (let item of eventTypeIds)
@@ -361,11 +360,11 @@ class Test {
     async testReaderNode()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlIiwiaSI6IjEifX0=")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn19")
         ];
 
         let reader = new UaNodeReader(nodeIds);
-        await this._testNodeReader(reader);
+        await reader.readAll(this.client);
 
         let nodes = reader.getResults();
         for (let item of nodes)
@@ -377,11 +376,11 @@ class Test {
     async testNodeChildReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn19")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlIiwiaSI6IjEifX0=")
         ];
 
         let reader = new UaNodeChildReader(nodeIds);
-        await this._testNodeChildReader(reader);
+        await reader.readAll(this.client);
 
         let childNodes = reader.getResults();
         for (let item of childNodes)
@@ -398,11 +397,11 @@ class Test {
     async testNodeLinkReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPURlcGFydG1lbnRFbXBsb3llZVJlZmVyZW5jZVR5cGUiLCJpIjoiMyIsImlkIjoibnM9MjtzPURlcGFydG1lbnRUeXBlLUVtcGxveWVlcyJ9fQ==")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlU2tpbGxSZWZlcmVuY2VUeXBlIiwiaSI6IjIiLCJpZCI6Im5zPTI7cz1FbXBsb3llZVNraWxsU3VibW9kZWxUeXBlLVNraWxscyJ9fQ==")
         ];
 
         let reader = new UaNodeLinkReader(nodeIds);
-        await this._testNodeLinkReader(reader);
+        await reader.readAll(this.client);
 
         let links = reader.getResults();
         for (let item of links)
@@ -414,38 +413,10 @@ class Test {
                 console.log({
                     target: item2.targetId.toString(),
                     reference: item2.referenceTypeId.toString(),
-                    isForward: (item2.isForward) ? undefined : false
+                    isForward: item2.isForward
                 });
             }
         }
-    }
-
-    async _testNodeReader(reader: UaNodeReader)
-    {
-        if (!reader.isFinish())
-        {            
-            await reader.read(this.client);
-            await this._testNodeReader(reader);
-        }
-    }
-
-    async _testNodeChildReader(reader: UaNodeChildReader)
-    {
-        if (!reader.isFinish())
-        {
-            await reader.read(this.client);
-            await this._testNodeChildReader(reader);
-        }        
-    }
-
-    async _testNodeLinkReader(reader: UaNodeLinkReader)
-    {
-        if (!reader.isFinish())
-        {
-            console.log("_testNodeLinkReader");
-            await reader.read(this.client);
-            await this._testNodeLinkReader(reader);
-        }        
     }
 }
 
