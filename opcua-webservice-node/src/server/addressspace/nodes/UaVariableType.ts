@@ -1,6 +1,7 @@
 import { Attributes, NodeClass } from "opcua-webapi";
 import { UaLocalizedText, UaNodeId, UaVariant, UaVariantType, VariableIds, VariableTypeIds } from "opcua-webapi-ts";
-import { UaDefinitionNode,UaVariable } from ".";
+import { UaDefinitionNode } from "./UaDefinitionNode";
+import type { UaVariable } from "./UaVariable";
 
 export class UaVariableType extends UaDefinitionNode {
     private readonly _dataType: UaNodeId;
@@ -13,13 +14,8 @@ export class UaVariableType extends UaDefinitionNode {
         displayName: UaLocalizedText,
         isAbstract: boolean,
         dataType: UaNodeId,
-        valueRank: number,
-        parentType: UaVariableType | null) {
+        valueRank: number) {
         super(nodeId, browseName, displayName, isAbstract);
-        if (parentType !== null) {
-            this.setParentType(parentType);
-        }
-
         this._dataType = dataType;
         this._valueRank = valueRank;
         this._value = UaVariant.null();

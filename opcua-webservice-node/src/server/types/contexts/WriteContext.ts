@@ -1,17 +1,21 @@
-import { WriteRequest, WriteValue } from "opcua-webapi";
+import { RequestHeader, WriteRequest, WriteValue } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
+import { UaWriteValue } from "opcua-webapi-ts";
 
 export class WriteContext extends ServiceContext
 {
-    private _nodesToWrite: Array<WriteValue>;
+    private _nodesToWrite: Array<UaWriteValue>;
     
-    constructor(request: WriteRequest, serverUri?: string)
+    constructor(
+        nodesToWrite: Array<UaWriteValue>,
+        serverUri?: string,
+        requestHeader?: RequestHeader)
     {
-        super(serverUri, request.RequestHeader);
-        this._nodesToWrite = (request.NodesToWrite) ? request.NodesToWrite : [];
+        super(serverUri, requestHeader);
+        this._nodesToWrite = (nodesToWrite) ? nodesToWrite : [];
     }
 
-    get nodesToWrite() : Array<WriteValue>
+    get nodesToWrite() : Array<UaWriteValue>
     {
         return this._nodesToWrite;
     }

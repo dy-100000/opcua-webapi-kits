@@ -26,3 +26,7 @@ export enum UaWriteMask {
     AccessRestrictions = 16777216,
     AccessLevelEx = 33554432
 }
+
+export function isWriteMaskRequired(mask: number, requiredMask: UaWriteMask): boolean {
+    return (mask & requiredMask) === requiredMask;
+}

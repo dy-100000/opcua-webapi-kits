@@ -1,6 +1,9 @@
 import { StatusCodes } from "opcua-webapi";
 import { UaError, UaLocalizedText, UaNodeId, makeUaStatusCode } from "opcua-webapi-ts";
-import { UaNode,UaReference,UaModellingRule, UaObjects, UaReferenceTypes } from ".";
+import { UaModellingRule } from "./UaModellingRule";
+import { UaNode } from "./UaNode";
+import { UaReference } from "./UaReference";
+import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
 
 export abstract class UaInstanceNode extends UaNode {
     private _modellingRule: UaModellingRule;
@@ -29,6 +32,7 @@ export abstract class UaInstanceNode extends UaNode {
         this._modellingRule = modellingRule;
 
         if (modellingRule === UaModellingRule.Mandatory) {
+            const { UaObjects } = require("./builtin/UaObjects");
             this.addReference(new UaReference(UaObjects.ModellingRule_Mandatory, UaReferenceTypes.HasModellingRule, true));
         }
     }

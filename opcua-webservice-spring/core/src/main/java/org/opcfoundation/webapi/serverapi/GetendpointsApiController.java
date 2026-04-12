@@ -51,9 +51,6 @@ public class GetendpointsApiController implements GetendpointsApi {
             String serverUri,
             GetEndpointsRequest getEndpointsRequest) {
         try {
-            UaServerConfigure serverConfig = service.getServerConfigure();
-            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
-
             GetEndpointContext getEndpointContext = new GetEndpointContext(
                     getEndpointsRequest.getEndpointUrl(),
                     getEndpointsRequest.getLocaleIds(),

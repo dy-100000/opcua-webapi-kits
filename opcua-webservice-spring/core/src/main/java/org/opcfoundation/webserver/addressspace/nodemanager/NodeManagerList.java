@@ -8,16 +8,7 @@ import java.util.*;
 
 public class NodeManagerList {
     private final List<NodeManagerBase> nodeManagers;
-    private static int globalNsIndex = 0;
-
     public final static NodeManagerList nodeManagerList = new NodeManagerList();
-
-    public static int getGlobalNsIndex()
-    {
-        int ret = globalNsIndex;
-        globalNsIndex++;
-        return ret;
-    }
 
     public NodeManagerList()
     {
@@ -32,6 +23,11 @@ public class NodeManagerList {
             ret.add(item.nsIndex());
         }
         return ret;
+    }
+
+    public int getNewNsIndex()
+    {
+        return nodeManagers.size();
     }
 
     public @Nullable NodeManagerBase getNodeManager(int nsIndex)

@@ -20,8 +20,9 @@ public class UaEnumDataType extends UaDataType {
         super(new NodeId(nodeManager.nsIndex(), dataTypeId),
                 dataTypeId,
                 displayName,
-                false,
-                UaDataTypes.Enumeration);
+                false);
+
+        setParentType(UaDataTypes.Enumeration);
 
         String enumStringsId = dataTypeId;
         enumStringsId += "-EnumStrings";
@@ -49,8 +50,9 @@ public class UaEnumDataType extends UaDataType {
         super(new NodeId(nodeManager.nsIndex(), dataTypeId),
                 dataTypeId,
                 displayName,
-                false,
-                UaDataTypes.Enumeration);
+                false);
+
+        setParentType(UaDataTypes.Enumeration);
 
         String enumValuesId = dataTypeId;
         enumValuesId += "-EnumValues";

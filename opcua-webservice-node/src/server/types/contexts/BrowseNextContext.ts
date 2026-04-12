@@ -1,24 +1,28 @@
-import { BrowseNextRequest } from "opcua-webapi";
+import { RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
 
 export class BrowseNextContext extends ServiceContext
 {
-    private _continuationPoints?: Array<string>;
-    private _releaseContinuationPoints?: boolean;  
+    private _continuationPoints: Array<string>;
+    private _releaseContinuationPoints: boolean;  
     
-    constructor(request: BrowseNextRequest, serverUri?: string)
+    constructor(
+        releaseContinuationPoints: boolean,
+        continuationPoints?: Array<string>,        
+        serverUri?: string,
+        requestHeader? : RequestHeader)
     {
-        super(serverUri, request.RequestHeader);
-        this._continuationPoints = (request.ContinuationPoints) ? request.ContinuationPoints : [];
-        this._releaseContinuationPoints = (request.ReleaseContinuationPoints) ? request.ReleaseContinuationPoints : false;
+        super(serverUri, requestHeader);
+        this._releaseContinuationPoints = releaseContinuationPoints;
+        this._continuationPoints = (continuationPoints) ? continuationPoints : [];        
     }
 
-    get continuationPoints() : Array<string> | undefined
+    get continuationPoints() : Array<string>
     {
         return this._continuationPoints;
     }
 
-    get releaseContinuationPoints() : boolean | undefined
+    get releaseContinuationPoints() : boolean
     {
         return this._releaseContinuationPoints;
     }

@@ -10,11 +10,9 @@ public class UaObjectType extends UaDefinitionNode {
             NodeId nodeId,
             String browseName,
             LocalizedText displayName,
-            boolean isAbstract,
-            @Nullable UaObjectType parentType)
+            boolean isAbstract)
     {
         super(nodeId,browseName,displayName,isAbstract);
-        if (null != parentType) setParentType(parentType);
     }
 
     @Override

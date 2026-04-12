@@ -1,19 +1,15 @@
 import { NodeClass } from "opcua-webapi";
 import { UaLocalizedText, UaNodeId, VariableTypeIds } from "opcua-webapi-ts";
 import { UaDefinitionNode } from "./UaDefinitionNode";
-import { UaInstanceNode } from "./UaInstanceNode";
+import type { UaInstanceNode } from "./UaInstanceNode";
 
 export class UaObjectType extends UaDefinitionNode {
     constructor(
         nodeId: UaNodeId,
         browseName: string,
         displayName: UaLocalizedText,
-        isAbstract: boolean,
-        parentType: UaObjectType | null) {
+        isAbstract: boolean) {
         super(nodeId, browseName, displayName, isAbstract);
-        if (null !== parentType) {
-            this.setParentType(parentType);
-        }
     }
 
     get nodeClass(): NodeClass {

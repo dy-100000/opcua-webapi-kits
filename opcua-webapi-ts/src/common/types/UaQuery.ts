@@ -78,7 +78,7 @@ export class UaQuery {
                 notElements.push(operand.index);
             } else if (item.operator >= FilterOperator.Equals && item.operator <= FilterOperator.InList) {
                 let query = UaQueryFilter.fromContentFilterElement(item);
-                if (null == query) return;
+                if (null == query) return null;
                 queryElements.set(index, query);
             } else if (item.operator == FilterOperator.Or) {
                 if (item.operands.length != 0) return null;

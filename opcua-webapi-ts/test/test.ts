@@ -21,8 +21,8 @@ class Test {
     {
         try
         {
-            await this.testFindServer();
             /*
+            await this.testFindServer();
             await this.testReadValues();
             await this.testBrowse();
             await this.testReadNodeAttribute();
@@ -53,8 +53,8 @@ class Test {
     {
         console.log("testBrowse");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSIsImkiOiJFbnRyeSJ9fQ==");
-        let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method);
+        let nodeId = parseUaNodeId("i=90");
+        let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.ReferenceType | NodeClass.DataType);
 
         console.log("browseChild");
         let children = await this.client.browseChild(nodeId, nodeClassToReturn, 3);
@@ -127,7 +127,7 @@ class Test {
     {
         console.log("testReadValues");
 
-        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVBlcnNvbmFsRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtUGVyc29uYWxEYXRhIn0sImNpIjp7InAiOiJTZXgifX0=");
+        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkJvb2wifX0=");
         let nodeId2 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVBlcnNvbmFsRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtUGVyc29uYWxEYXRhIn0sImNpIjp7InAiOiJBZGRyZXNzIn19");
         let nodeId3 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn0sImNpIjp7InAiOiJTYWxhcnkiLCJwMiI6IkVuZ2luZWVyaW5nVW5pdHMifX0=");
       

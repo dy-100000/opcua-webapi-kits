@@ -1,19 +1,24 @@
-import { BrowseDescription, BrowseRequest } from "opcua-webapi";
+import { RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
+import { UaBrowseDescription } from "opcua-webapi-ts";
 
 export class BrowseContext extends ServiceContext
 {
-    private _nodesToBrowse: Array<BrowseDescription>;
+    private _nodesToBrowse: Array<UaBrowseDescription>;
     private _requestedMaxReferencesPerNode: number;   
     
-    constructor(request: BrowseRequest, serverUri?: string)
+    constructor(
+        browseDescription: Array<UaBrowseDescription>, 
+        requestedMaxReferencesPerNode? : number,
+        serverUri?: string, 
+        requestHeader? : RequestHeader)
     {
-        super(serverUri, request.RequestHeader);
-        this._nodesToBrowse = (request.NodesToBrowse) ? request.NodesToBrowse : [];
-        this._requestedMaxReferencesPerNode = (request.RequestedMaxReferencesPerNode && request.RequestedMaxReferencesPerNode > 0) ? request.RequestedMaxReferencesPerNode : 0;
+        super(serverUri, requestHeader);
+        this._nodesToBrowse = browseDescription;
+        this._requestedMaxReferencesPerNode = (requestedMaxReferencesPerNode && requestedMaxReferencesPerNode > 0) ? requestedMaxReferencesPerNode : 0;
     }
 
-    get nodesToBrowse() : Array<BrowseDescription>
+    get nodesToBrowse() : Array<UaBrowseDescription>
     {
         return this._nodesToBrowse;
     }

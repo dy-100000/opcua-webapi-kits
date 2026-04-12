@@ -29,8 +29,4 @@ export class UaReferenceType extends UaDefinitionNode {
     public get isSymmetric(): boolean {
         return this._symmetric;
     }
-
-    public setParentReferenceType(referenceType: UaReferenceType): void {
-        this.setParentType(referenceType);
-    }
 }

@@ -8,17 +8,17 @@ import java.util.Objects;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UaObjectIdentifier {
-    @JsonProperty("t")
-    private String typeId;
     @JsonProperty("i")
     private String id;
+    @JsonProperty("t")
+    private @Nullable String typeId;
     @JsonProperty("id")
     private @Nullable String instanceDeclId;
 
     public UaObjectIdentifier()
     {
-        typeId = "";
         id = "";
+        typeId = null;
         instanceDeclId = null;
     }
 
@@ -27,17 +27,9 @@ public class UaObjectIdentifier {
             String id,
             @Nullable String instanceDeclId)
     {
-        this.typeId = typeId;
+        if (null == instanceDeclId) this.typeId = typeId;
         this.id = id;
         this.instanceDeclId = instanceDeclId;
-    }
-
-    public String getTypeId() {
-        return typeId;
-    }
-
-    public void setTypeId(String typeId) {
-        this.typeId = typeId;
     }
 
     public String getId() {
@@ -46,6 +38,14 @@ public class UaObjectIdentifier {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public @Nullable String getTypeId() {
+        return typeId;
+    }
+
+    public void setTypeId(@Nullable String typeId) {
+        this.typeId = typeId;
     }
 
     public @Nullable String getInstanceDeclId() {

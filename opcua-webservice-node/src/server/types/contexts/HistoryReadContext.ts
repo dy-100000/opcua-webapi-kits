@@ -1,28 +1,35 @@
-import { ExtensionObject, HistoryReadRequest, HistoryReadValueId } from "opcua-webapi";
+import { RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
+import { UaExtensionObject, UaHistoryReadValueId } from "opcua-webapi-ts";
 
 export class HistoryReadContext extends ServiceContext
 {
-    private _nodesToRead: Array<HistoryReadValueId>;
-    private _historyReadDetails: ExtensionObject | null;
+    private _nodesToRead: Array<UaHistoryReadValueId>;
+    private _historyReadDetails: UaExtensionObject;
     private _timestampsToReturn: number;
-    private _releaseContinuationPoints: boolean;   
+    private _releaseContinuationPoints: boolean;
     
-    constructor(request: HistoryReadRequest, serverUri?: string)
+    constructor(
+        nodesToRead: Array<UaHistoryReadValueId>,
+        historyReadDetails: UaExtensionObject,
+        timestampsToReturn?: number,
+        releaseContinuationPoints?: boolean,
+        serverUri?: string,
+        requestHeader?: RequestHeader)
     {
-        super(serverUri, request.RequestHeader);
-        this._nodesToRead = request.NodesToRead || [];
-        this._historyReadDetails = (request.HistoryReadDetails) ? request.HistoryReadDetails : null;
-        this._timestampsToReturn = request.TimestampsToReturn || 0;
-        this._releaseContinuationPoints = request.ReleaseContinuationPoints || false;
+        super(serverUri, requestHeader);
+        this._nodesToRead = nodesToRead || [];
+        this._historyReadDetails = historyReadDetails;
+        this._timestampsToReturn = (timestampsToReturn && timestampsToReturn > 0) ? timestampsToReturn : 0;
+        this._releaseContinuationPoints = releaseContinuationPoints || false;
     }
 
-    get nodesToRead() : Array<HistoryReadValueId>
+    get nodesToRead() : Array<UaHistoryReadValueId>
     {
         return this._nodesToRead;
     }
 
-    get historyReadDetails() : ExtensionObject | null
+    get historyReadDetails() : UaExtensionObject
     {
         return this._historyReadDetails;
     }

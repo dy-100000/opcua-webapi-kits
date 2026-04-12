@@ -2,7 +2,7 @@ import { StatusCodes } from "opcua-webapi"
 
 export class UaStatusCode {
 
-    private static _codesDictionary : Map<number,string> = null;
+    private static _codesDictionary : Map<number,string> | null = null;
     private _code : number;
     
     constructor(code? : number)
@@ -19,7 +19,7 @@ export class UaStatusCode {
     {
         if (null == UaStatusCode._codesDictionary)
         {
-            UaStatusCode._codesDictionary = new Map;
+            UaStatusCode._codesDictionary = new Map<number, string>();
             for (const key in StatusCodes)
             {
                 const value = StatusCodes[key as keyof typeof StatusCodes];

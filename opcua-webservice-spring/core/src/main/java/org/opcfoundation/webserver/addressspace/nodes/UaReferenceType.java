@@ -34,9 +34,4 @@ public class UaReferenceType extends UaDefinitionNode {
     public boolean isSymmetric() {
         return symmetric;
     }
-
-    public void setParentReferenceType(UaReferenceType referenceType)
-    {
-        setParentType(referenceType);
-    }
 }

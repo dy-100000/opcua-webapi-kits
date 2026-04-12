@@ -1,5 +1,6 @@
-import { ApplicationDescription, BrowseResult, CallMethodResult, DataValue, EndpointDescription, StatusCode, BrowsePathResult, HistoryReadResult, HistoryUpdateResult } from "opcua-webapi";
-import { BrowseContext, BrowseNextContext, CallContext, FindServerContext, GetEndpointContext, HistoryReadContext, HistoryUpdateContext, ReadContext, TranslateContext, UaServerConfigure, WriteContext } from "../types";
+import { ApplicationDescription, EndpointDescription } from "opcua-webapi";
+import { BrowseContext, BrowseNextContext, CallContext, FindServerContext, GetEndpointContext, HistoryReadContext, ReadContext, UaServerConfigure, WriteContext } from "../types";
+import { UaBrowseResult, UaCallMethodResult, UaDataValue, UaHistoryReadResult, UaStatusCode } from "opcua-webapi-ts";
 
 export interface UaWebService {
     getServerConfigure() : UaServerConfigure;
@@ -8,19 +9,15 @@ export interface UaWebService {
 
     findServers(context : FindServerContext) : Promise<Array<ApplicationDescription>>;
 
-    browse(context : BrowseContext) : Promise<Array<BrowseResult>>;
+    browse(context : BrowseContext) : Promise<Array<UaBrowseResult>>;
 
-    browseNext(context : BrowseNextContext) : Promise<Array<BrowseResult>>;
+    browseNext(context : BrowseNextContext) : Promise<Array<UaBrowseResult>>;
 
-    translate(context : TranslateContext) : Promise<Array<BrowsePathResult>>;
+    read(context : ReadContext) : Promise<Array<UaDataValue>>;
 
-    read(context : ReadContext) : Promise<Array<DataValue>>;
+    write(context : WriteContext) : Promise<Array<UaStatusCode>>;
 
-    write(context : WriteContext) : Promise<Array<StatusCode>>;
+    call(context : CallContext) : Promise<Array<UaCallMethodResult>>;
 
-    call(context : CallContext) : Promise<Array<CallMethodResult>>;
-
-    historyRead(context : HistoryReadContext) : Promise<Array<HistoryReadResult>>;
-
-    historyUpdate(context : HistoryUpdateContext) : Promise<Array<HistoryUpdateResult>>;
+    historyRead(context : HistoryReadContext) : Promise<Array<UaHistoryReadResult>>;
 }

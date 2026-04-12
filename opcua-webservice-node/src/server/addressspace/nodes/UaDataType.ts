@@ -11,12 +11,8 @@ export class UaDataType extends UaDefinitionNode {
         nodeId: UaNodeId,
         browseName: string,
         displayName: UaLocalizedText,
-        isAbstract: boolean,
-        parentType: UaDataType | null) {
+        isAbstract: boolean) {
         super(nodeId, browseName, displayName, isAbstract);
-        if (parentType !== null) {
-            this.setParentType(parentType);
-        }
         this._enumVariable = null;
     }
 

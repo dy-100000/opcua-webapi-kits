@@ -1,1 +1,6 @@
 export * from "./UaServerConfigure"
+export * from "./UaBrowseAdditionalInfo"
+export * from "./UaBrowseContinuationPoint"
+export * from "./UaChildIdentifier"
+export * from "./UaInstanceIdentifier"
+export * from "./UaObjectIdentifier"

@@ -29,7 +29,23 @@ public class NodeManagerReactiveObject extends NodeManager {
 
     public final @Nullable UaReactiveObjectType findObjectType(UaObjectIdentifier objectId)
     {
-        NodeId objectTypeId = NodeId.parseOrNull(objectId.getTypeId());
+        NodeId objectTypeId = null;
+
+        if (null != objectId.getTypeId())
+        {
+            objectTypeId = NodeId.parseOrNull(objectId.getTypeId());
+        } else {
+            if (null == objectId.getInstanceDeclId()) return null;
+
+            NodeId instanceDeclId = NodeId.parseOrNull(objectId.getInstanceDeclId());
+            if (null == instanceDeclId) return null;
+
+            UaNode instanceDeclNode = getNode(instanceDeclId);
+            if (null == instanceDeclNode || NodeClass.Object != instanceDeclNode.nodeClass()) return null;
+
+            objectTypeId = ((UaObject)instanceDeclNode).typeDefinition().nodeId();
+        }
+
         if (null == objectTypeId || objectTypeId.getType() != IdType.String) return null;
 
         UaNode node = getNode(objectTypeId);

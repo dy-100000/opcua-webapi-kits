@@ -1,6 +1,6 @@
 
 import { UaNode } from './UaNode';
-import { UaReferenceType } from './UaReferenceType';
+import type { UaReferenceType } from './UaReferenceType';
 
 export class UaReference {
     private readonly _linkedNode: UaNode;

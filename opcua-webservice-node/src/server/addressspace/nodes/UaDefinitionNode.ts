@@ -2,7 +2,7 @@ import { UaNodeId, UaLocalizedText, UaVariant, UaError, makeUaStatusCode } from 
 import { UaNode } from './UaNode';
 import { UaReference } from './UaReference';
 import { Attributes, StatusCodes } from "opcua-webapi";
-import { UaReferenceTypes } from "./builtin";
+import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
 
 export abstract class UaDefinitionNode extends UaNode {
     private readonly _isAbstract: boolean;
@@ -33,7 +33,7 @@ export abstract class UaDefinitionNode extends UaNode {
         return this._parentType.isSubtypeOf(typeId);
     }
 
-    protected setParentType(parentType: UaDefinitionNode): void {
+    public setParentType(parentType: UaDefinitionNode): void {
         if (this.nodeClass !== parentType.nodeClass) {
             throw new UaError(makeUaStatusCode(StatusCodes.BadNodeClassInvalid));
         }

@@ -357,6 +357,29 @@ paths:
                 $ref: "#/components/schemas/GetEndpointsResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/getendpoints:
+    post:
+      operationId: GetEndpointsWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetEndpointsRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetEndpointsResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /createsession:
     post:
       operationId: CreateSession

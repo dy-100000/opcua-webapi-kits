@@ -35,8 +35,9 @@ public class EventType extends UaObjectType {
         super(new NodeId(twinSpace.nsIndex(),typeId),
                 typeId,
                 displayName,
-                false,
-                (null == parentType) ? UaObjectTypes.BaseEventType : parentType);
+                false);
+
+        setParentType((null == parentType) ? UaObjectTypes.BaseEventType : parentType);
 
         if (typeId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);

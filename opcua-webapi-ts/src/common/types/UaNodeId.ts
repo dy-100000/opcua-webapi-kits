@@ -112,9 +112,9 @@ const regexNamespaceS = /ns=([0-9]+);s=(.*)/;
 const regexNamespaceB = /ns=([0-9]+);b=(.*)/;
 const regexNamespaceG = /ns=([0-9]+);g=([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})/;
 
-export function parseUaNodeId(value: string): UaNodeId
+export function parseUaNodeId(value: string | null | undefined): UaNodeId
 {
-    if (value.length <= 2) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdInvalid));
+    if (!value || value.length <= 2) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdInvalid));
 
     let identifierType = UaNodeIdType.NUMERIC;  
     let idValue;
@@ -160,7 +160,6 @@ export function parseUaNodeId(value: string): UaNodeId
 
 export function parseUaNodeIdOrNull(value: string | null | undefined): UaNodeId | null
 {
-    if (!value) return null;
     try
     {
         return parseUaNodeId(value);

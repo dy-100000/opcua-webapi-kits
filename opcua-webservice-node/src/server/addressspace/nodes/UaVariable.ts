@@ -1,6 +1,9 @@
 import { Attributes, NodeClass } from "opcua-webapi";
 import { UaAccessLevel, UaLocalizedText, UaNodeId, UaVariant, UaVariantType, VariableTypeIds } from "opcua-webapi-ts";
-import { UaInstanceNode, UaReference, UaReferenceTypes, UaVariableType } from ".";
+import { UaInstanceNode } from "./UaInstanceNode";
+import { UaReference } from "./UaReference";
+import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
+import type { UaVariableType } from "./UaVariableType";
 
 export class UaVariable extends UaInstanceNode {
     private readonly _typeDefinition: UaVariableType;
@@ -21,12 +24,14 @@ export class UaVariable extends UaInstanceNode {
     ) {
         super(nodeId, browseName, displayName);
         this._typeDefinition = typeDefinition;
-        this.addReference(new UaReference(typeDefinition, UaReferenceTypes.HasTypeDefinition, true));
+        
         this._dataType = dataType;
         this._valueRank = valueRank;
         this._accessLevel = accessLevel;
         this._historizing = false;
         this._value = UaVariant.null();
+
+        this.addReference(new UaReference(typeDefinition, UaReferenceTypes.HasTypeDefinition, true));
     }
 
     get nodeClass(): NodeClass {

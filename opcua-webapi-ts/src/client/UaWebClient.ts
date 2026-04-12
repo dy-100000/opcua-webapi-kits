@@ -1,9 +1,9 @@
 import { DefaultApi, ViewDescription, BrowseDescription, RequestHeader, BrowseRequestFromJSON, 
     ReadValueId, ReadRequestFromJSON, TimestampsToReturn, BrowseNextRequestFromJSON, 
     WriteValue, WriteRequestFromJSON, CallMethodRequest, CallRequestFromJSON, 
-    FindServersRequestFromJSON, 
+    FindServersRequestFromJSON,
     ApplicationDescription, NodeClass, BrowseDirection, Attributes, EndpointDescription, 
-    GetEndpointsRequestFromJSON,   
+    GetEndpointsRequestFromJSON,
     StatusCodes,
     Variant,
     HistoryReadRequestFromJSON,
@@ -25,7 +25,8 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaReadValueId,
     UaWriteValue,
     UaHistoryReadValueId,
-    UaHistoryReadResult} from "../common"
+    UaHistoryReadResult,
+    UaLocalizedText} from "../common"
 import { UaClientConfiguration, UaClientParameters } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult, UaCallMethodRequest, UaCallMethodResult} from "../common";
 
@@ -63,9 +64,11 @@ export class UaWebClient
 
         for (let item of results)
         {
+            let applicationName = UaPayloadMapper.localizedTextFromWebApi(item.ApplicationName)
+
             ret.push({
                 applicationUri: (item.ApplicationUri) ? item.ApplicationUri : "",
-                applicationName: UaPayloadMapper.localizedTextFromWebApi(item.ApplicationName),
+                applicationName: (applicationName) ? applicationName : UaLocalizedText.nullText,
                 productUri: (item.ProductUri) ? item.ProductUri : "",
                 urls: (item.DiscoveryUrls) ? item.DiscoveryUrls : []
             });
@@ -127,7 +130,7 @@ export class UaWebClient
         timestampsToReturn?: number) : Promise<Array<UaDataValue>>
     {
         if (nodeIds.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
-
+        
         let nodesToRead: Array<UaReadValueId> = [];
 
         for (let item of nodeIds)
@@ -265,8 +268,8 @@ export class UaWebClient
         let ret : UaMethodArguments = { inputArguments:[], outputArguments: [] };
         let browseResult = await this.browseChild(nodeId, NodeClass.Variable);
 
-        let inputArgumentsId : UaNodeId = null;
-        let outputArgumentsId : UaNodeId = null;
+        let inputArgumentsId : UaNodeId | null= null;
+        let outputArgumentsId : UaNodeId | null= null;
 
         for (let item of browseResult.results)
         {
@@ -377,7 +380,8 @@ export class UaWebClient
         let ret : Array<UaNodeId> = [];
         for (let item of browseResult.results)
         {
-            ret.push(item.nodeId.getNodeId());
+            let nodeId = item.nodeId.getNodeId();
+            if (nodeId) ret.push(nodeId);
         }       
 
         return ret;
@@ -396,15 +400,27 @@ export class UaWebClient
     {
         let nodeToRead = new UaHistoryReadValueId(nodeId,continuationPoint);
 
-        let details = new UaReadRawModifiedDetails(startTime,endTime, numValuesPerNode,returnBounds,isReadModified);
+        let details = new UaReadRawModifiedDetails(
+            startTime,
+            endTime, 
+            (numValuesPerNode) ? numValuesPerNode : 0,
+            (returnBounds) ? returnBounds : false,
+            (isReadModified) ? isReadModified : false);
+
         let historyReadDetails = details.toExtensionObject();
 
         let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
-        let results = await this.historyRead(nodesToRead, historyReadDetails, timestampsToReturn,releaseContinuationPoints);
+        let results = await this.historyRead(
+            nodesToRead, 
+            historyReadDetails, 
+            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Neither,
+            (releaseContinuationPoints) ? releaseContinuationPoints : false);
 
         if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
 
         let extensionObject = results[0].historyData;
+        if (!extensionObject) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
         let historyData = UaHistoryData.fromExtensionObject(extensionObject);
         if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
 
@@ -428,11 +444,17 @@ export class UaWebClient
         let historyReadDetails = details.toExtensionObject();
 
         let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
-        let results = await this.historyRead(nodesToRead, historyReadDetails, timestampsToReturn,releaseContinuationPoints);
+        let results = await this.historyRead(
+            nodesToRead, 
+            historyReadDetails, 
+            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Neither,
+            (releaseContinuationPoints) ? releaseContinuationPoints : false);
 
         if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
 
         let extensionObject = results[0].historyData;
+        if (!extensionObject) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
         let historyData = UaHistoryData.fromExtensionObject(extensionObject);
         if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
 
@@ -455,7 +477,7 @@ export class UaWebClient
         let nodeToRead = new UaHistoryReadValueId(nodeId,continuationPoint);
 
         let selectClauses : Array<UaSimpleAttributeOperand> = [];   
-        let whereClauses : UaContentFilter = (where) ? where.toContentFilter() : null;
+        let whereClauses = (where) ? where.toContentFilter() : null;
 
         for (let item of select)
         {
@@ -467,17 +489,21 @@ export class UaWebClient
             startTime,
             endTime, 
             new UaEventFilter(selectClauses, whereClauses), 
-            numValuesPerNode);
+            (numValuesPerNode) ? numValuesPerNode : null);
         
         let historyReadDetails = details.toExtensionObject();
 
         let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
-        let results = await this.historyRead(nodesToRead, historyReadDetails, TimestampsToReturn.Both,releaseContinuationPoints);
+        let results = await this.historyRead(
+            nodesToRead, 
+            historyReadDetails, 
+            TimestampsToReturn.Both,
+            (releaseContinuationPoints) ? releaseContinuationPoints : false);
 
         if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
 
         let extensionObject = results[0].historyData;
-        let historyData = UaHistoryEvent.fromExtensionObject(extensionObject);
+        let historyData = (extensionObject) ? UaHistoryEvent.fromExtensionObject(extensionObject) : null;
         if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
 
         let ret = new UaHistoryEventResult(historyData.events, results[0].continuationPoint);        

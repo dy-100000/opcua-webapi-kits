@@ -1,6 +1,6 @@
 {
   "name": "opcua-webapi-ts",
-  "version": "1.0.23",
+  "version": "1.0.26",
   "description": "Provides OPC UA WebAPI wrapper and client based on opcua-webapi-typescript",
   "author": "DingYan",
   "main": "./dist/cjs/index.js",
@@ -15,9 +15,7 @@
     "dev": "ts-node-dev --no-notify --respawn --transpile-only test/test"
   },
   "dependencies": {
-    "opcua-webapi": "^1.504.2"
-  },
-  "devDependencies": {
-    "typescript": "^4.0 || ^5.0"
+    "opcua-webapi": "^1.504.2",
+    "typescript": "^6.0.2"
   }
 }

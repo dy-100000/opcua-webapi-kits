@@ -75,7 +75,7 @@ export class UaBrowseResult
 
 		return new UaBrowseResult(
 			references,
-			browseResult.ContinuationPoint,
+			(browseResult.ContinuationPoint) ? browseResult.ContinuationPoint : null,
 			(browseResult.StatusCode) ? makeUaStatusCode(browseResult.StatusCode.Code) : makeUaStatusCode(StatusCodes.Good)
 		);
 	}

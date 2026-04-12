@@ -1,5 +1,5 @@
 import { ApplicationType } from "opcua-webapi";
-import { UaLocalizedText } from "opcua-webclient-ts";
+import { UaLocalizedText } from "opcua-webapi-ts";
 
 export class UaServerConfigure {
     private _applicationUri : string;

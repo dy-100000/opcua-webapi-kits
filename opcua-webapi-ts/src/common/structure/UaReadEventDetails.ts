@@ -16,8 +16,7 @@ export class UaReadEventDetails
         startTime: Date,
         endTime: Date, 
         filter: UaEventFilter,
-        numValuesPerNode?: number)
-    {        
+        numValuesPerNode?: number | null) {        
         this._startTime = startTime;
         this._endTime = endTime;
         this._filter = filter;

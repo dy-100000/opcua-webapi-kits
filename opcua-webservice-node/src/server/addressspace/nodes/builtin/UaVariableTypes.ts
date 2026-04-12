@@ -7,7 +7,7 @@ export class UaVariableTypes {
     static readonly PropertyType = new UaVariableType(UaNodeId.from(VariableTypeIds.PropertyType), "PropertyType", new UaLocalizedText("PropertyType"), false, UaNodeId.from(DataTypeIds.BaseDataType), -1, UaVariableTypes.BaseVariableType);
 
     static readonly DataItemType = new UaVariableType(UaNodeId.from(VariableTypeIds.DataItemType), "DataItemType", new UaLocalizedText("DataItemType"), false, UaNodeId.from(DataTypeIds.BaseDataType), -1, UaVariableTypes.BaseDataVariableType);
-    static readonly AnalogItemType = new UaVariableType(UaNodeId.from(VariableTypeIds.AnalogItemType), "AnalogItemType", new UaLocalizedText("AnalogItemType"), false, UaNodeId.from(DataTypeIds.Number), -1, UaVariableTypes.DataItemType);
+    static readonly BaseAnalogItemType = new UaVariableType(UaNodeId.from(VariableTypeIds.BaseAnalogType), "BaseAnalogType", new UaLocalizedText("BaseAnalogType"), false, UaNodeId.from(DataTypeIds.Number), -1, UaVariableTypes.DataItemType);
     static readonly DiscreteItemType = new UaVariableType(UaNodeId.from(VariableTypeIds.DiscreteItemType), "DiscreteItemType", new UaLocalizedText("DiscreteItemType"), false, UaNodeId.from(DataTypeIds.BaseDataType), -1, UaVariableTypes.DataItemType);
 
     static readonly TwoStateDiscreteType = new UaVariableType(UaNodeId.from(VariableTypeIds.TwoStateDiscreteType), "TwoStateDiscreteType", new UaLocalizedText("TwoStateDiscreteType"), false, UaNodeId.from(DataTypeIds.Boolean), -1, UaVariableTypes.DiscreteItemType);

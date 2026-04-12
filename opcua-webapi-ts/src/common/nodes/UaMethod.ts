@@ -31,7 +31,7 @@ export class UaMethod extends UaInstanceNode
     {
         this._children.push(node);
 
-        let isInputArgument : boolean = null;
+        let isInputArgument = null;
 
         if (UaMethod.InputArguments == node.browseName)
         {
@@ -43,13 +43,13 @@ export class UaMethod extends UaInstanceNode
         if (null == isInputArgument) return;
 
         let extensionObjects = node.value.toExtensionObjects();
-        if (null == extensionObjects) return null;
+        if (null == extensionObjects) return;
 
         let args : Array<UaArgument> = [];
         for (let item2 of extensionObjects)
         {
             let argument = UaArgument.fromExtensionObject(item2);
-            if (null == argument) return null;
+            if (null == argument) return;
 
             args.push(argument);
         }

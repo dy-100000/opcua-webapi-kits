@@ -1,8 +1,9 @@
-import { ApplicationDescription, BrowsePathResult, BrowseResult, CallMethodResult, DataValue, EndpointDescription, HistoryReadResult, HistoryUpdateResult, MessageSecurityMode, StatusCode, StatusCodes } from "opcua-webapi";
-import { UaWebService , UaServerConfigure, HistoryReadContext, HistoryUpdateContext} from "./server";
+import { ApplicationDescription, EndpointDescription, MessageSecurityMode, StatusCodes } from "opcua-webapi";
+import { UaWebService , UaServerConfigure, HistoryReadContext } from "./server";
 import { UaExpressServer } from "./UaExpressServer";
-import { makeUaStatusCode, UaError, UaPayloadMapper } from "opcua-webclient-ts";
-import { GetEndpointContext, BrowseContext, BrowseNextContext, CallContext, FindServerContext, ReadContext, TranslateContext, uaServerApi, WriteContext } from "./server";
+import { makeUaStatusCode, UaError, UaPayloadMapper } from "opcua-webapi-ts";
+import { GetEndpointContext, BrowseContext, BrowseNextContext, CallContext, FindServerContext, ReadContext, uaServerApi, WriteContext } from "./server";
+import { UaBrowseResult, UaCallMethodResult, UaDataValue, UaHistoryReadResult, UaStatusCode } from "opcua-webapi-ts";
 
 export class UaWebServerBase implements UaWebService {
 
@@ -19,6 +20,11 @@ export class UaWebServerBase implements UaWebService {
     get serverConfigure() : UaServerConfigure
     {        
         return this._configure;
+    }
+
+    protected get expressServer() : UaExpressServer
+    {
+        return this._server;
     }
 
     set serverConfigure(configure : UaServerConfigure)
@@ -52,47 +58,37 @@ export class UaWebServerBase implements UaWebService {
         return [ this._endpointDescription() ];
     }
 
-    findServers(context : FindServerContext) : Promise<Array<ApplicationDescription>>
+    async findServers(context : FindServerContext) : Promise<Array<ApplicationDescription>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    browse(context : BrowseContext) : Promise<Array<BrowseResult>>
+    async browse(context : BrowseContext) : Promise<Array<UaBrowseResult>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    browseNext(context : BrowseNextContext) : Promise<Array<BrowseResult>>
+    async browseNext(context : BrowseNextContext) : Promise<Array<UaBrowseResult>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    translate(context : TranslateContext) : Promise<Array<BrowsePathResult>>
+    async read(context : ReadContext) : Promise<Array<UaDataValue>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    read(context : ReadContext) : Promise<Array<DataValue>>
+    async write(context : WriteContext) : Promise<Array<UaStatusCode>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    write(context : WriteContext) : Promise<Array<StatusCode>>
+    async call(context : CallContext) : Promise<Array<UaCallMethodResult>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    call(context : CallContext) : Promise<Array<CallMethodResult>>
-    {
-        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
-    }
-
-    historyRead(context : HistoryReadContext) : Promise<Array<HistoryReadResult>>
-    {
-        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
-    }
-
-    historyUpdate(context : HistoryUpdateContext) : Promise<Array<HistoryUpdateResult>>
+    async historyRead(context : HistoryReadContext) : Promise<Array<UaHistoryReadResult>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }

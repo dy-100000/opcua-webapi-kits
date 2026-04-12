@@ -40,7 +40,7 @@ public abstract class UaDefinitionNode extends UaNode {
         return parentType.isSubtypeOf(typeId);
     }
 
-    protected void setParentType(UaDefinitionNode parentType) throws UaRuntimeException {
+    public void setParentType(UaDefinitionNode parentType) throws UaRuntimeException {
         if (nodeClass() != parentType.nodeClass()) throw new UaRuntimeException(StatusCodes.Bad_NodeClassInvalid);
         if (null != this.parentType) throw new UaRuntimeException(StatusCodes.Bad_AlreadyExists);
 

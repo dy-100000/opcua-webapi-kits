@@ -18,12 +18,9 @@ public class UaVariableType extends UaDefinitionNode {
             LocalizedText displayName,
             boolean isAbstract,
             NodeId dataType,
-            int valueRank,
-            @Nullable UaVariableType parentType)
+            int valueRank)
     {
         super(nodeId,browseName,displayName,isAbstract);
-        if (null != parentType) setParentType(parentType);
-
         this.dataType = dataType;
         this.valueRank = valueRank;
     }

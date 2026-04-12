@@ -31,7 +31,7 @@ public abstract class NodeManager implements NodeManagerBase {
 
     public NodeManager(String namespaceUri)
     {
-        this.nsIndex = NodeManagerList.getGlobalNsIndex();
+        this.nsIndex = NodeManagerList.nodeManagerList.getNewNsIndex();
         this.namespaceUri = namespaceUri;
         this.nodes = new HashMap<>();
     }
@@ -97,7 +97,7 @@ public abstract class NodeManager implements NodeManagerBase {
         return refsToReturn;
     }
 
-    public BrowseResult browseNode(
+    public BrowseResult browse(
             BrowseDescription browseDescription,
             UaBrowseAdditionalInfo additionalInfo)
     {
@@ -192,7 +192,7 @@ public abstract class NodeManager implements NodeManagerBase {
         return new BrowseResult(StatusCode.of(StatusCodes.Good), continuationPoint, references.toArray(new ReferenceDescription[0]));
     }
 
-    public DataValue readNode(
+    public DataValue read(
             NodeId nodeId,
             int attributeId,
             DateTime now,

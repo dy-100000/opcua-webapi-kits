@@ -62,7 +62,8 @@ public abstract class UaWebServer extends UaWebServerBase {
         for (Integer item : nsIndexes)
         {
             NodeManagerBase nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item);
-            if (null == nodeManager) continue;
+            if (null == nodeManager) throw new UaRuntimeException(StatusCodes.Bad_UnexpectedError);
+
             nodeManager.onStartUp();
             namespaceUris.add(nodeManager.namespaceUri());
         }

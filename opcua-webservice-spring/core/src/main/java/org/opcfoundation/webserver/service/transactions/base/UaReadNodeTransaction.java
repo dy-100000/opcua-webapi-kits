@@ -1,10 +1,9 @@
-package org.opcfoundation.webserver.service.transactions.reactiveobject;
+package org.opcfoundation.webserver.service.transactions.base;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.DataValue;
 import org.eclipse.milo.opcua.stack.core.types.builtin.DateTime;
 import org.eclipse.milo.opcua.stack.core.types.structured.ReadValueId;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.service.transactions.base.UaReadTransaction;
 import org.opcfoundation.webapi.service.types.ReadContext;
 
 import java.util.List;
@@ -32,7 +31,7 @@ public class UaReadNodeTransaction extends UaReadTransaction {
 
                 for (ReadValueId item: nodesToRead)
                 {
-                    DataValue result = nodeManager.readNode(item.getNodeId(), item.getAttributeId().intValue(), now, timestampsToReturn);
+                    DataValue result = nodeManager.read(item.getNodeId(), item.getAttributeId().intValue(), now, timestampsToReturn);
                     results.add(result);
                 }
 

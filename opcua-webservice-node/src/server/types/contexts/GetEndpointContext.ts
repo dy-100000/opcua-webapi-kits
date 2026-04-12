@@ -1,4 +1,4 @@
-import { GetEndpointsRequest } from "opcua-webapi";
+import { RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
 
 export class GetEndpointContext extends ServiceContext
@@ -7,13 +7,18 @@ export class GetEndpointContext extends ServiceContext
     private _localeIds : Array<string>;
     private _profileUris : Array<string>;
 
-    constructor(request: GetEndpointsRequest)
+    constructor(
+        endpointUrl?: string, 
+        localeIds?: Array<string>, 
+        profileUris?: Array<string>,
+        serverUri?: string, 
+        requestHeader? : RequestHeader)
     {
-        super("", request.RequestHeader);
+        super(serverUri, requestHeader);
 
-        this._endpointUrl = (request.EndpointUrl) ? request.EndpointUrl : "";
-        this._localeIds = (request.LocaleIds) ? request.LocaleIds : [];
-        this._profileUris = (request.ProfileUris) ? request.ProfileUris : [];
+        this._endpointUrl = (endpointUrl) ? endpointUrl : "";
+        this._localeIds = (localeIds) ? localeIds : [];
+        this._profileUris = (profileUris) ? profileUris : [];
     }
 
     get endpointUrl() : string

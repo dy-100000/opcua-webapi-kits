@@ -9,8 +9,6 @@ public class UaServerConfigure {
     private String productUri;
     private ApplicationType applicationType;
 
-    private boolean supportServerUriPath;
-
     private int browseRequestMaxSize;
     private int readRequestMaxSize;
     private int writeRequestMaxSize;
@@ -24,8 +22,6 @@ public class UaServerConfigure {
         applicationName = new LocalizedText("Unknown");
         productUri = "Unknown";
         applicationType = ApplicationType.Server;
-
-        supportServerUriPath = true;
 
         browseRequestMaxSize = 0;
         readRequestMaxSize = 0;
@@ -69,14 +65,6 @@ public class UaServerConfigure {
     public void setProductUri(String productUri)
     {
         this.productUri = productUri;
-    }
-
-    public boolean isServerUriPathSupported() {
-        return supportServerUriPath;
-    }
-
-    public void setSupportServerUriPath(boolean isSupported) {
-        supportServerUriPath = isSupported;
     }
 
     public int getBrowseRequestMaxSize() {

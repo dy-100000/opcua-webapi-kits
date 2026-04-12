@@ -90,7 +90,7 @@ export class UaReferenceDescription
 		let referenceTypeId = (referenceDescription.ReferenceTypeId) ? parseUaNodeIdOrNull(referenceDescription.ReferenceTypeId) : undefined;
 		let typeDefinition = (referenceDescription.TypeDefinition) ? parseUaExpandedNodeIdOrNull(referenceDescription.TypeDefinition) : undefined;
 
-        if (null == nodeId || null == displayName || null == referenceTypeId || null == typeDefinition) return null;
+        if (null === nodeId || null === displayName || null === referenceTypeId || null === typeDefinition) return null;
 
 		return new UaReferenceDescription(
             nodeId, 

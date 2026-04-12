@@ -25,11 +25,9 @@ public class UaDataType extends UaDefinitionNode {
             NodeId nodeId,
             String browseName,
             LocalizedText displayName,
-            boolean isAbstract,
-            @Nullable UaDataType parentType)
+            boolean isAbstract)
     {
         super(nodeId,browseName,displayName,isAbstract);
-        if (null != parentType) setParentType(parentType);
         enumVariable = null;
     }
 

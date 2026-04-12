@@ -35,8 +35,8 @@ export class UaRange
     toStruct() : Range
     {
         let range : Range = { 
-            Low: this._low,
-            High: this._high
+            Low: (null !==this._low) ? this._low : undefined,
+            High: (null !==this._high) ? this._high : undefined
         };
 
         return range;
@@ -44,7 +44,10 @@ export class UaRange
 
     static fromStruct(range : Range) : UaRange | null
     {
-        return new UaRange(range.Low, range.High);
+        return new UaRange(
+            (typeof range.Low === "number") ? range.Low : null,
+            (typeof range.High === "number") ? range.High : null
+        );
     }
 
     toExtensionObject() : UaExtensionObject

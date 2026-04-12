@@ -76,6 +76,9 @@ public class UaBrowseTransaction extends UaTransaction<BrowseDescription, Browse
 
     protected Void buildErrorResponse(Throwable exception)
     {
+        references.clear();
+        continuationPoint = ByteString.NULL_VALUE;
+
         statusCode = StatusCode.of(StatusCodes.Bad_UnexpectedError);
 
         if (exception instanceof UaRuntimeException)

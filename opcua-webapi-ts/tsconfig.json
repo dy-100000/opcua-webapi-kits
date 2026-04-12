@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
     "declaration": true,
+    "ignoreDeprecations": "6.0",
+    "strictNullChecks": false,
     "target": "es6",
     "module": "commonjs",
-    "moduleResolution": "node",
+    "moduleResolution": "node10",
+    "rootDir": "src",
     "outDir": "dist",
     "typeRoots": [
       "node_modules/@types"

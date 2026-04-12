@@ -234,10 +234,10 @@ const findServers = ({ findServersRequest }) => new Promise(
 * getEndpointsRequest GetEndpointsRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2). (optional)
 * returns GetEndpointsResponse
 * */
-const getEndpoints = ({ getEndpointsRequest }) => new Promise(
+const getEndpoints = ({ path,getEndpointsRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      const responseData = await uaServerApi.getEndpoints(getEndpointsRequest);
+      const responseData = await uaServerApi.getEndpoints(getEndpointsRequest, path);
       resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(

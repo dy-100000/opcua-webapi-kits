@@ -1,4 +1,5 @@
-export * from "./UaObjectTypes"
 export * from "./UaReferenceTypes"
+export * from "./UaObjectTypes"
+export * from "./UaDataTypes"
 export * from "./UaVariableTypes"
 export * from "./UaObjects"

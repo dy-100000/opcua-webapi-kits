@@ -54,6 +54,7 @@ public class UaReadTransaction extends UaTransaction2<ReadValueId, DataValue> {
             errorCode = ((UaRuntimeException)exception).getStatusCode();
         }
 
+        results.clear();
         for (Integer item: getHandleIds())
         {
             results.add(new DataValue(Variant.NULL_VALUE, errorCode, null));

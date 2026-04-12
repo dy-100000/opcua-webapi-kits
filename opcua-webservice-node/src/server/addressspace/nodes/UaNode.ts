@@ -1,8 +1,9 @@
 import { Attributes, BrowseDirection, NodeClass } from "opcua-webapi";
-import { ReferenceTypeIds, UaLocalizedText, UaNodeId, UaVariant, UaVariantType } from "opcua-webapi-ts";
-import { UaReference } from "./UaReference";
+import { ReferenceTypeIds, UaLocalizedText, UaNodeId, UaVariant, UaVariantType, VariableTypeIds } from "opcua-webapi-ts";
 import { UaInstanceNode } from "./UaInstanceNode";
-import { UaReferenceTypes } from "./builtin";
+import { UaReference } from "./UaReference";
+import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
+import type { UaVariable } from "./UaVariable";
 
 export abstract class UaNode {
     private readonly _nodeId: UaNodeId;
@@ -103,7 +104,6 @@ export abstract class UaNode {
     
     getReferences(direction: BrowseDirection): UaReference[] {
         const ret: UaReference[] = [];
-        if (!this._references) return ret;
 
         for (let item of this._references) {
             if ((BrowseDirection.Forward === direction && !item.isForward) ||
@@ -132,17 +132,6 @@ export abstract class UaNode {
         return members;
     }
 
-    hasMember(): boolean {
-        for (const item of this._references) 
-        {
-            if (item.isForward &&
-                item.linkedNode.isInstanceNode() &&
-                item.reference.isSubtypeOf(UaNodeId.from(ReferenceTypeIds.Aggregates))) return true;       
-        }     
-        
-        return false;
-    }
-
     getMember(path: string): UaInstanceNode | null {
         for (const item of this._references) {
             if (item.isForward &&
@@ -156,17 +145,17 @@ export abstract class UaNode {
     }
 
     protected addMemberNode(member: UaInstanceNode) {
-        /*
+        
         let reference = UaReferenceTypes.HasComponent;
 
         if (NodeClass.Variable == member.nodeClass) {
-            if ((member as UaVariable).typeDefinition().nodeId().equals(UaNodeId.from(VariableTypesId.PropertyType))
+            if ((member as UaVariable).typeDefinition.nodeId.equal(UaNodeId.from(VariableTypeIds.PropertyType)))
             {
                 reference = UaReferenceTypes.HasProperty;
             }
         }
 
-        addReference(new UaReference(member, reference, true));
-        member.addReference(new UaReference(this,reference, false)); */
+        this.addReference(new UaReference(member, reference, true));
+        member.addReference(new UaReference(this,reference, false));
     }
 }

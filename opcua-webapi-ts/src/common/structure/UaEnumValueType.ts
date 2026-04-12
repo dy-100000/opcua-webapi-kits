@@ -14,7 +14,7 @@ export class UaEnumValueType
     constructor(
         value : number,
         displayName: UaLocalizedText,
-        description: UaLocalizedText)
+        description: UaLocalizedText | null)
     {        
         this._value = value;
         this._displayName = displayName;
@@ -31,7 +31,7 @@ export class UaEnumValueType
         return this._displayName;
     }
 
-    get description() : UaLocalizedText
+    get description() : UaLocalizedText | null
     {
         return this._description;
     }
@@ -41,17 +41,19 @@ export class UaEnumValueType
         let enumValue : EnumValueType = { 
             Value: this._value,
             DisplayName: UaPayloadMapper.localizedTextToWebApi(this._displayName),
-            Description: UaPayloadMapper.localizedTextToWebApi(this._description)
+            Description: (null !== this._description) ? UaPayloadMapper.localizedTextToWebApi(this._description) : undefined
         };
     
         return enumValue;
     }
     
     static fromStruct(enumValueType : EnumValueType) : UaEnumValueType | null
-    {
-        let value = (typeof enumValueType.Value === "number") ? enumValueType.Value : null;
+    {        
+        let value = enumValueType.Value;
         let displayName = UaPayloadMapper.localizedTextFromWebApi(enumValueType.DisplayName);        
         let description = UaPayloadMapper.localizedTextFromWebApi(enumValueType.Description);
+
+        if (typeof value !== "number" || null == displayName) return null;
         return new UaEnumValueType(value, displayName, description);
     }
 

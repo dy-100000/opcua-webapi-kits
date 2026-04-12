@@ -6,8 +6,8 @@ export abstract class ServiceContext
     private _requestHeader : RequestHeader | null;
 
     constructor(
-        serverUri : string | undefined,
-        requestHeader: RequestHeader | undefined)
+        serverUri? : string ,
+        requestHeader?: RequestHeader)
     {
         this._serverUri = (serverUri) ? serverUri : null;
         this._requestHeader = (requestHeader) ? requestHeader : null;

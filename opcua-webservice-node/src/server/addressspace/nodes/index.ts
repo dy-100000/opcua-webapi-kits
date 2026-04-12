@@ -3,7 +3,6 @@ export * from './UaNode';
 export * from './UaReference';
 export * from './UaDefinitionNode';
 export * from './UaDataType';
-export * from './UaEnumDataType';
 export * from './UaInstanceNode';
 export * from './UaReferenceType';
 export * from './UaObjectType';

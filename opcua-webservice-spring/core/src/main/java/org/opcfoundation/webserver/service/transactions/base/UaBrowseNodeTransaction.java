@@ -1,9 +1,8 @@
-package org.opcfoundation.webserver.service.transactions.reactiveobject;
+package org.opcfoundation.webserver.service.transactions.base;
 
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseDescription;
 import org.eclipse.milo.opcua.stack.core.types.structured.BrowseResult;
 import org.opcfoundation.webserver.addressspace.nodemanager.NodeManager;
-import org.opcfoundation.webserver.service.transactions.base.UaBrowseTransaction;
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
 import org.opcfoundation.webapi.service.types.ServiceContext;
 
@@ -30,7 +29,7 @@ public class UaBrowseNodeTransaction extends UaBrowseTransaction {
             try
             {
                 BrowseDescription nodeToBrowse = getItem();
-                BrowseResult result = nodeManager.browseNode(nodeToBrowse, additionalInfo);
+                BrowseResult result = nodeManager.browse(nodeToBrowse, additionalInfo);
                 statusCode = result.getStatusCode();
                 continuationPoint = result.getContinuationPoint();
                 if (null != result.getReferences()) references = Arrays.asList(result.getReferences());

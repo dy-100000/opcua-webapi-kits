@@ -53,7 +53,6 @@ public class FindserversApiController implements FindserversApi {
         try
         {
             UaServerConfigure serverConfig = service.getServerConfigure();
-            if (!serverConfig.isServerUriPathSupported() && null != serverUri) throw new UaRuntimeException(StatusCodes.Bad_ServerUriInvalid);
 
             FindServersContext findServersContext = new FindServersContext(
                     (null == findServersRequest.getEndpointUrl()) ? "" : findServersRequest.getEndpointUrl(),

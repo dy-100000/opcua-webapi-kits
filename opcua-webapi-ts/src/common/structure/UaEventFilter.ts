@@ -56,7 +56,7 @@ export class UaEventFilter
             selectClauses.push(select);
         }
 
-        let where : UaContentFilter = null;
+        let where : UaContentFilter | null = null;
 
         if (undefined != filter.WhereClause)
         {

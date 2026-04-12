@@ -1,4 +1,4 @@
-import { FindServersRequest } from "opcua-webapi";
+import { FindServersRequest, RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
 
 export class FindServerContext extends ServiceContext
@@ -7,12 +7,16 @@ export class FindServerContext extends ServiceContext
     private _localeIds: Array<string>;
     private _serverUris: Array<string>;
     
-    constructor(request: FindServersRequest)
+    constructor(
+        endpointUrl?: string, 
+        localeIds?: Array<string>, 
+        serverUris?: Array<string>,
+        requestHeader? : RequestHeader)
     {
-        super(undefined, request.RequestHeader);
-        this._endpointUrl = (request.EndpointUrl) ? request.EndpointUrl : "";
-        this._localeIds = (request.LocaleIds) ? request.LocaleIds : [];
-        this._serverUris = (request.ServerUris) ? request.ServerUris : [];
+        super(undefined, requestHeader);
+        this._endpointUrl = (endpointUrl) ? endpointUrl : "";
+        this._localeIds = (localeIds) ? localeIds : [];
+        this._serverUris = (serverUris) ? serverUris : [];
     }
 
     get endpointUrl() : string

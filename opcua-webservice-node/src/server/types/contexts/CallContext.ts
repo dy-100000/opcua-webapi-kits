@@ -1,17 +1,21 @@
-import { CallMethodRequest, CallRequest } from "opcua-webapi";
+import { RequestHeader } from "opcua-webapi";
 import { ServiceContext } from "./ServiceContext";
+import { UaCallMethodRequest } from "opcua-webapi-ts";
 
 export class CallContext extends ServiceContext
 {
-    private _methodsToCall: Array<CallMethodRequest>;
+    private _methodsToCall: Array<UaCallMethodRequest>;
     
-    constructor(request: CallRequest, serverUri?: string)
+    constructor(
+        methodsToCall: Array<UaCallMethodRequest>,
+        serverUri?: string, 
+        requestHeader? : RequestHeader)
     {
-        super(serverUri, request.RequestHeader);
-        this._methodsToCall = (request.MethodsToCall) ? request.MethodsToCall : [];
+        super(serverUri, requestHeader);
+        this._methodsToCall = (methodsToCall) ? methodsToCall : [];
     }
 
-    get methodsToCall() : Array<CallMethodRequest>
+    get methodsToCall() : Array<UaCallMethodRequest>
     {
         return this._methodsToCall;
     }

@@ -114,7 +114,6 @@ public abstract class UaNode {
     public List<UaReference> getReferences(BrowseDirection direction)
     {
         List<UaReference> ret = new ArrayList<>();
-        if (null == this.references) return ret;
 
         for (UaReference item: references)
         {
@@ -140,18 +139,6 @@ public abstract class UaNode {
         }
 
         return members;
-    }
-
-    public boolean hasMember()
-    {
-        for (UaReference item: references)
-        {
-            if (item.isForward() &&
-                    item.linkedNode().isInstanceNode() &&
-                    item.reference().isSubtypeOf(NodeIds.Aggregates)) return true;
-        }
-
-        return false;
     }
 
     public @Nullable UaInstanceNode getMember(String path)

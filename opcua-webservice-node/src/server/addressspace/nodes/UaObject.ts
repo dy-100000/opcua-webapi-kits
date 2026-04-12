@@ -1,7 +1,10 @@
 import { Attributes, BrowseDirection, NodeClass } from "opcua-webapi";
 import { UaLocalizedText, UaNodeId, UaVariant, UaVariantType } from "opcua-webapi-ts";
 import { UaInstanceNode } from "./UaInstanceNode";
-import { UaNode, UaReference, UaObjectType, UaReferenceTypes } from ".";
+import { UaNode } from "./UaNode";
+import { UaReference } from "./UaReference";
+import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
+import type { UaObjectType } from "./UaObjectType";
 
 export class UaObject extends UaInstanceNode {
     private readonly _typeDefinition: UaObjectType;

@@ -79,8 +79,8 @@ export class UaQueryFilter {
             element.operator > UaQueryFilterType.InList ||
             element.operator == UaQueryFilterType.Like + 1) return null;
         
-        let simpleOperand : UaSimpleAttributeOperand = null;
-        let literalOperand : UaLiteralOperand = null;
+        let simpleOperand : UaSimpleAttributeOperand | null = null;
+        let literalOperand : UaLiteralOperand | null = null;
 
         for (let item of element.operands)
         {

@@ -19,8 +19,8 @@ type BrowseResult = {
     browseName : string;
     displayName : UaLocalizedText;
     referenceTypeId : UaNodeId;
-    isForward: boolean;
-    typeDefinitionId?: UaNodeId | null;
+    isForward?: boolean;
+    typeDefinitionId?: UaNodeId;
 }
 
 type ReadResult = {
@@ -120,11 +120,11 @@ export abstract class UaNodeReaderBase
                 this._browseResults.push({ 
                     fromNodeId: currentNode.nodeId,
                     nodeId: nodeId,
-                    nodeClass: item.nodeClass,
-                    browseName: item.browseName,
-                    displayName: item.displayName,
-                    referenceTypeId: item.referenceTypeId,
-                    isForward: item.isForward,
+                    nodeClass: (item.nodeClass) ? item.nodeClass : NodeClass.Unspecified,
+                    browseName: item.browseName ? item.browseName : "",
+                    displayName: item.displayName ? item.displayName : UaLocalizedText.nullText,
+                    referenceTypeId: item.referenceTypeId ? item.referenceTypeId : UaNodeId.nullNodeId,
+                    isForward: (item.isForward) ? item.isForward : false,
                     typeDefinitionId: (typeDefinition) ? typeDefinition : undefined
                 });
 

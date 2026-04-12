@@ -1,4 +1,4 @@
-import { BrowseResult, ExtensionObject, ExtensionObjectFromJSON, ReferenceDescription } from "opcua-webapi";
+import { ExtensionObject, ExtensionObjectFromJSON } from "opcua-webapi";
 import { LocalizedText, Variant, StatusCode, DataValue,StatusCodes } from "opcua-webapi"
 import { parseUaExpandedNodeId, parseUaNodeId, makeUaStatusCode, UaError, UaVariantType } from "../types";
 import { UaNodeId, UaExpandedNodeId, UaStatusCode, UaLocalizedText, UaExtensionObject, UaVariant, UaDataValue } from "../types";
@@ -37,14 +37,12 @@ export class UaPayloadMapper
         {
             let extensionObject = ExtensionObjectFromJSON(json);
 
-            if (null !== extensionObject)
-            {
-                let typeId = parseUaNodeId(extensionObject.UaTypeId);
-                let jsonStr = atob(extensionObject.UaBody);                
+            if (!extensionObject || !extensionObject.UaTypeId || !extensionObject.UaBody) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
 
-                let body = JSON.parse(jsonStr);
-                return new UaExtensionObject(typeId, body);                
-            }
+            let typeId = parseUaNodeId(extensionObject.UaTypeId);
+            let jsonStr = atob(extensionObject.UaBody);  
+            let body = JSON.parse(jsonStr);
+            return new UaExtensionObject(typeId, body); 
         } catch (e) {
             throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
         }
@@ -88,7 +86,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'number'))
+                    if (value.every((item: number) => typeof item === 'number'))
                     {
                         return UaVariant.integers(value, dataType);
                     } else {
@@ -105,7 +103,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     }  
                 } else {                  
-                    if (value.every(item => typeof item === 'number'))
+                        if (value.every((item: number) => typeof item === 'number'))
                     {
                         return UaVariant.doubles(value);
                     } else {
@@ -122,7 +120,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     }  
                 } else {                  
-                    if (value.every(item => typeof item === 'number'))
+                        if (value.every((item: number) => typeof item === 'number'))
                     {
                         return UaVariant.floats(value);
                     } else {
@@ -139,7 +137,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'boolean'))
+                    if (value.every((item: boolean) => typeof item === 'boolean'))
                     {
                         return UaVariant.booleans(value);
                     } else {
@@ -156,7 +154,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         return UaVariant.strings(value);
                     } else {
@@ -173,7 +171,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let nodeIds : Array<UaNodeId> = [];
                         for (let item of value)
@@ -195,7 +193,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let nodeIds : Array<UaExpandedNodeId> = [];
                         for (let item of value)
@@ -217,7 +215,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let datetimes : Array<Date> = [];
                         for (let item of value)
@@ -239,7 +237,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let byteStrings : Array<string> = [];
                         for (let item of value)
@@ -261,7 +259,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let qualifiedNames : Array<string> = [];
                         for (let item of value)
@@ -283,7 +281,7 @@ export class UaPayloadMapper
                         throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
                     } 
                 } else {
-                    if (value.every(item => typeof item === 'string'))
+                    if (value.every((item: string) => typeof item === 'string'))
                     {
                         let guids : Array<string> = [];
                         for (let item of value)
@@ -324,12 +322,20 @@ export class UaPayloadMapper
             } else if (UaVariantType.LocalizedText == dataType) {
                 if (!isArray)
                 {
-                    return UaVariant.localizedText(UaPayloadMapper.localizedTextFromWebApi(value)); 
+                        let localizedText = UaPayloadMapper.localizedTextFromWebApi(value);
+                        if (!localizedText) {
+                            throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                        }
+                        return UaVariant.localizedText(localizedText); 
                 } else {
                     let localizedTexts : Array<UaLocalizedText> = [];
                     for (let item of value)
                     {                        
-                        localizedTexts.push(UaPayloadMapper.localizedTextFromWebApi(item));
+                            let localizedText = UaPayloadMapper.localizedTextFromWebApi(item);
+                            if (!localizedText) {
+                                throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                            }
+                            localizedTexts.push(localizedText);
                     }                        
                     
                     return UaVariant.localizedTexts(localizedTexts);  

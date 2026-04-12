@@ -58,6 +58,11 @@ export class UaExpandedNodeId {
         // To be implemented  
         return this._nodeId.toString();
     }
+
+    static from(nodeId: UaNodeId) : UaExpandedNodeId
+    {
+        return new UaExpandedNodeId(nodeId);
+    }
 }
 
 export function parseUaExpandedNodeId(value: string): UaExpandedNodeId {

@@ -8,3 +8,7 @@ export enum UaAccessLevel {
     StatusWrite = 32,
     TimestampWrite = 64
 }
+
+export function isAccessible(accessLevel: number, requiredAccessLevel: UaAccessLevel): boolean {
+    return (accessLevel & requiredAccessLevel) === requiredAccessLevel;
+}

@@ -21,9 +21,9 @@ export class UaReadRawModifiedDetails
     {        
         this._startTime = startTime;
         this._endTime = endTime;
-        this._numValuesPerNode = (numValuesPerNode > 0) ? numValuesPerNode : 0;
-        this._returnBounds = (returnBounds) ? returnBounds : null;
-        this._isReadModified = (isReadModified) ? isReadModified : null;
+        this._numValuesPerNode = (numValuesPerNode && numValuesPerNode > 0) ? numValuesPerNode : 0;
+        this._returnBounds = (returnBounds) ? returnBounds : false;
+        this._isReadModified = (isReadModified) ? isReadModified : false;
     }
     
     get startTime()
