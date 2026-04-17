@@ -187,22 +187,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/HistoryUpdateResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.5/#5.11.5.2)."
-      x-eov-operation-handler: controllers/DefaultController
-  /{path}/historyupdate:
-    post:
-      operationId: HistoryUpdateWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/HistoryUpdateRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.5/#5.11.5.2)."
+      x-eov-operation-handler: controllers/DefaultController 
   /browse:
     post:
       operationId: Browse

@@ -17,8 +17,8 @@ import org.opcfoundation.webserver.digitaltwin.callback.EventElementCallback;
 import org.opcfoundation.webserver.digitaltwin.event.EventData;
 import org.opcfoundation.webserver.digitaltwin.event.EventType;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventRequest;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsResponse;
 import org.opcfoundation.webserver.service.message.reactiveobject.*;
 import org.opcfoundation.webserver.types.digitaltwin.ObjectServiceContext;
 import org.springframework.lang.Nullable;
@@ -83,15 +83,15 @@ public class EventElementType extends ElementType implements EventElementCallbac
     public final CompletableFuture<ReadHistoryEventResponse> onReadHistoryEvent(ReadHistoryEventRequest request)
     {
         ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
-        final GetEventRequest getEventRequest = GetEventRequest.getRequest(context, (ReadEventDetails) request.getDetails(), request.getOffset());
+        final ReadEventsRequest readEventsRequest = ReadEventsRequest.getRequest(context, (ReadEventDetails) request.getDetails(), request.getOffset());
 
-        return onGetEvent(getEventRequest).
-                thenApply(getEventResponse -> {
-                    return processReadHistoryEventResponse(getEventRequest, getEventResponse);
+        return onReadEvents(readEventsRequest).
+                thenApply(readEventResponse -> {
+                    return processReadHistoryEventResponse(readEventsRequest, readEventResponse);
                 });
     }
 
-    private ReadHistoryEventResponse processReadHistoryEventResponse(GetEventRequest request, GetEventResponse response) {
+    private ReadHistoryEventResponse processReadHistoryEventResponse(ReadEventsRequest request, ReadEventsResponse response) {
         List<String> select = request.getSelect();
         List<HistoryEventFieldList> eventFieldLists = new ArrayList<>();
 

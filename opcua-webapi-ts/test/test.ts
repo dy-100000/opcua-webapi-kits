@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://dingyan3:4842"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -21,6 +21,7 @@ class Test {
     {
         try
         {
+            await this.testHistoryReadAtTime();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -53,7 +54,7 @@ class Test {
     {
         console.log("testBrowse");
 
-        let nodeId = parseUaNodeId("i=90");
+        let nodeId = parseUaNodeId("ns=1;i=14");
         let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.ReferenceType | NodeClass.DataType);
 
         console.log("browseChild");
@@ -223,7 +224,7 @@ class Test {
     {
         console.log("testHistoryReadRawData");
         
-        let nodeId = new UaNodeId("Demo.History",3);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
         let startTime = new Date(Date.now());
         let endTime = new Date(startTime.getTime() + 2 * 60 * 1000);
 
@@ -232,7 +233,7 @@ class Test {
             startTime,
             endTime,
             20,
-            "abcd",            
+            null,            
             true,
             false);
         
@@ -247,7 +248,33 @@ class Test {
         }
     }
 
-    async testHistroryReadEvent()
+    async testHistoryReadAtTime()
+    {
+        console.log("testHistoryReadAtTime");
+        
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
+        let startTime = new Date(Date.now());
+        let time1 = new Date(startTime.getTime() + 2 * 60 * 1000);
+        let time2 = new Date(time1.getTime() + 2 * 60 * 1000);
+
+        let historyData = await this.client.historyReadAtTime(
+            nodeId,
+            [startTime, time1, time2],
+            true,
+            null);
+        
+        for (let item of historyData.historyData)
+        {
+            console.log(item.value.value);
+        }
+
+        if (historyData.continuationPoint)
+        {
+            console.log("cp:" + historyData.continuationPoint);
+        }
+    }
+
+    async testHistoryReadEvent()
     {
         console.log("testHistoryReadEvent");
         

@@ -296,7 +296,6 @@ public abstract class UaWebServer extends UaWebServerBase {
             if (null != nodeManager)
             {
                 transaction = nodeManager.getHistoryReadTransaction(context, currentIndex);
-
             } else {
                 transaction = new UaHistoryReadTransaction(
                         context,

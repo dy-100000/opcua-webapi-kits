@@ -349,6 +349,19 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
                 });
     }
 
+    @Override
+    public CompletableFuture<ReadHistoryDataResponse> onReadHistoryData(ReadHistoryDataRequest request)
+    {
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+        ReadPropertyHistoryValuesRequest readPropertyHistoryValuesRequest = new ReadPropertyHistoryValuesRequest(
+                context,
+                request.getChildId().getId(),
+                request.getDetails());
+
+        return onReadPropertyHistoryValues(readPropertyHistoryValuesRequest).
+                thenApply(this::processReadHistoryValueResponse);
+    }
+
     private BrowseObjectResponse processBrowseObjectChildrenResponse(
             UaObjectId objectId,
             List<UaInstanceNode> members,
@@ -399,6 +412,11 @@ public abstract class ElementCollectionType extends ElementType implements Eleme
         }
 
         return readVariableValueResponse;
+    }
+
+    private ReadHistoryDataResponse processReadHistoryValueResponse(ReadPropertyHistoryValuesResponse response)
+    {
+        return new ReadHistoryDataResponse(response.getDataValues(), response.containsMoreData());
     }
 
     @Override

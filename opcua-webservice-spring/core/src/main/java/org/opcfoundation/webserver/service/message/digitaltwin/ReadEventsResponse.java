@@ -4,11 +4,11 @@ import org.opcfoundation.webserver.digitaltwin.event.EventData;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetEventResponse {
+public class ReadEventsResponse {
     List<EventData> eventsData;
     boolean containsMoreData;
 
-    public GetEventResponse()
+    public ReadEventsResponse()
     {
         eventsData = new ArrayList<>();
         containsMoreData = false;

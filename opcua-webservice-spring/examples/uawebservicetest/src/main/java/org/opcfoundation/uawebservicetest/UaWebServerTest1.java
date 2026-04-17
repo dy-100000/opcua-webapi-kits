@@ -36,7 +36,6 @@ public class UaWebServerTest1 extends UaWebServerBase
         configure.setApplicationUri("test");
         configure.setApplicationName(LocalizedText.english("test"));
         configure.setProductUri("test");
-        configure.setSupportServerUriPath(true);
 
         setServerConfigure(configure);
     }

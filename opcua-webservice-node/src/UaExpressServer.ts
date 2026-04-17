@@ -49,7 +49,7 @@ export class UaExpressServer {
     }
 
     protected initializeRouters()
-    {
+    {  !!!
         this._app.post("/getEndpoints", getEndpoints);
         this._app.post(["/read","/:path/read"], read);
     }

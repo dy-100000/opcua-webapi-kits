@@ -1,14 +1,13 @@
 package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.EventElementType;
 import org.opcfoundation.webserver.digitaltwin.event.EventData;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorRequest;
 import org.opcfoundation.webserver.service.message.digitaltwin.GetDescriptorResponse;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventRequest;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsResponse;
 import org.opcfoundation.webserver.types.digitaltwin.EventQueryElement;
 
 import java.time.LocalDateTime;
@@ -20,7 +19,7 @@ public class EventElementTestType extends EventElementType {
     }
 
     @Override
-    public CompletableFuture<GetEventResponse> onGetEvent(GetEventRequest request) {
+    public CompletableFuture<ReadEventsResponse> onReadEvents(ReadEventsRequest request) {
         System.out.println(
                 "Id: " + request.getId() +
                         " StartTime: " + request.getStartTime() +
@@ -52,7 +51,7 @@ public class EventElementTestType extends EventElementType {
                 "def",
                 "Customized field");
 
-        GetEventResponse response = new GetEventResponse();
+        ReadEventsResponse response = new ReadEventsResponse();
         response.addEventData(data1);
         response.addEventData(data2);
         response.setContainsMoreData((0 == request.getOffset()));

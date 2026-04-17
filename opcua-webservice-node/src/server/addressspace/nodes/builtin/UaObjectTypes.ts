@@ -8,12 +8,12 @@ export class UaObjectTypes {
     static readonly ModellingRuleType = new UaObjectType(UaNodeId.from(ObjectTypeIds.ModellingRuleType), "ModellingRuleType", new UaLocalizedText("ModellingRuleType"), false);
     static readonly BaseEventType = new UaObjectType(UaNodeId.from(ObjectTypeIds.BaseEventType), "BaseEventType", new UaLocalizedText("BaseEventType"), false);
 
-    static readonly DigitalTwinType = new UaObjectType(new UaNodeId(1, 10), "DigitalTwinType", new UaLocalizedText("DigitalTwinType"), true);
-    static readonly DigitalTwinRepositoryType = new UaObjectType(new UaNodeId(1, 11), "DigitalTwinRepositoryType", new UaLocalizedText("DigitalTwinRepositoryType"), true);
-    static readonly SubmodelType = new UaObjectType(new UaNodeId(1, 12), "SubmodelType", new UaLocalizedText("SubmodelType"), true);
-    static readonly ElementType = new UaObjectType(new UaNodeId(1, 13), "ElementType", new UaLocalizedText("ElementType"), true);
-    static readonly ReferenceElementType = new UaObjectType(new UaNodeId(1, 14), "ReferenceElementType", new UaLocalizedText("ReferenceElementType"), true);
-    static readonly ElementCollectionType = new UaObjectType(new UaNodeId(1, 15), "ElementCollectionType", new UaLocalizedText("ElementCollectionType"), true);
-    static readonly ElementListType = new UaObjectType(new UaNodeId(1, 16), "ElementListType", new UaLocalizedText("ElementListType"), true);
-    static readonly EventElementType = new UaObjectType(new UaNodeId(1, 17), "EventElementType", new UaLocalizedText("EventElementType"), true);
+    static readonly DigitalTwinType = new UaObjectType(new UaNodeId(10,1), "DigitalTwinType", new UaLocalizedText("DigitalTwinType"), true);
+    static readonly DigitalTwinRepositoryType = new UaObjectType(new UaNodeId(11,1), "DigitalTwinRepositoryType", new UaLocalizedText("DigitalTwinRepositoryType"), true);
+    static readonly SubmodelType = new UaObjectType(new UaNodeId(12,1), "SubmodelType", new UaLocalizedText("SubmodelType"), true);
+    static readonly ElementType = new UaObjectType(new UaNodeId(13,1), "ElementType", new UaLocalizedText("ElementType"), true);
+    static readonly ReferenceElementType = new UaObjectType(new UaNodeId(14,1), "ReferenceElementType", new UaLocalizedText("ReferenceElementType"), true);
+    static readonly ElementCollectionType = new UaObjectType(new UaNodeId(15,1), "ElementCollectionType", new UaLocalizedText("ElementCollectionType"), true);
+    static readonly ElementListType = new UaObjectType(new UaNodeId(16,1), "ElementListType", new UaLocalizedText("ElementListType"), true);
+    static readonly EventElementType = new UaObjectType(new UaNodeId(17,1), "EventElementType", new UaLocalizedText("EventElementType"), true);
 }

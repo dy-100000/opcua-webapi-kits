@@ -32,6 +32,8 @@ public abstract class UaReactiveObjectType extends UaObjectType implements UaRea
 
         setParentType((null == parentType) ? UaObjectTypes.BaseObjectType : parentType);
 
+
+
         if (objectTypeId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
         this.nodeManager = nodeManager;
@@ -93,13 +95,17 @@ public abstract class UaReactiveObjectType extends UaObjectType implements UaRea
         variableId += "-";
         variableId += memberId;
 
+        int accessLevel = AccessLevel.CurrentRead.getValue();
+        if (writable) accessLevel += AccessLevel.CurrentWrite.getValue();
+        if (historizing) accessLevel += AccessLevel.HistoryRead.getValue();
+
         UaVariable newVariable = new UaVariable(
                 new NodeId(nodeManager.nsIndex(), variableId),
                 memberId,
                 displayName,
                 dataType.nodeId(),
                 (null == valueRank) ? ValueRank.Scalar.getValue() : valueRank,
-                (writable) ? AccessLevel.CurrentWrite.getValue() | AccessLevel.CurrentRead.getValue() : AccessLevel.CurrentRead.getValue(),
+                accessLevel,
                 (null == variableType) ? UaVariableTypes.PropertyType : variableType);
 
         newVariable.setHistorizing(historizing);

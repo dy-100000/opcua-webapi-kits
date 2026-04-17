@@ -27,7 +27,12 @@ public class UaObjectIdentifier {
             String id,
             @Nullable String instanceDeclId)
     {
-        if (null == instanceDeclId) this.typeId = typeId;
+        if (null == instanceDeclId) {
+            this.typeId = typeId;
+        } else {
+            this.typeId = null;
+        }
+
         this.id = id;
         this.instanceDeclId = instanceDeclId;
     }

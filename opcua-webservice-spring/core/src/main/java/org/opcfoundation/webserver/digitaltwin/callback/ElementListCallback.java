@@ -52,6 +52,13 @@ public interface ElementListCallback {
         });
     }
 
+    default CompletableFuture<ReadPropertyHistoryValuesResponse> onReadPropertyHistoryValues(ReadPropertyHistoryValuesRequest request)
+    {
+        return CompletableFuture.supplyAsync(()-> {
+            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
+        });
+    }
+
     default CompletableFuture<GetPropertySubElementsResponse> onGetPropertySubElements(GetPropertySubElementsRequest request)
     {
         return CompletableFuture.supplyAsync(()-> {

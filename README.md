@@ -20,7 +20,3 @@ Functionally consistent with opcua-webservice-spring. It is currently under deve
 Bilibili:
 1.https://www.bilibili.com/video/BV1h1syzoEFU/
 2.https://www.bilibili.com/video/BV1Yfc4zDEbP/
-
-Youtube：
-1.https://www.bilibili.com/video/BV1h1syzoEFU/
-2.https://www.bilibili.com/video/BV1Yfc4zDEbP/

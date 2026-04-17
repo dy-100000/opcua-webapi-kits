@@ -26,12 +26,12 @@ const activateSession = ({ activateSessionRequest }) => new Promise(
 * browseRequest BrowseRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2). (optional)
 * returns BrowseResponse
 * */
-const browse = ({ browseRequest }) => new Promise(
+const browse = ({ path, browseRequest, browseRequestWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        browseRequest,
-      }));
+      const req = browseRequest || browseRequestWithPathRequest;
+      const responseData = await uaServerApi.browse(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -45,12 +45,12 @@ const browse = ({ browseRequest }) => new Promise(
 * browseNextRequest BrowseNextRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2). (optional)
 * returns BrowseNextResponse
 * */
-const browseNext = ({ browseNextRequest }) => new Promise(
+const browseNext = ({ path, browseNextRequest, browseNextRequestWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        browseNextRequest,
-      }));
+      const req = browseNextRequest || browseNextRequestWithPathRequest;
+      const responseData = await uaServerApi.browseNext(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -234,10 +234,11 @@ const findServers = ({ findServersRequest }) => new Promise(
 * getEndpointsRequest GetEndpointsRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2). (optional)
 * returns GetEndpointsResponse
 * */
-const getEndpoints = ({ path,getEndpointsRequest }) => new Promise(
+const getEndpoints = ({ path,getEndpointsRequest, getEndpointsWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      const responseData = await uaServerApi.getEndpoints(getEndpointsRequest, path);
+      const req = getEndpointsRequest || getEndpointsWithPathRequest;
+      const responseData = await uaServerApi.getEndpoints(req, path);
       resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
@@ -271,12 +272,12 @@ const historyRead = ({ path, historyReadRequest, historyReadWithPathRequest }) =
 * historyUpdateRequest HistoryUpdateRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.5/#5.11.5.2). (optional)
 * returns HistoryUpdateResponse
 * */
-const historyUpdate = ({ path, historyUpdateRequest, historyUpdateWithPathRequest }) => new Promise(
+const historyUpdate = ({ historyUpdateRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      const req = historyUpdateRequest || historyUpdateWithPathRequest;
-      const responseData = await uaServerApi.historyUpdate(req, path);
-      resolve(Service.successResponse(responseData));
+      resolve(Service.successResponse({
+        historyUpdateRequest,
+      }));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -518,12 +519,12 @@ const unregisterNodes = ({ unregisterNodesRequest }) => new Promise(
 * writeRequest WriteRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.4/#5.11.4.2). (optional)
 * returns WriteResponse
 * */
-const write = ({ writeRequest }) => new Promise(
+const write = ({ path, writeRequest, writeRequestWithPathRequest }) => new Promise(
   async (resolve, reject) => {
     try {
-      resolve(Service.successResponse({
-        writeRequest,
-      }));
+      const req = writeRequest || writeRequestWithPathRequest;
+      const responseData = await uaServerApi.write(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',

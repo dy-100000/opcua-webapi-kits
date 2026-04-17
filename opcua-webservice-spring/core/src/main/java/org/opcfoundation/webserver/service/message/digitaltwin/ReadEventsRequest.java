@@ -13,7 +13,7 @@ import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GetEventRequest {
+public class ReadEventsRequest {
     private final String id;
     private final LocalDateTime startTime;
     private final LocalDateTime endTime;
@@ -26,7 +26,7 @@ public class GetEventRequest {
 
     private final ObjectServiceContext context;
 
-    public GetEventRequest(
+    public ReadEventsRequest(
             ObjectServiceContext context,
             LocalDateTime startTime,
             LocalDateTime endTime,
@@ -83,7 +83,7 @@ public class GetEventRequest {
         return context;
     }
 
-    public static GetEventRequest getRequest(ObjectServiceContext context, ReadEventDetails details, int offset) throws UaRuntimeException
+    public static ReadEventsRequest getRequest(ObjectServiceContext context, ReadEventDetails details, int offset) throws UaRuntimeException
     {
         LocalDateTime startTime = details.getStartTime().getJavaInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
         LocalDateTime endTime = details.getEndTime().getJavaInstant().atZone(ZoneOffset.UTC).toLocalDateTime();
@@ -128,7 +128,7 @@ public class GetEventRequest {
         // Where
         where = EventQuery.getQuery(eventFilter.getWhereClause());
 
-        return new GetEventRequest(
+        return new ReadEventsRequest(
                 context,
                 startTime,
                 endTime,

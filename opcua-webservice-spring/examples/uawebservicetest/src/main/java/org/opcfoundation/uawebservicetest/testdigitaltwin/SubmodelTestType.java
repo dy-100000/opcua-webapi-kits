@@ -2,10 +2,8 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
-import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
-import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
-import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
-import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
+import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
 import org.eclipse.milo.opcua.stack.core.types.structured.EUInformation;
 import org.eclipse.milo.opcua.stack.core.types.structured.Range;
@@ -19,6 +17,7 @@ import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
 import org.opcfoundation.webserver.service.message.digitaltwin.*;
 import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -56,7 +55,7 @@ public class SubmodelTestType extends SubmodelType {
                 new LocalizedText("Double member"),
                 UaDataTypes.Double,
                 true,
-                false,
+                true,
                 null,
                 UaVariableTypes.BaseAnalogType,
                 false);
@@ -208,5 +207,32 @@ public class SubmodelTestType extends SubmodelType {
                     new LocalizedText("Submodel-" + request.getId()),
                     new LocalizedText("Submodel with id " + request.getId()));
         });
+    }
+
+    @Override
+    public CompletableFuture<ReadPropertyHistoryValuesResponse> onReadPropertyHistoryValues(ReadPropertyHistoryValuesRequest request) {
+        ReadPropertyHistoryValuesResponse response = new ReadPropertyHistoryValuesResponse();
+        DateTime now = DateTime.now();
+
+        if (null != request.getReadRawDetails())
+        {
+            System.out.println(request.getReadRawDetails().toString());
+        } else if (null != request.getReadAtTimeDetails()) {
+            System.out.println(request.getReadAtTimeDetails().toString());
+        } else if (null != request.getReadProcessedDetails()) {
+            System.out.println(request.getReadProcessedDetails().toString());
+        }
+
+        for (int i=0; i<10; ++i)
+        {
+            DataValue value = new DataValue(
+                    Variant.ofInt32(i),
+                    StatusCode.GOOD,
+                    now);
+
+            response.addDataValue(value);
+        }
+
+        return CompletableFuture.completedFuture(response);
     }
 }

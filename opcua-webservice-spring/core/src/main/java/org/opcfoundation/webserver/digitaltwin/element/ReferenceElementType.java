@@ -2,6 +2,7 @@ package org.opcfoundation.webserver.digitaltwin.element;
 
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.NodeClass;
 import org.opcfoundation.webserver.addressspace.nodes.*;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjectTypes;

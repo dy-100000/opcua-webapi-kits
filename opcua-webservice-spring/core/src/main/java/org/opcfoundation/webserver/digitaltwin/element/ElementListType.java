@@ -177,6 +177,19 @@ public abstract class ElementListType extends ElementType implements ElementList
                 });
     }
 
+    @Override
+    public CompletableFuture<ReadHistoryDataResponse> onReadHistoryData(ReadHistoryDataRequest request)
+    {
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+        ReadPropertyHistoryValuesRequest readPropertyHistoryValuesRequest = new ReadPropertyHistoryValuesRequest(
+                context,
+                request.getChildId().getId(),
+                request.getDetails());
+
+        return onReadPropertyHistoryValues(readPropertyHistoryValuesRequest).
+                thenApply(this::processReadHistoryValueResponse);
+    }
+
     private BrowseObjectResponse processBrowseObjectChildrenResponse(GetObjectElementListResponse response)
     {
         List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
@@ -258,5 +271,10 @@ public abstract class ElementListType extends ElementType implements ElementList
                 response.getAccessLevel(),
                 response.getHistorizing(),
                 null);
+    }
+
+    private ReadHistoryDataResponse processReadHistoryValueResponse(ReadPropertyHistoryValuesResponse response)
+    {
+        return new ReadHistoryDataResponse(response.getDataValues(), response.containsMoreData());
     }
 }

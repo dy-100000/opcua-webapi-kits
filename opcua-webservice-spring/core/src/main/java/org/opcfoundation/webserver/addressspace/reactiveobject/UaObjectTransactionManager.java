@@ -431,16 +431,17 @@ public class UaObjectTransactionManager {
 
         if (null == identifier.getChildId())
         {
-            if (!(context.getHistoryReadDetails() instanceof ReadEventDetails)) return transactionNothingToDo;
-
-            return new UaReadEventHistoryTransaction(context, handleId, identifier, nodeManager);
-
+            if (context.getHistoryReadDetails() instanceof ReadEventDetails)
+            {
+                return new UaReadEventHistoryTransaction(context, handleId, identifier, nodeManager);
+            }
         } else {
-            if (!(context.getHistoryReadDetails() instanceof ReadRawModifiedDetails) &&
-                    !(context.getHistoryReadDetails() instanceof ReadAtTimeDetails) &&
-                    !(context.getHistoryReadDetails() instanceof ReadProcessedDetails)) return transactionNothingToDo;
-
-            // To be implemented
+            if (context.getHistoryReadDetails() instanceof ReadRawModifiedDetails ||
+                    context.getHistoryReadDetails() instanceof ReadAtTimeDetails ||
+                    context.getHistoryReadDetails() instanceof ReadProcessedDetails)
+            {
+                return new UaReadDataHistoryTransaction(context,handleId,identifier, nodeManager);
+            }
         }
 
         return transactionNothingToDo;

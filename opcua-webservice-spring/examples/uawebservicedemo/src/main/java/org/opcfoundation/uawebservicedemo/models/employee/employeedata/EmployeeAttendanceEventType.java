@@ -10,8 +10,8 @@ import org.opcfoundation.uawebservicedemo.database.mapper.EmployeeMapper;
 import org.opcfoundation.uawebservicedemo.models.employee.employeedata.event.EmployeeCheckInEventType;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.EventElementType;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventRequest;
-import org.opcfoundation.webserver.service.message.digitaltwin.GetEventResponse;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsRequest;
+import org.opcfoundation.webserver.service.message.digitaltwin.ReadEventsResponse;
 import org.opcfoundation.webserver.types.digitaltwin.EventQueryElement;
 
 import java.time.LocalDateTime;
@@ -24,7 +24,7 @@ public class EmployeeAttendanceEventType extends EventElementType {
     }
 
     @Override
-    public CompletableFuture<GetEventResponse> onGetEvent(GetEventRequest request) {
+    public CompletableFuture<ReadEventsResponse> onReadEvents(ReadEventsRequest request) {
 
         EmployeeMapper employeeMapper = EmployeeDatabase.getEmployeeMapper();
 
@@ -47,7 +47,7 @@ public class EmployeeAttendanceEventType extends EventElementType {
 
         List<EmployeeCheckIn> results = employeeMapper.getCheckInData(employeeId, startTime, endTime, checkIn);
 
-        GetEventResponse response = new GetEventResponse();
+        ReadEventsResponse response = new ReadEventsResponse();
         for (EmployeeCheckIn item : results)
         {
             response.addEventData(EmployeeCheckInEventType.generateEventData(item));
