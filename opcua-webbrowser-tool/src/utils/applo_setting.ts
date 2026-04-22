@@ -22,5 +22,7 @@ const cache = new InMemoryCache();
 
 export const apolloClient = new ApolloClient({
   link: authLink.concat(httpLink),
- cache,
+  cache,
+  // 关闭控制台 “Download the Apollo DevTools…” 提示
+  connectToDevTools: false,
 });

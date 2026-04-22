@@ -2,7 +2,7 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import * as OpenApiValidator from 'express-openapi-validator';
 import path from 'path';
-import { getEndpoints, read } from './controllers/DefaultController';
+import { browse, browseNext, call, findServers, getEndpoints, historyRead, read, write } from './controllers/DefaultController';
 
 export class UaExpressServer {
     private _app : Express;
@@ -27,7 +27,7 @@ export class UaExpressServer {
         this.initializeErrorHandlers();
 
         this.app.listen(this._port, () => {
-        console.log(`Server running on port ${this._port}`);
+            console.log(`Server running on port ${this._port}`);
         });
     }
 
@@ -49,9 +49,15 @@ export class UaExpressServer {
     }
 
     protected initializeRouters()
-    {  !!!
-        this._app.post("/getEndpoints", getEndpoints);
+    {
+        this._app.post("/findservers", findServers);
+        this._app.post(["/getEndpoints","/:path/getEndpoints"], getEndpoints);
+        this._app.post(["/browse","/:path/browse"], browse);
+        this._app.post(["/browsenext","/:path/browsenext"], browseNext);
         this._app.post(["/read","/:path/read"], read);
+        this._app.post(["/write","/:path/write"], write);
+        this._app.post(["/call","/:path/call"], call);
+        this._app.post(["/historyread","/:path/historyread"], historyRead);
     }
 
     private initializeErrorHandlers()

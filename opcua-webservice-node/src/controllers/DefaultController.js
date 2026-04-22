@@ -13,7 +13,6 @@ const activateSession = async (request, response) => {
 };
 
 const browse = async (request, response) => {
-  console.log('DefaultController - browse');
   await Controller.handleRequest(request, response, service.browse);
 };
 

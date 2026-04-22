@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "generate": "openapi-generator-cli generate -i opc.ua.openapi.allservices.json -g nodejs-express-server -o src",
-    "test": "ts-node-dev --no-notify --respawn --transpile-only examples/testserver/Application.ts",
+    "dev": "ts-node-dev --no-notify --respawn --transpile-only examples/testserver/Application.ts",
     "build": "tsc"
   },
   "dependencies": {

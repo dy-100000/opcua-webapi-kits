@@ -28,7 +28,19 @@ export class UaObjectIdentifier {
     }
    
     toString(): string {
-        return JSON.stringify(this.toJson());   
+        let ret = this._id;
+        
+        if (null !== this._typeId)
+        {
+            ret += `@${this._typeId}`;
+        }
+
+        if (null != this._instanceDeclId)
+        {
+            ret += `*${this._instanceDeclId}`;
+        }
+
+        return ret;
     }
 
     toJson(): SerializedObjectIdentifier {

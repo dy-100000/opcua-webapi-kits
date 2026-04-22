@@ -62,6 +62,7 @@ public class UaObjectTransactionManager {
         }
 
         UaObject instanceDeclaration = nodeManager.findInstanceDeclaration(identifier.getObjectId());
+        UaObjectId objectId = new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration);
 
         //System.out.println("NodeToBrowse: " + identifier);
         if (null == identifier.getChildId())
@@ -72,7 +73,7 @@ public class UaObjectTransactionManager {
                     additionalInfo,
                     handleId,
                     objectType,
-                    new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
+                    objectId,
                     nodeManager);
         } else {
             return new UaBrowseMemberTransaction(
@@ -81,7 +82,7 @@ public class UaObjectTransactionManager {
                     additionalInfo,
                     handleId,
                     objectType,
-                    new UaObjectId(identifier.getObjectId().getId(), instanceDeclaration),
+                    objectId,
                     identifier.getChildId(),
                     nodeManager);
         }

@@ -1,7 +1,7 @@
-import { createApp, h, provide , DirectiveBinding } from "vue";
+import { createApp, h, provide, DirectiveBinding } from "vue";
 import { createPinia } from 'pinia'
 
-import App from './App'; 
+import App from './App';
 import './index.css';
 import RightClickMenu from '@/views/components/Menu/index.vue'; // 导入组件
 import VDrag from 'v-drag';
@@ -14,10 +14,10 @@ if (typeof window !== 'undefined') {
   window.process = process;
   window.global = window;
   window.EventEmitter = EventEmitter;
-  
+
   // 手动修复缺失的函数
   if (typeof window.createFastUninitializedBuffer === 'undefined') {
-    window.createFastUninitializedBuffer = function(size) {
+    window.createFastUninitializedBuffer = function (size) {
       return Buffer.allocUnsafe(size);
     };
   }
@@ -25,11 +25,11 @@ if (typeof window !== 'undefined') {
 // 如果您正在使用CDN引入，请删除下面一行。
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 // import * as Icons from 'element-plus/lib/icons';
-import {apolloClient} from "@/utils/applo_setting"
+import { apolloClient } from "@/utils/applo_setting"
 import * as go from 'gojs';
 const gojsDirective = {
   mounted(el: HTMLElement, binding: DirectiveBinding) {
-    if (!binding.value) return; 
+    if (!binding.value) return;
     const $gojs = new go.Diagram(el);
     Object.assign($gojs, binding.value);
   }
@@ -47,12 +47,25 @@ import './iconfont.js';
 // import VlTree from '@sangtian152/virtual-tree';
 // import "@sangtian152/virtual-tree/lib/vl-tree.css";
 import router from '@/router/index'
-const app =  createApp({
+import { initGlobalErrorHandling } from '@/utils/utils'
+import eruda from 'eruda'
+
+// 开发环境一定展示（Vite 写法）
+// if (import.meta.env.DEV) {   // 等价于 NODE_ENV === 'development'
+//   eruda.init({
+//     tool: ['console', 'elements', 'network'],
+//     useShadowDom: true
+//   })
+// }
+// 初始化全局错误处理
+initGlobalErrorHandling();
+
+const app = createApp({
   setup() {
     provide(DefaultApolloClient, apolloClient);
   },
   render: () => h(App),
-}) 
+})
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
   app.component(key, component)
 }
@@ -106,7 +119,7 @@ app.directive('drags', (el) => {
   const originalZIndex = el.style.zIndex ? parseInt(el.style.zIndex, 10) : 0;
   el.style.position = 'absolute';
 
-  el.addEventListener('mousedown', function(e) {
+  el.addEventListener('mousedown', function (e) {
     e.preventDefault(); // 阻止默认事件，例如文本选择
     dragging = true;
     offset = [e.clientX - el.offsetLeft, e.clientY - el.offsetTop];

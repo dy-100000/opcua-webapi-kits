@@ -31,7 +31,7 @@
                 <SwitchButton />
               </el-icon>
               <span class="cus-label">
-                {{ data.BrowseName }}
+                {{ getDisplayName(data) || data.BrowseName }}
               </span>
             </div>
             <template #dropdown v-if="currentDrop === node.id">
@@ -49,7 +49,7 @@
             <img :src="groupImg" v-if="data.nodeClass === 128" class="svg-icon" />
             <img :src="playImg" v-if="data.nodeClass === 4" class="svg-icon" />
             <span class="node-label cus-label">
-              {{ data.displayName._text }}
+              {{ getDisplayName(data) || data.displayName?._text }}
             </span>
           </div>
         </div>
@@ -95,6 +95,35 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<Emits>();
 
 const treeRef = ref();
+
+// 辅助函数：获取显示名称（优先使用 displayName）
+const getDisplayName = (item: any) => {
+  if (!item) return '';
+  
+  // 优先使用 displayName
+  if (item.displayName) {
+    if (typeof item.displayName === 'string') {
+      return item.displayName;
+    }
+    if (item.displayName._text) {
+      return item.displayName._text;
+    }
+    if (item.displayName.text) {
+      return item.displayName.text;
+    }
+    if (item.displayName.name) {
+      return item.displayName.name;
+    }
+  }
+  
+  // 备选：使用 targetDisplayName（用于引用关系）
+  if (item.targetDisplayName) {
+    return item.targetDisplayName;
+  }
+  
+  // 最后备选：使用 browseName 或 name
+  return item.browseName || item.BrowseName || item.name || '';
+};
 
 const treeProps = {
   children: 'children',

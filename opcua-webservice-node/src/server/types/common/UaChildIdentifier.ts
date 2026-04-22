@@ -28,7 +28,19 @@ export class UaChildIdentifier {
     }    
 
     toString(): string {
-        return JSON.stringify(this.toJson());   
+        let ret = this._path;
+        
+        if (null !== this._pathL2)
+        {
+            ret += `@${this._pathL2}`;
+         }
+
+        if (this._methodNode)
+        {
+            ret += "*";
+        }
+
+        return ret;
     }
 
     toJson(): SerializedChildIdentifier {

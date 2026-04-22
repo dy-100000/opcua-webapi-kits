@@ -20,8 +20,7 @@ class Test {
     async run()
     {
         try
-        {
-            await this.testHistoryReadAtTime();
+        {            
             /*
             await this.testFindServer();
             await this.testReadValues();

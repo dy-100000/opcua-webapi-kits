@@ -263,6 +263,11 @@ public class NodeManagerNs0 extends NodeManager {
         addNode(UaObjects.DataTypesFolder);
         addNode(UaObjects.ReferenceTypesFolder);
 
+        addNode(UaObjects.ModellingRule_Mandatory);
+        addNode(UaObjects.ModellingRule_Optional);
+        addNode(UaObjects.ModellingRule_MandatoryPlaceHolder);
+        addNode(UaObjects.ModellingRule_OptionalPlaceHolder);
+
         UaObjects.RootFolder.organizes(UaObjects.ObjectsFolder);
         UaObjects.RootFolder.organizes(UaObjects.TypesFolder);
         UaObjects.RootFolder.organizes(UaObjects.ViewsFolder);

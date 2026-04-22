@@ -1,7 +1,7 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { UaExpressServer, UaServerConfigure, UaWebServerBase, UaWebServer} from "../../src";
+import { UaExpressServer, UaServerConfigure, UaWebServer} from "../../src";
 
-export class UaTestWebServer extends UaWebServerBase 
+export class UaTestWebServer extends UaWebServer 
 {
     constructor(server : UaExpressServer)
     {

@@ -32,8 +32,6 @@ public abstract class UaReactiveObjectType extends UaObjectType implements UaRea
 
         setParentType((null == parentType) ? UaObjectTypes.BaseObjectType : parentType);
 
-
-
         if (objectTypeId.isEmpty()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdRejected);
         if (displayName.isNull()) throw new UaRuntimeException(StatusCodes.Bad_InvalidArgument);
         this.nodeManager = nodeManager;

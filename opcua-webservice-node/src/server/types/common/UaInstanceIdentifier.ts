@@ -44,11 +44,9 @@ export class UaInstanceIdentifier {
     }
 
     toString(): string {
-        let ret = "ObjectId: ";
-        ret += this._objectId.toString();
-
+        let ret = this._objectId.toString();
         if (this._childId !== null) {
-            ret += ` ChildId: ${this._childId.toString()}`;
+            ret += `%${this._childId.toString()}`;
         }
 
         return ret;
