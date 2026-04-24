@@ -89,7 +89,6 @@ public abstract class DigitalTwinType extends UaReactiveObjectType implements Di
     {
         List<UaReferenceDescriptor> childDescriptors = new ArrayList<>();
 
-
         for (SubmodelDescriptor item: response.getSubmodels())
         {
             UaReferenceDescriptor descriptor;
