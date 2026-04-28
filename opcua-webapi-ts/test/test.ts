@@ -10,17 +10,20 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4842"
+            basePath: "http://zangmobai:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
+        clientConfig.defaultTimeout = 20000;
+
         this.client = new UaWebClient(clientConfig);
     }
 
     async run()
     {
         try
-        {            
+        {
+            await this.testHistoryReadRawData();    
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -36,8 +39,7 @@ class Test {
             await this.testGetGeneratedEvent();
             await this.testDataTypeDictionary();    
             await this.testReferenceTypeDictionary();
-            await this.testObjectTypeDictionary();       
-            await this.testHistroryReadEvent();  
+            await this.testObjectTypeDictionary();  
             await this.testReaderNode();
             await this.testNodeChildReader();   
             await this.testNodeLinkReader();   
@@ -53,7 +55,7 @@ class Test {
     {
         console.log("testBrowse");
 
-        let nodeId = parseUaNodeId("ns=1;i=14");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiUHJvY2Vzc1NlZ21lbnRzIiwidCI6Im5zPTI7cz1Qcm9jZXNzU2VnbWVudFJlcG9zaXRvcnlUeXBlIn19");
         let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.ReferenceType | NodeClass.DataType);
 
         console.log("browseChild");
@@ -223,15 +225,16 @@ class Test {
     {
         console.log("testHistoryReadRawData");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
-        let startTime = new Date(Date.now());
-        let endTime = new Date(startTime.getTime() + 2 * 60 * 1000);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRklGU0NBSUAwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAzRTI5NUYiLCJpZCI6Im5zPTI7cz1TZW5zb3JUeXBlLVNpZ25hbCJ9LCJjaSI6eyJwIjoiVmFsdWUifX0=");
+                
+        const startTime = new Date("2026-01-01T13:00:00Z");
+        const endTime = new Date("2026-01-01T13:02:00Z");
 
         let historyData = await this.client.historyReadRawData(
             nodeId,
             startTime,
             endTime,
-            20,
+            1000,
             null,            
             true,
             false);
@@ -423,7 +426,7 @@ class Test {
     async testNodeLinkReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlU2tpbGxSZWZlcmVuY2VUeXBlIiwiaSI6IjIiLCJpZCI6Im5zPTI7cz1FbXBsb3llZVNraWxsU3VibW9kZWxUeXBlLVNraWxscyJ9fQ==")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtUmVmZXJlbmNlIn19")
         ];
 
         let reader = new UaNodeLinkReader(nodeIds);
@@ -439,7 +442,10 @@ class Test {
                 console.log({
                     target: item2.targetId.toString(),
                     reference: item2.referenceTypeId.toString(),
-                    isForward: item2.isForward
+                    isForward: item2.isForward,
+                    browseName: item2.browseName,
+                    displayName: item2.displayName.toString(),
+                    nodeClass: item2.nodeClass
                 });
             }
         }

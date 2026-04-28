@@ -55,7 +55,7 @@ export class UaObjectTypeDictionary
                     new UaNodeId(ReferenceTypeIds.HasSubtype),
                     false,
                     NodeClass.ObjectType,
-                    31);
+                    63);
 
             nodesToBrowse.push(browseDescription);
         }

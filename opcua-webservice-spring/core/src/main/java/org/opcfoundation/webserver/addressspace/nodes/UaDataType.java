@@ -3,6 +3,7 @@ package org.opcfoundation.webserver.addressspace.nodes;
 import org.eclipse.milo.opcua.sdk.core.AccessLevel;
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
+import org.eclipse.milo.opcua.stack.core.OpcUaDataType;
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.UaStructuredType;
@@ -19,7 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UaDataType extends UaDefinitionNode {
-    private @Nullable UaVariable enumVariable;
+    private @Nullable OpcUaDataType valueType;
 
     public UaDataType(
             NodeId nodeId,
@@ -28,7 +29,7 @@ public class UaDataType extends UaDefinitionNode {
             boolean isAbstract)
     {
         super(nodeId,browseName,displayName,isAbstract);
-        enumVariable = null;
+        valueType = null;
     }
 
     @Override
@@ -36,48 +37,61 @@ public class UaDataType extends UaDefinitionNode {
         return NodeClass.DataType;
     }
 
-    public boolean isEnumDataType()
+    public OpcUaDataType getValueType()
     {
-        return null != enumVariable;
-    }
+        if (null != valueType) return valueType;
 
-    public UaVariable setEnumStrings(
-            NodeId nodeId,
-            LocalizedText[] enumStrings)
-    {
-        if (!isSubtypeOf(NodeIds.Enumeration) || null != enumVariable) throw new UaRuntimeException(StatusCodes.Bad_TypeDefinitionInvalid);
-        enumVariable = new UaVariable(
-                nodeId,
-                "EnumStrings",
-                new LocalizedText("EnumStrings"),
-                NodeIds.LocalizedText,
-                ValueRank.OneDimension.getValue(),
-                AccessLevel.CurrentRead.getValue(),
-                UaVariableTypes.PropertyType);
+        if (isSubtypeOf(NodeIds.Boolean))
+        {
+            valueType = OpcUaDataType.Boolean;
+        } else if (isSubtypeOf(NodeIds.SByte)) {
+            valueType = OpcUaDataType.SByte;
+        } else if (isSubtypeOf(NodeIds.Int16)) {
+            valueType = OpcUaDataType.Int16;
+        } else if (isSubtypeOf(NodeIds.UInt16)) {
+            valueType = OpcUaDataType.UInt16;
+        } else if (isSubtypeOf(NodeIds.Int32)) {
+            valueType = OpcUaDataType.Int32;
+        } else if (isSubtypeOf(NodeIds.UInt32)) {
+            valueType = OpcUaDataType.UInt32;
+        } else if (isSubtypeOf(NodeIds.Int64)) {
+            valueType = OpcUaDataType.Int64;
+        } else if (isSubtypeOf(NodeIds.UInt64)) {
+            valueType = OpcUaDataType.UInt64;
+        } else if (isSubtypeOf(NodeIds.Float)) {
+            valueType = OpcUaDataType.Float;
+        } else if (isSubtypeOf(NodeIds.Double)) {
+            valueType = OpcUaDataType.Double;
+        } else if (isSubtypeOf(NodeIds.String)) {
+            valueType = OpcUaDataType.String;
+        } else if (isSubtypeOf(NodeIds.DateTime)) {
+            valueType = OpcUaDataType.DateTime;
+        } else if (isSubtypeOf(NodeIds.Guid)) {
+            valueType = OpcUaDataType.Guid;
+        } else if (isSubtypeOf(NodeIds.ByteString)) {
+            valueType = OpcUaDataType.ByteString;
+        } else if (isSubtypeOf(NodeIds.XmlElement)) {
+            valueType = OpcUaDataType.XmlElement;
+        } else if (isSubtypeOf(NodeIds.NodeId)) {
+            valueType = OpcUaDataType.NodeId;
+        } else if (isSubtypeOf(NodeIds.ExpandedNodeId)) {
+            valueType = OpcUaDataType.ExpandedNodeId;
+        } else if (isSubtypeOf(NodeIds.StatusCode)) {
+            valueType = OpcUaDataType.StatusCode;
+        } else if (isSubtypeOf(NodeIds.QualifiedName)) {
+            valueType = OpcUaDataType.QualifiedName;
+        } else if (isSubtypeOf(NodeIds.LocalizedText)) {
+            valueType = OpcUaDataType.LocalizedText;
+        } else if (isSubtypeOf(NodeIds.DataValue)) {
+            valueType = OpcUaDataType.DataValue;
+        } else if (isSubtypeOf(NodeIds.DiagnosticInfo)) {
+            valueType = OpcUaDataType.DiagnosticInfo;
+        } else if (isSubtypeOf(NodeIds.Enumeration)) {
+            valueType = OpcUaDataType.Int32;
+        } else if (isSubtypeOf(NodeIds.Structure)) {
+            valueType = OpcUaDataType.ExtensionObject;
+        }
 
-        enumVariable.setValue(new Variant(enumStrings));
-        addMemberNode(enumVariable);
-        return enumVariable;
-    }
-
-    public UaVariable setEnumValues(
-            NodeId nodeId,
-            List<EnumValueType> enumValues)
-    {
-        if (!isSubtypeOf(NodeIds.Enumeration) || null != enumVariable) throw new UaRuntimeException(StatusCodes.Bad_TypeDefinitionInvalid);
-        enumVariable = new UaVariable(
-                nodeId,
-                "EnumValues",
-                new LocalizedText("EnumValues"),
-                NodeIds.EnumValueType,
-                ValueRank.OneDimension.getValue(),
-                AccessLevel.CurrentRead.getValue(),
-                UaVariableTypes.PropertyType);
-
-        List<UaStructuredType> structs = new ArrayList<>(enumValues);
-        enumVariable.setValue(UaStructureUtilities.toVariant(structs));
-
-        addMemberNode(enumVariable);
-        return enumVariable;
+        return valueType;
     }
 }

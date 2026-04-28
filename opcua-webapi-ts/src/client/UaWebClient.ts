@@ -1,4 +1,4 @@
-import { DefaultApi, ViewDescription, BrowseDescription, RequestHeader, BrowseRequestFromJSON, 
+import { ViewDescription, BrowseDescription, RequestHeader, BrowseRequestFromJSON, 
     ReadValueId, ReadRequestFromJSON, TimestampsToReturn, BrowseNextRequestFromJSON, 
     WriteValue, WriteRequestFromJSON, CallMethodRequest, CallRequestFromJSON, 
     FindServersRequestFromJSON,
@@ -27,32 +27,26 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaHistoryReadValueId,
     UaHistoryReadResult,
     UaLocalizedText} from "../common"
-import { UaClientConfiguration, UaClientParameters } from "..";
+import { UaClientConfiguration, UaClientParameters, UaWebClientApi, UaWebClientNative } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult, UaCallMethodRequest, UaCallMethodResult} from "../common";
 
 export class UaWebClient
 {
-    private api : DefaultApi;
+    private api : UaWebClientApi;
     private clientConfig : UaClientConfiguration;
-    private requestHandle : number;    
-    protected authenticationToken : string | undefined;
+    private requestHandle : number;
 
     constructor(clientConfig: UaClientConfiguration)
     {
-        this.api = new DefaultApi(clientConfig.apiConfig);
         this.clientConfig = clientConfig;
+        this.api = this.createApi();       
         this.requestHandle = 1;
     }
 
-    getUrl() : string
+    public getUrl() : string
     {
         return this.clientConfig.apiConfig.basePath;
     }
-
-    getNativeApi() : DefaultApi
-    {
-        return this.api;
-    }   
 
     async find(applicationUris?: Array<string>) : Promise<Array<UaApplicationDescriptor>>
     {
@@ -526,12 +520,33 @@ export class UaWebClient
         }
 
         let request = BrowseRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             NodesToBrowse: NodesToBrowse,
             RequestedMaxReferencesPerNode: (maxReferencesPerNode && maxReferencesPerNode > 0) ? maxReferencesPerNode : undefined,
             View: view }); 
-            
-        let response = await this.api.browse({browseRequest: request});
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);           
+
+            try {
+                response = await this.api.browse(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.browse(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -561,11 +576,30 @@ export class UaWebClient
         if (continuationPoints.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
 
         let request = BrowseNextRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             ContinuationPoints: continuationPoints,
             ReleaseContinuationPoints: releaseContinuationPoints }); 
 
-        let response = await this.api.browseNext({browseNextRequest: request});
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.browseNext(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {                 
+                response = await this.api.browseNext(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -599,7 +633,7 @@ export class UaWebClient
         }
 
         let request = ReadRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             NodesToRead: NodesToRead,
             MaxAge: (maxAge && maxAge > 0) ? maxAge : undefined,
             TimestampsToReturn: 
@@ -607,7 +641,27 @@ export class UaWebClient
                 timestampsToReturn >= TimestampsToReturn.Source && 
                 timestampsToReturn < TimestampsToReturn.Invalid) ? timestampsToReturn : TimestampsToReturn.Neither }); 
 
-        let response = await this.api.read({readRequest: request});
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.read(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {                 
+                response = await this.api.read(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -638,10 +692,29 @@ export class UaWebClient
         }
 
         let request = WriteRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             NodesToWrite: NodesToWrite }); 
 
-        let response = await this.api.write({writeRequest: request});
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.write(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {                 
+                response = await this.api.write(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -672,10 +745,30 @@ export class UaWebClient
         }
 
         let request = CallRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             MethodsToCall: MethodsToCall }); 
 
-        let response = await this.api.call({callRequest: request});
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.call(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {                 
+                response = await this.api.call(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -709,7 +802,7 @@ export class UaWebClient
         }
 
         let request = HistoryReadRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             HistoryReadDetails: UaPayloadMapper.extensionObjectToWebApi(historyReadDetails),
             TimestampsToReturn: 
                (timestampsToReturn && 
@@ -719,7 +812,27 @@ export class UaWebClient
             NodesToRead: NodesToRead
         });
 
-        let response = await this.api.historyRead({historyReadRequest: request});
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout); 
+            try {
+                response = await this.api.historyRead(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {                 
+                response = await this.api.historyRead(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
 
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -745,12 +858,32 @@ export class UaWebClient
         additionalParameters?: UaClientParameters) : Promise<Array<ApplicationDescription>>
     {
         let request = FindServersRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             ServerUris: serverUris,
             EndpointUrl: endpointUrl,
             LocaleIds: localeIds }); 
 
-        let response = await this.api.findServers({findServersRequest: request});
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.findServers(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+            finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.findServers(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
         
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
@@ -768,12 +901,32 @@ export class UaWebClient
         additionalParameters?: UaClientParameters) : Promise<Array<EndpointDescription>>
     {
         let request = GetEndpointsRequestFromJSON({
-            RequestHeader: this.requestHeader(this.clientConfig, additionalParameters),
+            RequestHeader: this.requestHeader(additionalParameters),
             EndpointUrl: endpointUrl,
             LocaleIds: localeIds,
             ProfileUris: profileUris }); 
 
-        let response = await this.api.getEndpoints({ getEndpointsRequest: request });
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.getEndpoints(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.getEndpoints(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+        
         if (response?.ResponseHeader?.ServiceResult?.Code) 
             throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
         if (!response.Endpoints) 
@@ -782,18 +935,14 @@ export class UaWebClient
         return response.Endpoints;
     }
 
-    private requestHeader(
-        clientConfig : UaClientConfiguration,
-        additionalParameters?: UaClientParameters) : RequestHeader
+    protected requestHeader(additionalParameters?: UaClientParameters) : RequestHeader
     {
-        let timeout = clientConfig.defaultTimeout;
-        if (additionalParameters && additionalParameters.timeout) timeout = additionalParameters.timeout;
+        let timeout = this.requestTimeout(additionalParameters);
 
         let ret : RequestHeader = {
             RequestHandle: this.requestHandle,
             TimeoutHint: timeout,
             Timestamp: new Date(),
-            AuthenticationToken: this.authenticationToken,
             ReturnDiagnostics: (additionalParameters) ? additionalParameters.returnDiagnostics : undefined,
             AuditEntryId: (additionalParameters) ? additionalParameters.auditEntryId : undefined,
         };
@@ -801,6 +950,18 @@ export class UaWebClient
         this.requestHandle++;
         if (0xFFFFFFFF == this.requestHandle) this.requestHandle = 1;
         return ret;
+    }
+
+    protected requestTimeout(additionalParameters?: UaClientParameters) : number
+    {
+        let timeout = this.clientConfig.defaultTimeout;
+        if (additionalParameters && additionalParameters.timeout > 1000) timeout = additionalParameters.timeout;
+        return timeout;
+    }
+
+    protected createApi() : UaWebClientApi
+    {
+        return new UaWebClientNative(this.clientConfig.apiConfig); 
     }
 }
 

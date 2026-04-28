@@ -30,7 +30,6 @@ public class ReferenceElementTestType extends ReferenceElementType {
         }
 
         response.setContainsMoreData(0==request.getOffset());
-
         return CompletableFuture.completedFuture(response);
     }
 

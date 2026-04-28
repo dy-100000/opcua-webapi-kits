@@ -14,7 +14,7 @@ export class UaClientParameters {
         {
             this._timeout = 500;
         } else {
-            this._timeout = this.timeout;
+            this._timeout = timeout;
         }
     } 
 

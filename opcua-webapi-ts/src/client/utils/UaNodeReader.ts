@@ -115,7 +115,7 @@ export abstract class UaNodeReaderBase
             {
                 let nodeId = item.nodeId.getNodeId();
                 let typeDefinition = item.typeDefinition?.getNodeId();
-                if (null == nodeId || null == typeDefinition) continue;
+                if (null == nodeId || null === typeDefinition) continue;
 
                 this._browseResults.push({ 
                     fromNodeId: currentNode.nodeId,
@@ -827,6 +827,8 @@ export class UaNodeLinkReader
             result.links.push(new UaLink(
                 item.nodeId,
                 item.nodeClass,
+                item.browseName,
+                item.displayName,
                 item.referenceTypeId,
                 item.isForward
             ));
@@ -849,8 +851,8 @@ export class UaNodeLinkReader
                 BrowseDirection.Both,
                 UaNodeId.from(ReferenceTypeIds.NonHierarchicalReferences),
                 true,
-                NodeClass.Object | NodeClass.Variable | NodeClass.Method,
-                7
+                NodeClass.Object,
+                63
             );
 
             browseDescriptions.push(browseDescription);
@@ -869,15 +871,15 @@ export class UaNodeLinkReader
             {
                 let nodeId = item.nodeId.getNodeId();
                 let typeDefinition = item.typeDefinition?.getNodeId();
-                if (null == nodeId || null == typeDefinition) continue;
+                if (null == nodeId || null === typeDefinition) continue;
 
                 this._browseResults.push({
                     fromNodeId: currentNodeId,
                     nodeId: nodeId,
-                    nodeClass: item.nodeClass,
-                    browseName: item.browseName,
-                    displayName: item.displayName,
-                    referenceTypeId: item.referenceTypeId,
+                    nodeClass: (item.nodeClass) ? item.nodeClass : NodeClass.Unspecified,
+                    browseName: (item.browseName) ? item.browseName : "",
+                    displayName: (item.displayName) ? item.displayName : UaLocalizedText.nullText,
+                    referenceTypeId: (item.referenceTypeId) ? item.referenceTypeId : UaNodeId.nullNodeId,
                     isForward: item.isForward,
                     typeDefinitionId: typeDefinition
                 });
@@ -916,15 +918,15 @@ export class UaNodeLinkReader
             {
                 let nodeId = item.nodeId.getNodeId();
                 let typeDefinition = item.typeDefinition?.getNodeId();
-                if (null == nodeId || null == typeDefinition) continue;
+                if (null == nodeId || null === typeDefinition) continue;
 
                 this._browseResults.push({
                     fromNodeId: currentNodeId,
                     nodeId: nodeId,
-                    nodeClass: item.nodeClass,
-                    browseName: item.browseName,
-                    displayName: item.displayName,
-                    referenceTypeId: item.referenceTypeId,
+                    nodeClass: (item.nodeClass) ? item.nodeClass : NodeClass.Unspecified,
+                    browseName: (item.browseName) ? item.browseName : "",
+                    displayName: (item.displayName) ? item.displayName : UaLocalizedText.nullText,
+                    referenceTypeId: (item.referenceTypeId) ? item.referenceTypeId : UaNodeId.nullNodeId,
                     isForward: item.isForward,
                     typeDefinitionId: typeDefinition
                 });

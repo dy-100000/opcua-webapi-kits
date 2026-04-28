@@ -6,7 +6,7 @@ export class UaClientConfiguration {
 
     constructor(apiConfig : Configuration) {        
         this._apiConfig = apiConfig;      
-        this._defaultTimeout = 60000;
+        this._defaultTimeout = 0;
     }
 
     get apiConfig() : Configuration
@@ -21,9 +21,9 @@ export class UaClientConfiguration {
 
     set defaultTimeout(timeout: number)
     {
-        if (timeout < 5000)
+        if (timeout < 1000)
         {
-            this._defaultTimeout = 5000;
+            this._defaultTimeout = 0;
         } else {
             this._defaultTimeout = timeout;
         }
