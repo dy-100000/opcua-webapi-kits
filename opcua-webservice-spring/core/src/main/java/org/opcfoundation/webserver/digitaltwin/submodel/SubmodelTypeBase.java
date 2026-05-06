@@ -17,4 +17,9 @@ public abstract class SubmodelTypeBase extends UaReactiveObjectType {
                 UaObjectTypes.SubmodelType,
                 twinSpace);
     }
+
+    public DigitalTwinSpace digitalTwinSpace()
+    {
+        return (DigitalTwinSpace)nodeManager;
+    }
 }

@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://zangmobai:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -23,7 +23,7 @@ class Test {
     {
         try
         {
-            await this.testHistoryReadRawData();    
+            await this.testHistoryReadProcessed();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -225,7 +225,7 @@ class Test {
     {
         console.log("testHistoryReadRawData");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRklGU0NBSUAwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAzRTI5NUYiLCJpZCI6Im5zPTI7cz1TZW5zb3JUeXBlLVNpZ25hbCJ9LCJjaSI6eyJwIjoiVmFsdWUifX0=");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
                 
         const startTime = new Date("2026-01-01T13:00:00Z");
         const endTime = new Date("2026-01-01T13:02:00Z");
@@ -264,6 +264,32 @@ class Test {
             [startTime, time1, time2],
             true,
             null);
+        
+        for (let item of historyData.historyData)
+        {
+            console.log(item.value.value);
+        }
+
+        if (historyData.continuationPoint)
+        {
+            console.log("cp:" + historyData.continuationPoint);
+        }
+    }
+
+    async testHistoryReadProcessed()
+    {
+        console.log("testHistoryReadProcessed");
+        
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
+                
+        const startTime = new Date("2026-01-01T13:00:00Z");
+        const endTime = new Date("2026-01-01T13:02:00Z");
+
+        let historyData = await this.client.historyReadProcessed(
+            nodeId,
+            startTime,
+            endTime,
+            60000);
         
         for (let item of historyData.historyData)
         {
@@ -389,10 +415,10 @@ class Test {
     async testReaderNode()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIxIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn19")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRW50cnkiLCJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSJ9fQ==")
         ];
 
-        let reader = new UaNodeReader(nodeIds);
+        let reader = new UaNodeReader(nodeIds,true);
         await reader.readAll(this.client);
 
         let nodes = reader.getResults();
@@ -405,10 +431,10 @@ class Test {
     async testNodeChildReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlIiwiaSI6IjEifX0=")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRW50cnkiLCJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSJ9fQ==")
         ];
 
-        let reader = new UaNodeChildReader(nodeIds);
+        let reader = new UaNodeChildReader(nodeIds,true);
         await reader.readAll(this.client);
 
         let childNodes = reader.getResults();
@@ -429,7 +455,7 @@ class Test {
             parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtUmVmZXJlbmNlIn19")
         ];
 
-        let reader = new UaNodeLinkReader(nodeIds);
+        let reader = new UaNodeLinkReader(nodeIds,true);
         await reader.readAll(this.client);
 
         let links = reader.getResults();
@@ -439,14 +465,7 @@ class Test {
 
             for (let item2 of item.links)
             {
-                console.log({
-                    target: item2.targetId.toString(),
-                    reference: item2.referenceTypeId.toString(),
-                    isForward: item2.isForward,
-                    browseName: item2.browseName,
-                    displayName: item2.displayName.toString(),
-                    nodeClass: item2.nodeClass
-                });
+                console.dir(item2.toJson(), { depth: null });
             }
         }
     }

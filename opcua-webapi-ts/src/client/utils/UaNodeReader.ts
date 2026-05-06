@@ -46,24 +46,27 @@ export abstract class UaNodeReaderBase
     protected _browseResults : Array<BrowseResult>;
     protected _readResults : Map<string, ReadResult>;
     protected _nodeClassToReturn : number;
+    protected _returnDescription : boolean;
 
     private static s_variableTypeWithoutMember : Set<string> = null;
     private static s_variableNameToReadValue : Set<string> = null;
 
-    constructor(
-        returnVariables ? : boolean | null,
-        returnMethod? : boolean | null)
+    constructor(        
+        returnDescription : boolean,
+        returnVariables : boolean,
+        returnMethod : boolean)
     {
         this._finished = false;
         this._nodesToBrowse = [];
         this._continuationPointToBrowse = [];
         this._browseResults = [];
         this._readResults = new Map;
+        this._returnDescription = returnDescription;
 
         this._nodeClassToReturn = 0;       
 
-        if (false != returnVariables) this._nodeClassToReturn += NodeClass.Variable;
-        if (false != returnMethod) this._nodeClassToReturn += NodeClass.Method;
+        if (returnVariables) this._nodeClassToReturn += NodeClass.Variable;
+        if (returnMethod) this._nodeClassToReturn += NodeClass.Method;
 
         if (null == UaNodeReaderBase.s_variableTypeWithoutMember)
         {
@@ -283,12 +286,10 @@ export abstract class UaNodeReaderBase
         let nodesToRead: Array<UaReadValueId> = [];    
 
         for (let item of typesToRead)
-        {
-            let nodeToRead = new UaReadValueId(
+        {  
+            nodesToRead.push(new UaReadValueId(
                 item.nodeId,
-                Attributes.IsAbstract);
-
-            nodesToRead.push(nodeToRead);
+                Attributes.IsAbstract));
 
             if (item.nodeClass == NodeClass.VariableType)
             {
@@ -300,13 +301,27 @@ export abstract class UaNodeReaderBase
                     item.nodeId,
                     Attributes.ValueRank));
             }
+
+            if (this._returnDescription)
+            {
+                nodesToRead.push(new UaReadValueId(
+                item.nodeId,
+                Attributes.Description));
+            }
         }
 
         let dataValues = await client.read(nodesToRead);
         
         for (let i=0; i<typesToRead.length; ++i)
         {
-            let dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i*3 : i; 
+            let dataIndex;
+            
+            if (this._returnDescription)
+            {
+                dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i*4 : i*2;
+            } else {
+                dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i*3 : i; 
+            }
 
             if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
 
@@ -360,6 +375,16 @@ export abstract class UaNodeReaderBase
                     false);
             }
 
+            if (this._returnDescription)
+            {
+                let descriptionIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? dataIndex + 3 : dataIndex + 1;
+                if (dataValues[descriptionIndex].statusCode.isGood())
+                {
+                    let descriptionValue = dataValues[descriptionIndex].value.toLocalizedText();
+                    if (null != descriptionValue) typeNode.description = descriptionValue;
+                }
+            }
+
             typeNode.refToParent = typesToRead[i].referenceTypeId;
 
             this._readResults.set(typeNode.nodeId.toString(), 
@@ -387,22 +412,33 @@ export abstract class UaNodeReaderBase
         
         for (let item of objectsToRead)
         {
-            let nodeToRead = new UaReadValueId(
+            nodesToRead.push(new UaReadValueId(
                 item.nodeId,
-                Attributes.EventNotifier);
+                Attributes.EventNotifier));
 
-            nodesToRead.push(nodeToRead);
+            if (this._returnDescription)
+            {
+                nodesToRead.push(new UaReadValueId(
+                    item.nodeId,
+                    Attributes.Description));
+            }
         }
 
         let dataValues = await client.read(nodesToRead);     
               
         for (let i=0; i<objectsToRead.length; ++i)
         {
-            if (dataValues[i].statusCode.isNotGood()) throw new UaError(dataValues[i].statusCode);
+            if (!objectsToRead[i].typeDefinitionId) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+             
+            let dataIndex = (this._returnDescription) ? i*2 : i;
 
-            let eventNotifier = dataValues[i].value.toNumber();
-            if (null == eventNotifier || undefined == objectsToRead[i].typeDefinitionId) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-                        
+            let eventNotifier : number = 0;
+
+            if (dataValues[dataIndex].statusCode.isGood())
+            {
+                eventNotifier = dataValues[dataIndex].value.toNumber();
+            }
+
             let objectNode = new UaObject(
                 objectsToRead[i].nodeId,
                 objectsToRead[i].browseName,
@@ -411,6 +447,16 @@ export abstract class UaNodeReaderBase
                 objectsToRead[i].typeDefinitionId);
 
             objectNode.refToParent = objectsToRead[i].referenceTypeId;           
+
+            if (this._returnDescription)
+            {
+                let descriptionIndex = dataIndex + 1;
+                if (dataValues[descriptionIndex].statusCode.isGood())
+                {
+                    let descriptionValue = dataValues[descriptionIndex].value.toLocalizedText();
+                    if (null != descriptionValue) objectNode.description = descriptionValue;
+                }
+            }
 
             this._readResults.set(objectNode.nodeId.toString(), 
                 {
@@ -528,11 +574,15 @@ export class UaNodeReader extends UaNodeReaderBase
     private _isRootNodeRead : boolean;
 
     constructor(
-        nodeIds : Array<UaNodeId>,
+        nodeIds : Array<UaNodeId>,  
+        returnDescription? : boolean | null,      
         returnVariables ? : boolean | null,
         returnMethod? : boolean | null)
     {
-        super(returnVariables, returnMethod);
+        super(       
+            returnDescription ? returnDescription : false,     
+            returnVariables ? returnVariables : false,
+            returnMethod ? returnMethod : false);
 
         if (nodeIds.length == 0) this._finished = true;
 
@@ -663,7 +713,7 @@ export class UaNodeReader extends UaNodeReaderBase
             let browseDescription = new UaBrowseDescription(
                 currentNode.nodeId,
                 BrowseDirection.Forward,
-                UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
+                UaNodeId.from(ReferenceTypeIds.HasTypeDefinition),
                 false,
                 NodeClass.ObjectType | NodeClass.VariableType,
                 0);
@@ -698,10 +748,14 @@ export class UaNodeChildReader extends UaNodeReaderBase
 
     constructor(
         nodeIds : Array<UaNodeId>,
+        returnDescription? : boolean | null,
         returnVariables ? : boolean | null,
         returnMethod? : boolean | null)
     {
-        super(returnVariables,returnMethod);
+        super(
+            (returnDescription) ? returnDescription : false,
+            (returnVariables) ? returnVariables : false,
+            (returnMethod) ? returnMethod : false);
 
         if (nodeIds.length == 0) this._finished = true;
 
@@ -775,12 +829,18 @@ export class UaNodeLinkReader
     private _nodesToBrowse : Array<UaNodeId>;
     private _continuationPointToBrowse : Array<CpToBrowse>;
     private _browseResults : Array<BrowseResult>;
+    private _returnDescription : boolean;
+    private _readResults : Array<ReadLinkResult> | null;
 
-    constructor(nodeIds : Array<UaNodeId>)
+    constructor(
+        nodeIds : Array<UaNodeId>,
+        returnDescription? : boolean | null)
     {
         this._nodesToBrowse = nodeIds;
         this._continuationPointToBrowse = [];
         this._browseResults = [];
+        this._returnDescription = (returnDescription) ? returnDescription : false;
+        this._readResults = null;
     }
 
     async readAll(client : UaWebClient)
@@ -791,50 +851,27 @@ export class UaNodeLinkReader
     }
 
     async read(client : UaWebClient)
-    {
+    {        
         if (this.isFinish()) return;
 
         if (this._nodesToBrowse.length != 0) {
             await this._browseNodes(client);
         } else if (this._continuationPointToBrowse.length != 0) {
             await this._browseContinuationPoints(client);
+        } else {
+            this._buildResults();
+            await this._readDescriptions(client);
         }
     }
 
     isFinish() : boolean
     {
-        return this._nodesToBrowse.length == 0 && this._continuationPointToBrowse.length == 0;
+        return null != this._readResults;
     }
 
     getResults() : Array<ReadLinkResult>
     {
-        let ret : Map<string, ReadLinkResult> = new Map;
-
-        for (let item of this._browseResults)
-        {            
-            let result : ReadLinkResult = ret.get(item.fromNodeId.toString());
-
-            if (!result)
-            {
-                result = {
-                    nodeId: item.fromNodeId,
-                    links: []
-                };
-
-                ret.set(item.fromNodeId.toString(), result);
-            }
-
-            result.links.push(new UaLink(
-                item.nodeId,
-                item.nodeClass,
-                item.browseName,
-                item.displayName,
-                item.referenceTypeId,
-                item.isForward
-            ));
-        }
-
-        return [...ret.values()];
+        return (this._readResults) ? this._readResults : [];
     } 
 
     private async _browseNodes(client : UaWebClient)
@@ -938,6 +975,73 @@ export class UaNodeLinkReader
                     nodeId: currentNodeId,
                     continuationPoint: currentResult.continuationPoint
                 });
+            }
+        }
+    }
+
+    private _buildResults()
+    {
+        if (this._readResults != null) return;
+
+        this._readResults = [];
+        let ret : Map<string, ReadLinkResult> = new Map;
+
+        for (let item of this._browseResults)
+        {            
+            let result : ReadLinkResult = ret.get(item.fromNodeId.toString());
+
+            if (!result)
+            {
+                result = {
+                    nodeId: item.fromNodeId,
+                    links: []
+                };
+
+                ret.set(item.fromNodeId.toString(), result);
+            }
+
+            result.links.push(new UaLink(
+                item.nodeId,
+                item.nodeClass,
+                item.browseName,
+                item.displayName,
+                item.referenceTypeId,
+                item.isForward
+            ));
+        }
+
+        this._readResults = Array.from(ret.values());
+    }
+
+    private async _readDescriptions(client : UaWebClient)
+    {
+        if (!this._returnDescription) return;
+
+        let linkedNodesToRead : Array<UaLink> = [];
+
+        for (let item of this._readResults)
+        {
+            for (let link of item.links)
+            {
+                if (link.nodeClass == NodeClass.Object) linkedNodesToRead.push(link);
+            }
+        }
+
+        if (linkedNodesToRead.length == 0) return;
+
+        let nodesToRead : Array<UaReadValueId> = [];
+
+        for (let item of linkedNodesToRead)
+        {
+            nodesToRead.push(new UaReadValueId(item.targetId,Attributes.Description));            
+        }
+
+        let dataValues = await client.read(nodesToRead);
+        for (let i=0; i<linkedNodesToRead.length; ++i)
+        {
+            if (dataValues[i].statusCode.isGood())
+            {
+                linkedNodesToRead[i].description = dataValues[i].value.toLocalizedText();
             }
         }
     }

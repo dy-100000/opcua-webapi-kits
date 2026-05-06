@@ -26,7 +26,9 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaWriteValue,
     UaHistoryReadValueId,
     UaHistoryReadResult,
-    UaLocalizedText} from "../common"
+    UaLocalizedText,
+    UaReadProcessedDetails,
+    ObjectIds} from "../common"
 import { UaClientConfiguration, UaClientParameters, UaWebClientApi, UaWebClientNative } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult, UaCallMethodRequest, UaCallMethodResult} from "../common";
 
@@ -407,7 +409,7 @@ export class UaWebClient
         let results = await this.historyRead(
             nodesToRead, 
             historyReadDetails, 
-            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Neither,
+            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Both,
             (releaseContinuationPoints) ? releaseContinuationPoints : false);
 
         if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
@@ -441,7 +443,50 @@ export class UaWebClient
         let results = await this.historyRead(
             nodesToRead, 
             historyReadDetails, 
-            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Neither,
+            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Both,
+            (releaseContinuationPoints) ? releaseContinuationPoints : false);
+
+        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
+
+        let extensionObject = results[0].historyData;
+        if (!extensionObject) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
+        let historyData = UaHistoryData.fromExtensionObject(extensionObject);
+        if (null == historyData) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+
+        let ret = new UaHistoryDataResult(historyData.dataValues, results[0].continuationPoint);        
+        return ret;
+    }
+
+    async historyReadProcessed(
+        nodeId: UaNodeId, 
+        startTime: Date, 
+        endTime: Date, 
+        processingInterval: number,
+        aggregateType?: UaNodeId | null,
+        continuationPoint?: string | null,
+        timestampsToReturn?: number | null,
+        releaseContinuationPoints?: boolean | null) : Promise<UaHistoryDataResult>
+    {
+        let nodeToRead = new UaHistoryReadValueId(nodeId,continuationPoint);
+
+        let aggregateTypeId = (aggregateType) ? 
+            aggregateType : 
+            UaNodeId.from(ObjectIds.AggregateFunction_Interpolative);
+
+        let details = new UaReadProcessedDetails(
+            startTime,
+            endTime, 
+            processingInterval,
+            [aggregateTypeId]);
+
+        let historyReadDetails = details.toExtensionObject();
+
+        let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
+        let results = await this.historyRead(
+            nodesToRead, 
+            historyReadDetails, 
+            (timestampsToReturn) ? timestampsToReturn : TimestampsToReturn.Both,
             (releaseContinuationPoints) ? releaseContinuationPoints : false);
 
         if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);

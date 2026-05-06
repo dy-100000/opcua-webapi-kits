@@ -109,7 +109,7 @@ export class UaVariable extends UaInstanceNode
             nodeId : this._nodeId.toString(),
             nodeClass: NodeClass.Variable,
             name: this._browseName,
-            displayName: this._displayName.text,
+            displayName: this._displayName.text,            
             typeDefinition: this._typeDefinitionId.toString(),
             dataType: this._dataType.toString(),
             valueRank: this._valueRank,

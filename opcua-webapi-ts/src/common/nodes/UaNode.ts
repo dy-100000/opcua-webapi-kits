@@ -6,11 +6,11 @@ export abstract class UaNode
     protected _nodeId: UaNodeId;
     protected _browseName: string;
     protected _displayName: UaLocalizedText;
-    protected _description: UaLocalizedText | undefined;
+    protected _description: UaLocalizedText | null;
     protected _writeMask: number;
     protected _parent : UaNode | null;
     protected _children : Array<UaNode>;   
-    protected _refToParent : UaNodeId | undefined; 
+    protected _refToParent : UaNodeId | null; 
 
     constructor(
         nodeId: UaNodeId,
@@ -21,9 +21,11 @@ export abstract class UaNode
         this._nodeId = nodeId;
         this._browseName = browseName;
         this._displayName = displayName;
+        this._description = null;
         this._writeMask = (writeMask) ? writeMask : 0;
         this._parent = null;
         this._children = [];
+        this._refToParent = null;
     }
 
     abstract get nodeClass() : NodeClass;
@@ -50,20 +52,20 @@ export abstract class UaNode
 
     get description() : UaLocalizedText | null
     {
-        return (this._description) ? this._description : null;
+        return this._description;
     }
 
-    set description(description: UaLocalizedText)
+    set description(description: UaLocalizedText | null)
     {
         this._description = description;
     }
 
     get refToParent() : UaNodeId | null
     {
-        return (this._refToParent) ? this._refToParent : null;
+        return this._refToParent;
     }
 
-    set refToParent(referenceTypeId: UaNodeId)
+    set refToParent(referenceTypeId: UaNodeId | null)
     {
         this._refToParent = referenceTypeId;
     }

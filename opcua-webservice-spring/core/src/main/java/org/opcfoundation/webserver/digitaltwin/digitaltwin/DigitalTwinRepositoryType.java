@@ -36,6 +36,11 @@ public abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
         super(typeId, displayName, UaObjectTypes.DigitalTwinRepositoryType, twinSpace);
     }
 
+    public DigitalTwinSpace digitalTwinSpace()
+    {
+        return (DigitalTwinSpace)nodeManager;
+    }
+
     @Override
     public final CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {

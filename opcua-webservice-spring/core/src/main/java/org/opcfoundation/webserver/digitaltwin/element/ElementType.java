@@ -19,4 +19,9 @@ public abstract class ElementType extends UaReactiveObjectType {
                 elementType,
                 twinSpace);
     }
+
+    public DigitalTwinSpace digitalTwinSpace()
+    {
+        return (DigitalTwinSpace)nodeManager;
+    }
 }
