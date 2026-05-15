@@ -36,12 +36,60 @@ export class UaDataType extends UaDefintionNode
         return this._enumValues;
     }
 
+    classify()
+    {
+        let isBasicDataType = false;
+
+        if (0 == this._nodeId.nsIndex)
+        {
+            if (DataTypeIds.Boolean <= this._nodeId.numericId() && 
+                DataTypeIds.Structure >= this._nodeId.numericId()) isBasicDataType = true;
+            
+            if (DataTypeIds.Enumeration == this._nodeId.numericId()) isBasicDataType = true;
+        }
+
+        if (isBasicDataType)
+        {
+            this._valueType = this._nodeId.numericId();
+        } else {
+            this._valueType = (this.parentType()) ? (this.parentType() as UaDataType)._valueType : 0;
+        }
+    }
+
+    toJson() : any
+    {
+        let enumValues = [];
+
+        if (this._enumValues)
+        {
+            for (let item of this._enumValues)
+            {                
+                enumValues.push({
+                    index: item[0],
+                    text: item[1].text
+                });
+            } 
+        }       
+
+        let ret = {
+            nodeId : this._nodeId.toString(),
+            nodeClass: NodeClass.DataType,
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            isAbstract: this._isAbstract,
+            enumValues: (enumValues.length != 0) ? enumValues : undefined
+        }
+
+        return ret;
+    }
+
     setEnumVariable(node : UaVariable)
     {
         if ("EnumStrings" == node.browseName ||
             "EnumValues" == node.browseName)
         {            
-            this.setEnumValues(node.value);
+            if (node.value) this.setEnumValues(node.value);
         }
     }
 
@@ -75,53 +123,5 @@ export class UaDataType extends UaDefintionNode
 
             this._enumValues = enumValues;
         }
-    }
-
-    classify()
-    {
-        let isBasicDataType = false;
-
-        if (0 == this._nodeId.nsIndex)
-        {
-            if (DataTypeIds.Boolean <= this._nodeId.numericId() && 
-                DataTypeIds.Structure >= this._nodeId.numericId()) isBasicDataType = true;
-            
-            if (DataTypeIds.Enumeration == this._nodeId.numericId()) isBasicDataType = true;
-        }
-
-        if (isBasicDataType)
-        {
-            this._valueType = this._nodeId.numericId();
-        } else {
-            this._valueType = (this.parentType()) ? (this.parentType() as UaDataType)._valueType : 0;
-        }
-    }
-
-    toJson() : any
-    {
-        let enumValues = [];
-
-        if (this._enumValues)
-        {
-            for (let item of this._enumValues)
-            {                
-                enumValues.push({
-                    value: item[0],
-                    text: item[1].text
-                });
-            } 
-        }       
-
-        let ret = {
-            nodeId : this._nodeId.toString(),
-            nodeClass: NodeClass.DataType,
-            name: this._browseName,
-            displayName: this._displayName.text,
-            description: (this._description) ? this._description.text : undefined,
-            isAbstract: this._isAbstract,
-            enumValues: (enumValues.length == 0) ? enumValues : undefined
-        }
-
-        return ret;
     }
 }

@@ -404,7 +404,7 @@ export class UaWebClient
             (isReadModified) ? isReadModified : false);
 
         let historyReadDetails = details.toExtensionObject();
-
+        
         let nodesToRead: Array<UaHistoryReadValueId> = [nodeToRead];
         let results = await this.historyRead(
             nodesToRead, 

@@ -7,7 +7,6 @@ export * from "./UaHistoryDataResult"
 export * from "./UaHistoryEventFieldList"
 export * from "./UaHistoryEventResult"
 export * from "./UaLocalizedText";
-export * from "./UaLink";
 export * from "./UaNodeId";
 export * from "./UaQuery";
 export * from "./UaQueryFilter";
@@ -18,5 +17,6 @@ export * from "./UaAccessLevel";
 export * from "./UaBrowseMask";
 export * from "./UaValueRank";
 export * from "./UaWriteMask";
+export * from "./UaReference";
 
 

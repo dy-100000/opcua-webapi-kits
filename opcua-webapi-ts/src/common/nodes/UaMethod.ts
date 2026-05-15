@@ -99,8 +99,8 @@ export class UaMethod extends UaInstanceNode
             name: this._browseName,
             displayName: this._displayName.text,
             description: (this._description) ? this._description.text : undefined,
-            inputArguments: inputArgs,
-            outputArguments: outputArgs
+            inputArguments: (inputArgs.length != 0) ? inputArgs : undefined,
+            outputArguments: (outputArgs.length != 0) ? outputArgs : undefined
         }
 
         return ret;

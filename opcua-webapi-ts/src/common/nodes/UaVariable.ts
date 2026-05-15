@@ -1,5 +1,5 @@
 import { NodeClass } from "opcua-webapi";
-import { UaLocalizedText, UaNodeId, UaVariant } from "../types";
+import { UaDataValue, UaLocalizedText, UaNodeId, UaVariant } from "../types";
 import { UaInstanceNode } from ".";
 
 export class UaVariable extends UaInstanceNode
@@ -10,7 +10,7 @@ export class UaVariable extends UaInstanceNode
     private _accessLevel : number;
     private _userAccessLevel : number;
     private _historizing : boolean;
-    private _value : UaVariant
+    private _dataValue : UaDataValue | null;
 
     constructor(
         nodeId: UaNodeId,
@@ -29,8 +29,8 @@ export class UaVariable extends UaInstanceNode
         this._accessLevel = accessLevel;
         this._userAccessLevel = userAccessLevel;
         this._historizing = historizing;
-        this._value = UaVariant.null();
         this._typeDefinitionId = typeDefinitionId;
+        this._dataValue = null;
     }
     
     get nodeClass() : NodeClass 
@@ -63,14 +63,19 @@ export class UaVariable extends UaInstanceNode
         return this._historizing;
     }
 
-    get value() : UaVariant
+    get value() : UaVariant | null
     {
-        return this._value;
+        return (this._dataValue && this._dataValue.statusCode.isGood()) ? this._dataValue.value : null;
     }
 
-    set value(val: UaVariant)
+    get dataValue() : UaDataValue | null
     {
-        this._value = val;
+        return this._dataValue;
+    }
+
+    set dataValue(value : UaDataValue)
+    {
+        this._dataValue = value;
     }
 
     get typeDefinitionId() : UaNodeId
@@ -110,10 +115,12 @@ export class UaVariable extends UaInstanceNode
             nodeClass: NodeClass.Variable,
             name: this._browseName,
             displayName: this._displayName.text,            
-            typeDefinition: this._typeDefinitionId.toString(),
+            typeDefinitionId: this._typeDefinitionId.toString(),
             dataType: this._dataType.toString(),
             valueRank: this._valueRank,
             accessLevel: this._accessLevel,
+            historizing: this._historizing,
+            value: this._dataValue ? this._dataValue.value.value : undefined,
             children: (children.length != 0) ? children : undefined
         }
 
