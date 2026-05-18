@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4842"
+            basePath: "http://172.26.18.100:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -23,7 +23,7 @@ class Test {
     {
         try
         {
-            await this.testTypeReader();
+            await this.testObjectReader();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -413,10 +413,11 @@ class Test {
     async testObjectReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ==")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiUGFyYW1ldGVyX0VxdWlwbWVudEAwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAzRTI3M0IiLCJ0IjoibnM9MjtzPVBhcmFtZXRlclNldCJ9fQ=="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiU3BlY19IZWF0RXhjaGFuZ2VyQDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDNFMjczQiIsInQiOiJucz0yO3M9UGFyYW1ldGVyU2V0In19")
         ];
 
-        let reader = new UaObjectReader(true);
+        let reader = new UaObjectReader(false,true);
         let nodes = await reader.read(nodeIds, this.client);
 
         for (let item of nodes)
@@ -443,11 +444,11 @@ class Test {
     async testChildBrowser()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRW50cnkiLCJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSJ9fQ=="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1FbGVtZW50TGlzdFN1Ym1vZGVsIn19"),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0U1NzJGIiwidCI6Im5zPTI7cz1Qcm9jZXNzU2VnbWVudFR5cGUifX0="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9UHJvY2Vzc1NlZ21lbnRUeXBlLURldmljZXMifX0="),
         ];
 
-        let reader = new UaChildBrowser(nodeIds);
+        let reader = new UaChildBrowser(nodeIds, true);
         await reader.browse(this.client);
 
         let references = reader.results();
@@ -465,11 +466,11 @@ class Test {
     async testLinkBrowser()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtUmVmZXJlbmNlIn19"),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtUmVmZXJlbmNlIn19")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLVNlbnNvcnMifX0="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLUVxdWlwbWVudHMifX0=")
         ];
 
-        let reader = new UaLinkBrowser(nodeIds);
+        let reader = new UaLinkBrowser(nodeIds,true);
         await reader.browse(this.client);
 
         let references = reader.results();

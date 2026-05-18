@@ -2,6 +2,7 @@ package org.opcfoundation.uawebservicetest.testdigitaltwin;
 
 import org.eclipse.milo.opcua.sdk.core.ValueRank;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
+import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.Argument;
@@ -17,6 +18,7 @@ import org.opcfoundation.webserver.digitaltwin.submodel.SubmodelType;
 import org.opcfoundation.webserver.service.message.digitaltwin.*;
 import org.opcfoundation.webserver.types.common.UaStructureUtilities;
 
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -212,7 +214,7 @@ public class SubmodelTestType extends SubmodelType {
     @Override
     public CompletableFuture<ReadPropertyHistoryValuesResponse> onReadPropertyHistoryValues(ReadPropertyHistoryValuesRequest request) {
         ReadPropertyHistoryValuesResponse response = new ReadPropertyHistoryValuesResponse();
-        DateTime now = DateTime.now();
+        Instant time = Instant.now();
 
         if (null != request.getReadRawDetails())
         {
@@ -223,12 +225,14 @@ public class SubmodelTestType extends SubmodelType {
             System.out.println(request.getReadProcessedDetails().toString());
         }
 
-        for (int i=0; i<10; ++i)
+        for (int i=0; i<100; ++i)
         {
+            time = time.plusSeconds(5);
+
             DataValue value = new DataValue(
                     Variant.ofInt32(i),
                     StatusCode.GOOD,
-                    now);
+                    new DateTime(time));
 
             response.addDataValue(value);
         }
