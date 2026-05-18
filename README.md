@@ -17,6 +17,6 @@ https://opcua-webbrowser-tool.opcfoundation.cn/
 ### 4. opcua-webservice-node
 Functionally consistent with opcua-webservice-spring. It is currently under development and will be gradually improved in subsequent updates.
 
-Bilibili:
-1.https://www.bilibili.com/video/BV1h1syzoEFU/
-2.https://www.bilibili.com/video/BV1Yfc4zDEbP/
+### Tutorial video:
+### 1.English: https://www.youtube.com/watch?v=jUCcu9lo1GE
+### 2.Chinese: https://www.bilibili.com/video/BV1Yfc4zDEbP/
