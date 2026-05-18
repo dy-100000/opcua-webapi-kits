@@ -19,6 +19,7 @@ public class ElementCollectionTestBType extends ElementCollectionType {
             DigitalTwinSpace space)
     {
         super("ElementCollectionTestBType", new LocalizedText("ElementCollectionTestBType"), space);
+        setDescription(new LocalizedText("ElementCollectionTestBType"));
 
         Reference = addReferenceElement(
                 referenceElementTestType,

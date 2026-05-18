@@ -1,17 +1,19 @@
-import { BrowseDirection, NodeClass } from "opcua-webapi";
-import { UaReferenceType, UaLocalizedText, UaNodeId, ReferenceTypeIds, UaBrowseDescription } from "../../common"
+import { NodeClass } from "opcua-webapi";
+import { UaReferenceType, UaLocalizedText, UaNodeId, ReferenceTypeIds, UaBrowseDescription, UaReference } from "../../common"
 import { UaWebClient } from "../UaWebClient"
+import { UaChildBrowser, UaNodeReader } from "./UaNodeReader";
 
 export class UaReferenceTypeDictionary
 {
     private _referenceTypes : Map<string, UaReferenceType>;
-    private _remainingNodesToBrowse : Array<UaNodeId>;
+    private _returnAllAttributes: boolean;
 
-    constructor()     
+    constructor(simpleMode?: boolean)     
     {
-        this._referenceTypes = new Map;
+        this._referenceTypes = new Map;        
+        this._returnAllAttributes = (null == simpleMode) ? false : !simpleMode;
     
-        let referencesId = new UaNodeId(ReferenceTypeIds.References);
+        let referencesId = UaNodeId.from(ReferenceTypeIds.References);
         this._referenceTypes.set(
                 referencesId.toString(), 
                 new UaReferenceType(
@@ -22,13 +24,12 @@ export class UaReferenceTypeDictionary
                     UaLocalizedText.nullText,
                     true 
                 ));
-    
-        this._remainingNodesToBrowse = [ referencesId ];
     }
     
     public async read(client : UaWebClient)
     {
-        await this.__browseReferenceTypes(client);
+        let browser = new UaChildBrowser([UaNodeId.from(ReferenceTypeIds.References)]);
+        await this._read(browser, client);
     }
 
     public getReferenceType(nodeId: UaNodeId) : UaReferenceType | null
@@ -42,60 +43,53 @@ export class UaReferenceTypeDictionary
         return [...this._referenceTypes.values()];
     }
 
-    private async __browseReferenceTypes(client : UaWebClient)
+    private async _read(
+        browser: UaChildBrowser,
+        client: UaWebClient)
     {
-        if (0 == this._remainingNodesToBrowse.length) return;
+        // Browse child type
+        await browser.browse(client)
+        let results = browser.results();
+        
+        let referencesToRead: Array<UaReference> = [];
 
-        let nodeIds = this._remainingNodesToBrowse.splice(0,15);
-
-        let nodesToBrowse: Array<UaBrowseDescription> = [];
-
-        for (let item of nodeIds)
+        for (let item of results)
         {
-            let browseDescription = new UaBrowseDescription(
-                    item,
-                    BrowseDirection.Forward,
-                    new UaNodeId(ReferenceTypeIds.HasSubtype),
-                    false,
-                    NodeClass.ReferenceType,
-                    31);
-
-            nodesToBrowse.push(browseDescription);
+            for (let reference of item.references) referencesToRead.push(reference);        
         }
 
-        let results = await client.browse(nodesToBrowse);
+        if (0 == referencesToRead.length) return;
 
-        for (let i=0; i<nodeIds.length; ++i)
+        // Read child type
+        let nodeIdsToBrowse: Array<UaNodeId> = [];
+        let nodeReader = new UaNodeReader(this._returnAllAttributes,false, false,this._returnAllAttributes);
+        let nodes = await nodeReader.readByReferences(referencesToRead,client);
+
+        for (let node of nodes)
         {
-            if (results[i].statusCode.isNotGood()) continue;
+            if (NodeClass.ReferenceType != node.nodeClass) continue;
+            nodeIdsToBrowse.push(node.nodeId);
+            this._referenceTypes.set(node.nodeId.toString(), node as UaReferenceType);         
+        }
 
-            let parentType = this._referenceTypes.get(nodeIds[i].toString());
+        // Build parent-child relationship
+        for (let item of results)
+        {
+            let parentType = this._referenceTypes.get(item.nodeId.toString());
 
-            for (let item of results[i].references)
+            for (let reference of item.references)
             {
-                let referenceTypeId = item.nodeId.getNodeId();
-                if (null == referenceTypeId || NodeClass.ReferenceType != item.nodeClass ||
-                    !item.browseName || !item.displayName) continue;
-
-                let referenceType = new UaReferenceType(
-                    referenceTypeId, 
-                    item.browseName, 
-                    item.displayName,
-                    false,
-                    UaLocalizedText.nullText,
-                    false);              
-                
-                this._referenceTypes.set(referenceTypeId.toString(), referenceType);
-                this._remainingNodesToBrowse.push(referenceTypeId);
-                if (parentType) referenceType.setParentType(parentType);
-            }
+                let referenceType = this._referenceTypes.get(reference.nodeId.toString());                
+                if (referenceType && parentType) referenceType.setParentType(parentType);
+            }            
         }
 
-        if (this._remainingNodesToBrowse.length != 0)
-        {
-            await this.__delay(20);
-            await this.__browseReferenceTypes(client);
-        }
+        if (0 == nodeIdsToBrowse.length) return;
+        await this.__delay(20);
+
+        // Continue to browse and read child type
+        let childBrowser = new UaChildBrowser(nodeIdsToBrowse);
+        await this._read(childBrowser, client);
     }
 
     private async __delay(ms: number): Promise<void> {

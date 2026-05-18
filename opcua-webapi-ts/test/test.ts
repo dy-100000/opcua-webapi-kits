@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://172.26.18.100:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -23,7 +23,7 @@ class Test {
     {
         try
         {
-            await this.testObjectReader();
+            await this.testDataTypeDictionary();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -368,15 +368,8 @@ class Test {
         
         for (let item of dataTypes)
         {
-            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName} Abstract: ${item.isAbstract} ValueType: ${item.valueType}`)
-            
-            if (DataTypeIds.Enumeration == item.valueType && item.enumValues)
-            {
-                for (let itemL2 of item.enumValues)
-                {
-                    console.log(`Name: ${itemL2[1]} Value: ${itemL2[0]}`);
-                }
-            }            
+            console.dir(item.toJson(), { depth: null });
+            console.log("Parent: " + item.parentType()?.browseName); 
         }
     }
 
@@ -391,7 +384,8 @@ class Test {
         
         for (let item of referenceTypes)
         {
-            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName} Abstract: ${item.isAbstract}`)
+            console.dir(item.toJson(), { depth: null });
+            console.log("Parent: " + item.parentType()?.browseName); 
         }
     }
 
@@ -406,7 +400,8 @@ class Test {
         
         for (let item of objectTypes)
         {
-            console.log(`Id: ${item.nodeId.toString()} Name: ${item.browseName}`)            
+            console.dir(item.toJson(), { depth: null });
+            console.log("Parent: " + item.parentType()?.browseName);        
         }
     }
 

@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
 public class DynamicSubmodelTestType extends DynamicSubmodelType {
     public DynamicSubmodelTestType(DigitalTwinSpace space) {
         super("DynamicSubmodelTestType", new LocalizedText("DynamicSubmodelTestType"), space);
+        setDescription(new LocalizedText("DynamicSubmodelTestType"));
     }
 
     @Override

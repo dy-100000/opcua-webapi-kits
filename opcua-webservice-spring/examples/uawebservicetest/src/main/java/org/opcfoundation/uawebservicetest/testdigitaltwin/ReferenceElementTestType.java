@@ -14,6 +14,7 @@ public class ReferenceElementTestType extends ReferenceElementType {
 
     public ReferenceElementTestType(DigitalTwinSpace space) {
         super("ReferenceElementTestType",new LocalizedText("ReferenceElementTestType"), space);
+        setDescription(new LocalizedText("ReferenceElementTestType"));
     }
 
     @Override

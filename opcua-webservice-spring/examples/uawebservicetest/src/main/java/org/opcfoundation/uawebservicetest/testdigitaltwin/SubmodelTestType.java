@@ -43,6 +43,7 @@ public class SubmodelTestType extends SubmodelType {
             DigitalTwinSpace space)
     {
         super("SubmodelTestType", new LocalizedText("SubmodelTestType"), space);
+        setDescription(new LocalizedText("SubmodelTestType"));
 
         Bool = addPropertyElement(
                 "Bool",

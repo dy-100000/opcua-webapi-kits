@@ -15,6 +15,8 @@ public class EventTestType extends EventType {
     public EventTestType(DigitalTwinSpace space)
     {
         super("EventTestType", new LocalizedText("EventTestType"), space);
+        setDescription(new LocalizedText("EventTestType"));
+
         addField(Customized, new LocalizedText(Customized), new LocalizedText("Customized field"), UaDataTypes.String);
     }
 

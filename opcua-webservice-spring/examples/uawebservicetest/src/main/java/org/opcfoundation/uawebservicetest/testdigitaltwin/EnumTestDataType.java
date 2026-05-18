@@ -14,5 +14,7 @@ public class EnumTestDataType extends UaEnumDataType {
                 new LocalizedText("EnumTest"),
                 List.of("A","B","C","D"),
                 space);
+
+        setDescription(new LocalizedText("EnumTestDataType"));
     }
 }

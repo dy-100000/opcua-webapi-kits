@@ -12,6 +12,7 @@ import java.util.concurrent.CompletableFuture;
 public class DigitalTwinDirectoryTestType extends DigitalTwinRepositoryType {
     public DigitalTwinDirectoryTestType(DigitalTwinSpace space) {
         super("TestDigitalTwinDirectory", new LocalizedText("TestDigitalTwinDirectory"), space);
+        setDescription(new LocalizedText("TestDigitalTwinDirectory"));
     }
 
     @Override

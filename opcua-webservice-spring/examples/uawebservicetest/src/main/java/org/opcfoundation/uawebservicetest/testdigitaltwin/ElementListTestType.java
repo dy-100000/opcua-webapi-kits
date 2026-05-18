@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public class ElementListTestType extends ElementListType {
     public ElementListTestType(DigitalTwinSpace space) {
         super("ElementListTestType", new LocalizedText("ElementListTestType"), space);
+        setDescription(new LocalizedText("ElementListTestType"));
     }
 
     @Override

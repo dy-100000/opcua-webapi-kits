@@ -1,42 +1,28 @@
 import { BrowseDescription, BrowseDirection, NodeClass } from "opcua-webapi";
-import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType, ReferenceTypeIds, UaBrowseDescription } from "../../common"
+import { DataTypeIds, parseUaNodeIdOrNull, UaDataType, UaExtensionObject, UaLocalizedText, UaNodeId, UaPayloadMapper, UaArrayType, UaVariantType, UaEnumValueType, ReferenceTypeIds, UaBrowseDescription, UaReference } from "../../common"
 import { UaWebClient } from "../UaWebClient"
+import { UaChildBrowser, UaNodeReader } from "../..";
 
 export class UaDataTypeDictionary
 {
-    private static _abstractDataTypeIds : Set<number> = null;
     private _dataTypes : Map<string, UaDataType>;
-    private _remainingNodesToBrowse : Array<UaNodeId>;
-    private _remainingEnumerationToRead : Array<UaNodeId>;
+    private _returnAllAttributes: boolean;
 
-    constructor()
+    constructor(simpleMode?: boolean)
     {
-        if (null == UaDataTypeDictionary._abstractDataTypeIds)
-        {
-            UaDataTypeDictionary._abstractDataTypeIds = new Set;
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.BaseDataType);
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.Number);
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.Structure);
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.Integer);
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.UInteger);
-            UaDataTypeDictionary._abstractDataTypeIds.add(DataTypeIds.Enumeration);
-        }        
-
         this._dataTypes = new Map;
+        this._returnAllAttributes = (null == simpleMode) ? false : !simpleMode;
 
         let baseDataTypeId = new UaNodeId(DataTypeIds.BaseDataType);
         this._dataTypes.set(
             baseDataTypeId.toString(), 
             new UaDataType(baseDataTypeId, "BaseDataType", new UaLocalizedText("BaseDataType"), true));
-
-        this._remainingNodesToBrowse = [ new UaNodeId(DataTypeIds.BaseDataType) ];
-        this._remainingEnumerationToRead = [];
     }
 
     public async read(client : UaWebClient)
     {
-        await this.__browseDataTypes(client);
-        await this.__readEnumValues(client);
+        let browser = new UaChildBrowser([UaNodeId.from(DataTypeIds.BaseDataType)]);
+        await this._read(browser, client);
     }
 
     public getDataType(nodeId: UaNodeId) : UaDataType | null
@@ -50,136 +36,58 @@ export class UaDataTypeDictionary
         return [...this._dataTypes.values()];
     }
 
-    private async __browseDataTypes(client : UaWebClient)
+    private async _read(
+            browser: UaChildBrowser,
+            client: UaWebClient)
     {
-        if (0 == this._remainingNodesToBrowse.length) return;
-
-        let nodeIds = this._remainingNodesToBrowse.splice(0,15);
-
-        let nodesToBrowse: Array<UaBrowseDescription> = [];
-
-        for (let item of nodeIds)
-        {
-            let browseDescription = new UaBrowseDescription(
-                    item,
-                    BrowseDirection.Forward,
-                    new UaNodeId(ReferenceTypeIds.HasSubtype),
-                    false,
-                    NodeClass.DataType,
-                    31);
-
-            nodesToBrowse.push(browseDescription);
-        }
-
-        let results = await client.browse(nodesToBrowse);
-
-        for (let i=0; i<nodeIds.length; ++i)
-        {
-            if (results[i].statusCode.isNotGood()) continue;
-
-            let parentType = this._dataTypes.get(nodeIds[i].toString());
-
-            for (let item of results[i].references)
-            {
-                let dataTypeId = item.nodeId.getNodeId();
-                if (null == dataTypeId ||
-                    NodeClass.DataType != item.nodeClass ||
-                    !item.browseName || !item.displayName) continue;
-
-                let isAbstract = false;
-                if (dataTypeId.nsIndex == 0 &&
-                    UaDataTypeDictionary._abstractDataTypeIds.has(dataTypeId.numericId())) isAbstract = true;
-
-                let dataType = new UaDataType(
-                    dataTypeId, 
-                    item.browseName, 
-                    item.displayName,
-                    isAbstract);              
-                
-                this._dataTypes.set(dataTypeId.toString(), dataType);
-                this._remainingNodesToBrowse.push(dataTypeId);
-                if (parentType) dataType.setParentType(parentType);
-                
-                dataType.classify();
-                if (DataTypeIds.Enumeration == dataType.valueType)
-                {
-                    this._remainingEnumerationToRead.push(dataType.nodeId);
-                }
-            }
-        }
-
-        if (this._remainingNodesToBrowse.length != 0)
-        {
-            await this.__delay(20);
-            await this.__browseDataTypes(client);
-        }
-    }
-
-    private async __readEnumValues(client : UaWebClient)
-    {
-        if (this._remainingEnumerationToRead.length == 0) return;
-
-        let nodeIds = this._remainingEnumerationToRead.splice(0, 20);
-
-        let nodesToBrowse: Array<UaBrowseDescription> = [];
-
-        for (let item of nodeIds)
-        {
-            let browseDescription = new UaBrowseDescription(
-                    item,
-                    BrowseDirection.Forward,
-                    new UaNodeId(ReferenceTypeIds.HasProperty),
-                    false,
-                    NodeClass.Variable,
-                    8);
-
-            nodesToBrowse.push(browseDescription);
-        }
-
-        let results = await client.browse(nodesToBrowse);
-
-        let enumDataTypeIds : Array<UaNodeId> = [];
-        let enumValueIds : Array<UaNodeId> = [];
-
-        for (let i=0; i<nodeIds.length; ++i)
-        {                
-            if (results[i].statusCode.isNotGood() ||
-                results[i].references.length == 0) continue;
-
-            if (results[i].references[0].browseName == "EnumStrings" || results[i].references[0].browseName == "EnumValues")
-            {
-                let enumValueId = results[i].references[0].nodeId.getNodeId();
-                if (enumValueId)
-                {
-                    enumDataTypeIds.push(nodeIds[i]);
-                    enumValueIds.push(enumValueId);
-                }
-            }
-        }
+        // Browse child type
+        await browser.browse(client)
+        let results = browser.results();
         
-        if (enumDataTypeIds.length!= 0)
+        let referencesToRead: Array<UaReference> = [];
+        let needToReadEnumValue = false;
+
+        for (let item of results)
         {
-            let values = await client.readValues(enumValueIds);
-            for (let i=0; i<enumValueIds.length; ++i)
-            {                
-                if (values[i].statusCode.isNotGood() || 
-                    values[i].value.arrayType != UaArrayType.Array) continue;
-
-                let dataType = this._dataTypes.get(enumDataTypeIds[i].toString());
-                if (!dataType) continue;               
-
-                dataType.setEnumValues(values[i].value);            
-            }
+            for (let reference of item.references) referencesToRead.push(reference);             
+            if (item.nodeId.equal(UaNodeId.from(DataTypeIds.Enumeration))) needToReadEnumValue = true;
         }
 
-        if (this._remainingEnumerationToRead.length != 0)
+        if (0 == referencesToRead.length) return;
+
+        // Read child type
+        let nodeIdsToBrowse: Array<UaNodeId> = [];
+        let nodeReader = new UaNodeReader(this._returnAllAttributes,needToReadEnumValue, false,this._returnAllAttributes);
+        let nodes = await nodeReader.readByReferences(referencesToRead,client);
+
+        for (let node of nodes)
         {
-            await this.__delay(20);
-            await this.__readEnumValues(client);
-        }        
+            if (NodeClass.DataType != node.nodeClass) continue;
+            nodeIdsToBrowse.push(node.nodeId);
+            this._dataTypes.set(node.nodeId.toString(), node as UaDataType);         
+        }
+
+        // Build parent-child relationship
+        for (let item of results)
+        {
+            let parentType = this._dataTypes.get(item.nodeId.toString());
+
+            for (let reference of item.references)
+            {
+                let dataType = this._dataTypes.get(reference.nodeId.toString());                
+                if (dataType && parentType) dataType.setParentType(parentType);
+            }            
+        }
+
+        if (0 == nodeIdsToBrowse.length) return;
+        await this.__delay(20);
+
+        // Continue to browse and read child type
+        let childBrowser = new UaChildBrowser(nodeIdsToBrowse);
+        await this._read(childBrowser, client);
     }
 
     private async __delay(ms: number): Promise<void> {
         return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    }   
 }

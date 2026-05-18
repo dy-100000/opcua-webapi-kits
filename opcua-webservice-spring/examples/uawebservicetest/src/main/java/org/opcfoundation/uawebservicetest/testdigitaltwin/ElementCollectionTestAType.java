@@ -35,6 +35,7 @@ public class ElementCollectionTestAType extends ElementCollectionType {
             DigitalTwinSpace space)
     {
         super("ElementCollectionTestAType", new LocalizedText("ElementCollectionTestAType"), space);
+        setDescription(new LocalizedText("ElementCollectionTestAType"));
 
         Bool = addPropertyElement(
                 "Bool",

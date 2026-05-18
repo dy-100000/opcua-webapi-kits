@@ -485,71 +485,78 @@ export class UaNodeReader {
 
     private async _readTypes(references: Array<UaReference>, nodes: Map<string,UaNode>, client: UaWebClient) {
         let typesToRead: Array<UaReference> = [];
+        let needReadAttributes = this._returnAttributes || this._returnDescription;
 
         for (let item of references) {
             if (item.nodeClass != NodeClass.ObjectType &&
                 item.nodeClass != NodeClass.DataType &&
                 item.nodeClass != NodeClass.VariableType &&
                 item.nodeClass != NodeClass.ReferenceType) continue;
-
+            
             typesToRead.push(item);
         }
 
         if (0 == typesToRead.length) return;
 
-        let nodesToRead: Array<UaReadValueId> = [];
+        let dataValues : Array<UaDataValue> = [];
 
-        for (let item of typesToRead) {
-            nodesToRead.push(new UaReadValueId(
-                item.nodeId,
-                Attributes.IsAbstract));
+        if (needReadAttributes) {
+            let nodesToRead: Array<UaReadValueId> = [];
 
-            nodesToRead.push(new UaReadValueId(
-                item.nodeId,
-                Attributes.Description));
-
-            if (item.nodeClass == NodeClass.VariableType) {
+            for (let item of typesToRead) {
                 nodesToRead.push(new UaReadValueId(
                     item.nodeId,
-                    Attributes.DataType));
+                    Attributes.IsAbstract));
 
                 nodesToRead.push(new UaReadValueId(
                     item.nodeId,
-                    Attributes.ValueRank));
-            }            
+                    Attributes.Description));
+
+                if (item.nodeClass == NodeClass.VariableType) {
+                    nodesToRead.push(new UaReadValueId(
+                        item.nodeId,
+                        Attributes.DataType));
+
+                    nodesToRead.push(new UaReadValueId(
+                        item.nodeId,
+                        Attributes.ValueRank));
+                }            
+            }
+
+            dataValues = await client.read(nodesToRead);
         }
 
-        let dataValues = await client.read(nodesToRead);
-
-        for (let i = 0; i < typesToRead.length; ++i) {
-            let dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i * 4 : i * 2;
-
-            if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
-
-            let isAbstract = dataValues[dataIndex].value.toBoolean();            
-            if (null == isAbstract) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-            dataIndex++;
-
+        for (let i = 0; i < typesToRead.length; ++i) {   
+            let isAbstract : boolean = false;
             let description: UaLocalizedText = undefined;
-            if (this._returnDescription && dataValues[dataIndex].statusCode.isGood()) {
-                description = dataValues[dataIndex].value.toLocalizedText();
-                if (null == description) description = undefined
-            }
-            dataIndex++;
-
             let dataType = UaNodeId.nullNodeId;
             let valueRank = -1;
 
-            if (typesToRead[i].nodeClass == NodeClass.VariableType) {
+            if (needReadAttributes) {
+                let dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i * 4 : i * 2;
                 if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
-                dataType = dataValues[dataIndex].value.toNodeId();
+
+                isAbstract = dataValues[dataIndex].value.toBoolean();
+                if (null == isAbstract) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+                dataIndex++;
+                
+                if (this._returnDescription && dataValues[dataIndex].statusCode.isGood()) {
+                    description = dataValues[dataIndex].value.toLocalizedText();
+                    if (null == description) description = undefined
+                }
                 dataIndex++;
 
-                if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);                
-                valueRank = dataValues[dataIndex].value.toNumber();
-                dataIndex++;
+                if (typesToRead[i].nodeClass == NodeClass.VariableType) {
+                    if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
+                    dataType = dataValues[dataIndex].value.toNodeId();
+                    dataIndex++;
 
-                if (null == dataType || null == valueRank) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+                    if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);                
+                    valueRank = dataValues[dataIndex].value.toNumber();
+                    dataIndex++;
+
+                    if (null == dataType || null == valueRank) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+                }
             }
 
             let typeNode: UaNode;

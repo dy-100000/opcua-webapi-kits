@@ -19,6 +19,7 @@ public class DigitalTwinTestType extends DigitalTwinType {
             DynamicSubmodelTestType elementListSubmodel,
             DigitalTwinSpace space) {
         super("TestDigitalTwin", new LocalizedText("TestDigitalTwin"), space);
+        setDescription(new LocalizedText("TestDigitalTwin"));
 
         addSubmodel(
                 submodel,

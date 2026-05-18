@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 public class EventElementTestType extends EventElementType {
     public EventElementTestType(EventTestType testType, DigitalTwinSpace space) {
         super("EventElementTestType",new LocalizedText("EventElementTestType"), testType, space);
+        setDescription(new LocalizedText("EventElementTestType"));
     }
 
     @Override
