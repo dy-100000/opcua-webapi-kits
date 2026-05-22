@@ -74,7 +74,7 @@ public abstract class DigitalTwinType extends UaReactiveObjectType implements Di
         GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
         return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-            return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
+            return new ReadObjectAttributeResponse(request.getObjectId(), response.getDisplayName(), response.getDescription());
         });
     }
 

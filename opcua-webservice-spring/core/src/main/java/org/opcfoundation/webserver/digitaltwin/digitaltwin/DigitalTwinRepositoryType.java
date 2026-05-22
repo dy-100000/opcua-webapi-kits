@@ -73,7 +73,7 @@ public abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
         if (null == directoryNode || NodeClass.Object != directoryNode.nodeClass()) throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
 
         return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(
-                request.getObjectId().getId(),
+                request.getObjectId(),
                 directoryNode.displayName(),
                 directoryNode.description()));
     }

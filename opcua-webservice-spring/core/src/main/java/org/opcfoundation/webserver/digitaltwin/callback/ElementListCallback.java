@@ -2,6 +2,8 @@ package org.opcfoundation.webserver.digitaltwin.callback;
 
 import org.eclipse.milo.opcua.stack.core.StatusCodes;
 import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
+import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
+import org.opcfoundation.webserver.addressspace.nodes.UaObject;
 import org.opcfoundation.webserver.service.message.digitaltwin.*;
 
 import java.util.concurrent.CompletableFuture;
@@ -68,6 +70,20 @@ public interface ElementListCallback {
 
     default CompletableFuture<GetDescriptorResponse> onGetDescriptor(GetDescriptorRequest request)
     {
-        return CompletableFuture.completedFuture(new GetDescriptorResponse(request.getId()));
+        UaObject instance = request.getContext().getObjectId().getInstance();
+        GetDescriptorResponse response;
+
+        if (null == instance)
+        {
+            response = new GetDescriptorResponse(
+                    new LocalizedText("NotImplemented"),
+                    LocalizedText.NULL_VALUE);
+        } else {
+            response = new GetDescriptorResponse(
+                    instance.displayName(),
+                    instance.description());
+        }
+
+        return CompletableFuture.completedFuture(response);
     }
 }

@@ -44,7 +44,7 @@ public class UaBrowseMemberTransaction extends UaBrowseTransaction {
             if (!additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK) ||
                     null != memberId.getPathL2()) return CompletableFuture.completedFuture(null);
 
-            boolean isMethod = null != memberId.getMethodNode() && memberId.getMethodNode();
+            boolean isMethod = (null != memberId.getMethodNode()) && memberId.getMethodNode();
 
             BrowseMemberRequest request = new BrowseMemberRequest(
                     objectId,

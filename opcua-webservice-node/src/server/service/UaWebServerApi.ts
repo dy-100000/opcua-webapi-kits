@@ -1,4 +1,4 @@
-import { ApplicationDescription, BrowseNextRequestFromJSON, BrowsePathResult, BrowseRequestFromJSON, BrowseResponse, BrowseResult, CallMethodResult, CallRequestFromJSON, CallResponse, DataValue, EndpointDescription, FindServersRequestFromJSON, FindServersResponse, GetEndpointsRequestFromJSON, GetEndpointsResponse, GetEndpointsResponseToJSONTyped, HistoryReadRequestFromJSON, HistoryReadResponse, HistoryReadResult, ReadRequestFromJSON, ReadResponse, ResponseHeader, StatusCode, StatusCodeFromJSON, StatusCodes, TranslateBrowsePathsToNodeIdsRequestFromJSON, TranslateBrowsePathsToNodeIdsResponse, WriteRequestFromJSON, WriteResponse } from "opcua-webapi";
+import { ApplicationDescription, BrowseNextRequestFromJSON, BrowseRequestFromJSON, BrowseResponse, BrowseResult, CallMethodResult, CallRequestFromJSON, CallResponse, DataValue, EndpointDescription, FindServersRequestFromJSON, FindServersResponse, GetEndpointsRequestFromJSON, GetEndpointsResponse, GetEndpointsResponseToJSONTyped, HistoryReadRequestFromJSON, HistoryReadResponse, HistoryReadResult, ReadRequestFromJSON, ReadResponse, ResponseHeader, StatusCode, StatusCodeFromJSON, StatusCodes, TranslateBrowsePathsToNodeIdsRequestFromJSON, TranslateBrowsePathsToNodeIdsResponse, WriteRequestFromJSON, WriteResponse } from "opcua-webapi";
 import { GetEndpointContext } from "../types/contexts/GetEndpointContext";
 import { UaWebService } from "./UaWebService";
 import { makeUaStatusCode, UaBrowseDescription, UaCallMethodRequest, UaError, UaHistoryReadValueId, UaPayloadMapper, UaReadValueId, UaWriteValue } from "opcua-webapi-ts";
@@ -226,7 +226,7 @@ export class UaWebServerApi {
                 nodesToRead.push(readValueId);
             }
             
-            let context = new ReadContext(                
+            let context = new ReadContext(    
                 nodesToRead,
                 readRequest.TimestampsToReturn,
                 readRequest.MaxAge,
@@ -241,7 +241,7 @@ export class UaWebServerApi {
                 results.push(dataValue);
             }
         } catch (err) {            
-            if (err instanceof UaError) 
+            if (err instanceof UaError)
             {
                 statusCode = (err as UaError).statusCode.value;
             } else {

@@ -17,14 +17,15 @@ export class UaWebServerBase implements UaWebService {
         uaServerApi.registrateWebService(this);
     }
 
+    // Can be override to customize the start up logic
+    async onStartUp() : Promise<void> {}
+
+    // Can be override to customize the shut down logic
+    async onShutDown() : Promise<void> {}
+
     get serverConfigure() : UaServerConfigure
     {        
         return this._configure;
-    }
-
-    protected get expressServer() : UaExpressServer
-    {
-        return this._server;
     }
 
     set serverConfigure(configure : UaServerConfigure)
@@ -44,9 +45,10 @@ export class UaWebServerBase implements UaWebService {
         }
     }
 
-    async onStartUp() : Promise<void> {}
-
-    async onShutDown() : Promise<void> {}
+    get expressServer() : UaExpressServer
+    {
+        return this._server;
+    }
 
     getServerConfigure() : UaServerConfigure
     {

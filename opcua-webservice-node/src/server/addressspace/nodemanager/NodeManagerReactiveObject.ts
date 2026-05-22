@@ -38,10 +38,8 @@ export class NodeManagerReactiveObject extends NodeManager {
         if (objectId.instanceDeclId === null) return null;
         
         let nodeId = parseUaNodeIdOrNull(objectId.instanceDeclId);
-        if (nodeId === null) {
-            return null;
-        }
-
+        if (nodeId === null) return null;
+        
         const instanceDeclaration = this.getNode(nodeId);
         if (instanceDeclaration === null || instanceDeclaration.nodeClass !== NodeClass.Object) {
             return null;

@@ -82,18 +82,6 @@ public class UaBrowseObjectTransaction extends UaBrowseTransaction {
                         thenApply(this::browseObjectResult).
                         exceptionally(ex -> buildErrorResponse(ex.getCause()));
             }
-
-            /*
-            if (additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_PARENT_TASK)) {
-                BrowseObjectRequest request = new BrowseObjectRequest(
-                        objectId,
-                        additionalInfo,
-                        getItem());
-
-                return objectType.onBrowseObjectParent(request).
-                        thenApply(response-> browseObjectResult(response, UaBrowseAdditionalInfo.GET_PARENT_TASK)).
-                        exceptionally(ex -> buildErrorResponse(ex.getCause()));
-            } */
         } catch (Exception e) {
             buildErrorResponse(e);
         }

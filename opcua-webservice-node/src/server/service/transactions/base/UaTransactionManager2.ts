@@ -4,11 +4,9 @@ import { UaTransaction2 } from "./UaTransaction2";
 
 export class UaTransactionManager2<TRequest, TResponse> {
     private readonly transactions: Array<UaTransaction2<TRequest, TResponse>>;
-    private currentTransactionIndex: number;
 
     constructor() {
         this.transactions = [];
-        this.currentTransactionIndex = 0;
     }
 
     addTransaction(transaction: UaTransaction2<TRequest, TResponse>): void {
@@ -36,10 +34,9 @@ export class UaTransactionManager2<TRequest, TResponse> {
     }
 
     async execute(): Promise<void> {
-        if (this.currentTransactionIndex >= this.transactions.length) return;
-        await this.transactions[this.currentTransactionIndex].execute();
-        this.currentTransactionIndex += 1;
-        await this.execute();
+        for (let transaction of this.transactions) {
+            await transaction.execute();
+        }
     }
 
     static getNsIndexes(nodeIds: Array<UaNodeId>): Array<number> {

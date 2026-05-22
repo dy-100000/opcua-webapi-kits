@@ -37,23 +37,12 @@ public abstract class ElementListType extends ElementType implements ElementList
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request)
     {
-        UaObject instanceDeclaration = request.getObjectId().getInstance();
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+        GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
-        if (null == instanceDeclaration)
-        {
-            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
-            GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
-
-            return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
-            });
-        } else {
-            return CompletableFuture.completedFuture(
-                    new ReadObjectAttributeResponse(
-                            instanceDeclaration.browseName(),
-                            instanceDeclaration.displayName(),
-                            instanceDeclaration.description()));
-        }
+        return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
+            return new ReadObjectAttributeResponse(request.getObjectId(), response.getDisplayName(), response.getDescription());
+        });
     }
 
     @Override

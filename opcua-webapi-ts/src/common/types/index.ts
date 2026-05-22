@@ -18,5 +18,6 @@ export * from "./UaBrowseMask";
 export * from "./UaValueRank";
 export * from "./UaWriteMask";
 export * from "./UaReference";
+export * from "./UaEventNotifier";
 
 

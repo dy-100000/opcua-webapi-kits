@@ -38,20 +38,16 @@ import { UaObjectType } from "../nodes/UaObjectType";
 import { UaVariable } from "../nodes/UaVariable";
 import type { UaVariableType } from "../nodes/UaVariableType";
 import { UaObjectTypes, UaVariableTypes } from "../nodes/builtin";
+import type { UaReactiveObjectCallback } from "./UaReactiveObjectCallback";
 
-function notImplemented(): never {
-    throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
-}
-
-export abstract class UaReactiveObjectType extends UaObjectType {
+export abstract class UaReactiveObjectType extends UaObjectType implements UaReactiveObjectCallback {
     protected readonly nodeManager: NodeManager;
 
     constructor(
         objectTypeId: string,
         displayName: UaLocalizedText,
         parentType: UaObjectType | null,
-        nodeManager: NodeManager,
-    ) {
+        nodeManager: NodeManager) {
         if (objectTypeId.length === 0) {
             throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdRejected));
         }
@@ -63,7 +59,7 @@ export abstract class UaReactiveObjectType extends UaObjectType {
             new UaNodeId(objectTypeId, nodeManager.nsIndex()),
             objectTypeId,
             displayName,
-            false,
+            false
         );
 
         this.setParentType(parentType ?? UaObjectTypes.BaseObjectType);
@@ -204,48 +200,48 @@ export abstract class UaReactiveObjectType extends UaObjectType {
         return newMethod;
     }
 
-    onBrowseObjectChildren(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        return Promise.resolve(new BrowseObjectResponse([], false));
+    async onBrowseObjectChildren(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        return new BrowseObjectResponse([], false);
     }
 
-    onBrowseMemberChildren(_request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
-        return Promise.reject(notImplemented());
+    async onBrowseMemberChildren(_request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onBrowseObjectParent(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        return Promise.reject(notImplemented());
+    async onBrowseObjectParent(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onBrowseObjectLinks(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        return Promise.reject(notImplemented());
+    async onBrowseObjectLinks(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onReadObjectAttributes(_request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
-        return Promise.reject(notImplemented());
+    async onReadObjectAttributes(_request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onReadMemberAttributes(_request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
-        return Promise.reject(notImplemented());
+    async onReadMemberAttributes(_request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onReadVariablesValue(_request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
-        return Promise.reject(notImplemented());
+    async onReadVariablesValue(_request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onWriteVariablesValue(_request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
-        return Promise.reject(notImplemented());
+    async onWriteVariablesValue(_request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onMethodCall(_request: MethodCallRequest): Promise<MethodCallResponse> {
-        return Promise.reject(notImplemented());
+    async onMethodCall(_request: MethodCallRequest): Promise<MethodCallResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onReadHistoryData(_request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
-        return Promise.reject(notImplemented());
+    async onReadHistoryData(_request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    onReadHistoryEvent(_request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
-        return Promise.reject(notImplemented());
+    async onReadHistoryEvent(_request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
     private copyNode(node: UaInstanceNode, newInstanceId: string): UaInstanceNode {

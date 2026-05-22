@@ -32,6 +32,6 @@ export class ReadVariableValueResponse {
             return path;
         }
 
-        return path.serialize();
+        return path.toString();
     }
 }

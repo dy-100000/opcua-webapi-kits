@@ -75,7 +75,10 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return newVariable;
     }
 
-    public void addSubElementOfProperty(UaVariable property, String subElementName, Variant value)
+    public void addSubElementOfProperty(
+            UaVariable property,
+            String subElementName,
+            Variant value)
     {
         UaVariable subElement = property.addMember(subElementName);
         if (null != subElement)
@@ -153,21 +156,12 @@ public class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
 
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request) {
-        UaObject instanceDeclaration = request.getObjectId().getInstance();
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+        GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
-        if (null == instanceDeclaration) {
-            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
-            GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
-
-            return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription());
-            });
-        } else {
-            return CompletableFuture.completedFuture(new ReadObjectAttributeResponse(
-                    instanceDeclaration.browseName(),
-                    instanceDeclaration.displayName(),
-                    instanceDeclaration.description()));
-        }
+        return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
+            return new ReadObjectAttributeResponse(request.getObjectId(), response.getDisplayName(), response.getDescription());
+        });
     }
 
     @Override

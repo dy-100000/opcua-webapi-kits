@@ -4,11 +4,9 @@ import { StatusCodes } from "opcua-webapi";
 
 export class UaTransactionManager<TRequest, TResponse> {
     private readonly transactions: Array<UaTransaction<TRequest, TResponse>>;
-    private currentTransactionIndex: number;
 
     constructor() {
         this.transactions = [];
-        this.currentTransactionIndex = 0;
     }
 
     addTransaction(transaction: UaTransaction<TRequest, TResponse>): void {
@@ -32,9 +30,8 @@ export class UaTransactionManager<TRequest, TResponse> {
     }
 
     async execute(): Promise<void> {
-        if (this.currentTransactionIndex >= this.transactions.length) return;
-        await this.transactions[this.currentTransactionIndex].execute();
-        this.currentTransactionIndex += 1;
-        await this.execute();
+        for (const transaction of this.transactions) {
+            await transaction.execute();
+        }
     }
 }

@@ -178,12 +178,13 @@ public class ElementCollectionTestAType extends ElementCollectionType {
         return CompletableFuture.completedFuture(response);
     }
 
-    @Override
+
+/*    @Override
     public CompletableFuture<GetDescriptorResponse> onGetDescriptor(GetDescriptorRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             return new GetDescriptorResponse(
                     new LocalizedText("Element-" + request.getId()),
                     new LocalizedText("Element with id " + request.getId()));
         });
-    }
+    }*/
 }

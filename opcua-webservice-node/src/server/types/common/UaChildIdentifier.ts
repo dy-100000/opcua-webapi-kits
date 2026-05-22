@@ -47,7 +47,7 @@ export class UaChildIdentifier {
         return {
             p: this._path,
             p2: this._pathL2 ?? undefined,
-            mn: this._methodNode ?? undefined,
+            mn: (this._methodNode) ? this._methodNode : undefined,
         };
     }
 

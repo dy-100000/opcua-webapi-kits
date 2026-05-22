@@ -1,11 +1,12 @@
 import { DataValue } from "opcua-webapi";
 import { UaChildId } from "./UaChildId";
+import { UaDataValue } from "opcua-webapi-ts";
 
 export class WriteVariableValue {
     private readonly _variableId: UaChildId;
-    private readonly _value: DataValue;
+    private readonly _value: UaDataValue;
 
-    constructor(variableId: UaChildId, value: DataValue) {
+    constructor(variableId: UaChildId, value: UaDataValue) {
         this._variableId = variableId;
         this._value = value;
     }
@@ -14,7 +15,7 @@ export class WriteVariableValue {
         return this._variableId;
     }
 
-    get value(): DataValue {
+    get value(): UaDataValue {
         return this._value;
     }
 }

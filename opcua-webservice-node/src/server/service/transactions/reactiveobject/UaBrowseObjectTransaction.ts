@@ -1,9 +1,10 @@
 import { NodeClass } from "opcua-webapi";
-import { UaBrowseDescription, UaExpandedNodeId, UaReferenceDescription, UaNodeId } from "opcua-webapi-ts";
+import { UaBrowseDescription, UaExpandedNodeId, UaReferenceDescription, UaNodeId, UaNodeIdType } from "opcua-webapi-ts";
 import { NodeManagerReactiveObject } from "../../../addressspace/nodemanager/NodeManagerReactiveObject";
 import { UaReactiveObjectType } from "../../../addressspace/reactiveobject/UaReactiveObjectType";
 import {
     UaBrowseAdditionalInfo,
+    UaBrowseContinuationPoint,
     UaChildIdentifier,
     UaInstanceIdentifier,
     UaObjectId,
@@ -47,20 +48,22 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
                     this.objectType.browseName,
                     this.objectType.displayName,
                 );
+                this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_DEFINITION_TASK);
             }
 
-            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_TASK)) {
-                const response = await this.objectType.onBrowseObjectChildren(request);
-                this.browseObjectResult(response);
-            }
-
-            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_PARENT_TASK)) {
-                const response = await this.objectType.onBrowseObjectParent(request);
-                this.browseObjectResult(response);
-            }
+            this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_PARENT_TASK);
 
             if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_LINK_TASK)) {
                 const response = await this.objectType.onBrowseObjectLinks(request);
+                this.browseObjectResult(response);
+                return;
+            }
+
+            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) ||
+                this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK) ||
+                this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK))
+            {
+                const response = await this.objectType.onBrowseObjectChildren(request);
                 this.browseObjectResult(response);
             }
         } catch (error) {
@@ -68,50 +71,83 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
         }
     }
 
-    private browseObjectResult(response: BrowseObjectResponse): void {
-        for (const item of response.children) {
-            if (item.id.length === 0) {
+    private browseObjectResult(response: BrowseObjectResponse)
+    {
+        for (const item of response.children)
+        {
+            if (item.nodeClass == NodeClass.ObjectType)
+            {
+                this._references.push(new UaReferenceDescription(
+                        UaExpandedNodeId.from(item.typeDefinitionId),
+                        item.nodeClass,
+                        item.browseName,
+                        item.displayName,
+                        item.referenceTypeId,
+                        item.isForward,
+                        UaExpandedNodeId.from(UaNodeId.nullNodeId)));
+
                 continue;
             }
 
-            const objectIdentifier = new UaObjectIdentifier(
-                this.objectType.nodeId.toString(),
-                this.objectId.id,
-                this.objectId.instance?.nodeId.toString() ?? null,
-            );
+            if (item.id.length === 0) continue;
 
-            const childIdentifier = this.toChildIdentifier(item);
-            const nodeId = childIdentifier === null
-                ? new UaNodeId(item.id, this.nodeManager.nsIndex())
-                : new UaNodeId(new UaInstanceIdentifier(objectIdentifier, childIdentifier).toByteString() ?? "", this.nodeManager.nsIndex());
+            if (item.nodeClass != NodeClass.Object &&
+                    item.nodeClass != NodeClass.Variable &&
+                    item.nodeClass != NodeClass.Method) continue;
 
-            if (nodeId.value === "") {
-                continue;
+            let newIdentifier : UaInstanceIdentifier;
+
+            if (item.nodeClass == NodeClass.Object)
+            {
+                let objectIdentifier = new UaObjectIdentifier(
+                        item.typeDefinitionId.toString(),
+                        item.id,
+                        (!item.instanceDeclarationId.isEmpty()) ? item.instanceDeclarationId.toString() : null);
+
+                newIdentifier = new UaInstanceIdentifier(
+                        objectIdentifier,
+                        null);
+            } else {
+                let objectIdentifier = new UaObjectIdentifier(
+                        this.objectType.nodeId.toString(),
+                        this.objectId.id,
+                        (this.objectId.instance) ? this.objectId.instance.nodeId.toString() : null);
+
+                let memberIdentifier = new UaChildIdentifier(
+                        item.id,
+                        null,
+                        item.nodeClass == NodeClass.Method);
+
+                newIdentifier = new UaInstanceIdentifier(
+                        objectIdentifier,
+                        memberIdentifier);
             }
 
-            this._references.push(
-                new UaReferenceDescription(
-                    UaExpandedNodeId.from(nodeId),
+            let newNodeId = new UaNodeId(
+                newIdentifier.toByteString(),
+                this.nodeManager.nsIndex(),
+                UaNodeIdType.BYTESTRING);
+                
+            this._references.push(new UaReferenceDescription(
+                    UaExpandedNodeId.from(newNodeId),
                     item.nodeClass,
                     item.browseName,
                     item.displayName,
                     item.referenceTypeId,
                     item.isForward,
-                    UaExpandedNodeId.from(item.typeDefinitionId),
-                ),
-            );
+                    UaExpandedNodeId.from(item.typeDefinitionId)));
         }
-    }
 
-    private toChildIdentifier(item: BrowseObjectResponse["children"][number]): UaChildIdentifier | null {
-        if (item.nodeClass === NodeClass.Object) {
-            return new UaChildIdentifier(item.id, null, false);
+        if (response.containsMoreData && 0 != this._references.length)
+        {
+            this._additionalInfo = this._additionalInfo.updateOffset(this._references.length);
+        } else {
+            this._additionalInfo = this._additionalInfo.taskComplete(response.taskMask);
         }
-        if (item.nodeClass === NodeClass.Variable) {
-            return new UaChildIdentifier(item.id, null, false);
-        }
-        if (item.nodeClass === NodeClass.Method) {
-            return new UaChildIdentifier(item.id, null, true);
+
+        if (!this._additionalInfo.isAllTaskComplete())
+        {
+            this._continuationPoint = new UaBrowseContinuationPoint(this.getItem(), this._additionalInfo).toByteString();
         }
 
         return null;

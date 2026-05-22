@@ -4,6 +4,7 @@ import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.StatusCode;
 import org.eclipse.milo.opcua.stack.core.types.builtin.Variant;
 import org.opcfoundation.webserver.addressspace.nodes.builtin.UaDataTypes;
+import org.opcfoundation.webserver.addressspace.nodes.builtin.UaVariableTypes;
 import org.opcfoundation.webserver.digitaltwin.DigitalTwinSpace;
 import org.opcfoundation.webserver.digitaltwin.element.ElementListType;
 import org.opcfoundation.webserver.service.message.digitaltwin.*;
@@ -45,7 +46,7 @@ public class ElementListTestType extends ElementListType {
 
         for (int i=request.getOffset();i<request.getOffset()+5; ++i)
         {
-            response.add(new PropertyElementDescriptor(Integer.toString(i), new LocalizedText("Var-"+Integer.toString(i)), true));
+            response.add(new PropertyElementDescriptor(Integer.toString(i), new LocalizedText("Var-"+Integer.toString(i)), UaVariableTypes.BaseAnalogType));
         }
 
         response.setContainsMoreData(request.getOffset() == 0);
@@ -117,7 +118,6 @@ public class ElementListTestType extends ElementListType {
     public CompletableFuture<GetPropertySubElementsResponse> onGetPropertySubElements(GetPropertySubElementsRequest request) {
         GetPropertySubElementsResponse response = new GetPropertySubElementsResponse();
         response.add("Sub-" + request.getPropertyId());
-
         return CompletableFuture.completedFuture(response);
     }
 }

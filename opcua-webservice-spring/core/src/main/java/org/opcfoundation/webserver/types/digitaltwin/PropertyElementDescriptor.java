@@ -3,6 +3,8 @@ package org.opcfoundation.webserver.types.digitaltwin;
 import org.eclipse.milo.opcua.stack.core.NodeIds;
 import org.eclipse.milo.opcua.stack.core.types.builtin.LocalizedText;
 import org.eclipse.milo.opcua.stack.core.types.builtin.NodeId;
+import org.opcfoundation.webserver.addressspace.nodes.UaVariableType;
+import org.springframework.lang.Nullable;
 
 public class PropertyElementDescriptor {
     private final String id;
@@ -12,11 +14,11 @@ public class PropertyElementDescriptor {
     public PropertyElementDescriptor(
             String propertyId,
             LocalizedText displayName,
-            boolean containsSubProperties)
+            @Nullable UaVariableType variableType)
     {
         this.id = propertyId;
         this.displayName = displayName;
-        this.typeId = (containsSubProperties) ? NodeIds.DataItemType : NodeIds.BaseDataVariableType;
+        this.typeId = (null != variableType) ? variableType.nodeId() : NodeIds.BaseDataVariableType;
     }
 
     public String getId() {

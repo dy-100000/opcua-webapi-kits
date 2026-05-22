@@ -60,12 +60,12 @@ public class EventElementTestType extends EventElementType {
         return CompletableFuture.completedFuture(response);
     }
 
-    @Override
+/*    @Override
     public CompletableFuture<GetDescriptorResponse> onGetDescriptor(GetDescriptorRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             return new GetDescriptorResponse(
                     new LocalizedText("EventElement-" + request.getId()),
                     new LocalizedText("EventElement with id " + request.getId()));
         });
-    }
+    }*/
 }

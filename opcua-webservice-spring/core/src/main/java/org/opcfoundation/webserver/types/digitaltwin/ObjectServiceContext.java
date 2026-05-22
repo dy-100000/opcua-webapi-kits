@@ -22,9 +22,10 @@ public class ObjectServiceContext {
         return (null == objectId.getInstance()) ? objectId.getId() : objectId.getInstance().browseName();
     }
 
+    /*
     public List<String> getCurrentObjectPath()
     {
         // To be implemented
         return new ArrayList<>();
-    }
+    }*/
 }

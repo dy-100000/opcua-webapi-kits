@@ -58,25 +58,13 @@ public class EventElementType extends ElementType implements EventElementCallbac
     @Override
     public final CompletableFuture<ReadObjectAttributeResponse> onReadObjectAttributes(ReadObjectAttributeRequest request)
     {
-        UaObject instanceDeclaration = request.getObjectId().getInstance();
         UByte historyReadEventNotifier = UByte.valueOf(EventNotifierType.Field.HistoryRead.getBitIndex());
+        ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
+        GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
 
-        if (null == instanceDeclaration)
-        {
-            ObjectServiceContext context = new ObjectServiceContext(request.getObjectId());
-            GetDescriptorRequest getDescriptorRequest = new GetDescriptorRequest(context);
-
-            return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
-                return new ReadObjectAttributeResponse(request.getObjectId().getId(), response.getDisplayName(), response.getDescription(), historyReadEventNotifier);
-            });
-        } else {
-            return CompletableFuture.completedFuture(
-                    new ReadObjectAttributeResponse(
-                            instanceDeclaration.browseName(),
-                            instanceDeclaration.displayName(),
-                            instanceDeclaration.description(),
-                            historyReadEventNotifier));
-        }
+        return onGetDescriptor(getDescriptorRequest).thenApply(response -> {
+            return new ReadObjectAttributeResponse(request.getObjectId(), response.getDisplayName(), response.getDescription(), historyReadEventNotifier);
+        });
     }
 
     @Override

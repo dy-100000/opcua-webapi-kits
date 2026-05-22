@@ -39,7 +39,7 @@ export class UaInstanceIdentifier {
         }
     }
 
-    toByteString(): string | null {
+    toByteString(): string {
         return JSON.stringify(this.toJson());
     }
 

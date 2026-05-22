@@ -36,10 +36,10 @@ public class ElementCollectionTestBType extends ElementCollectionType {
                 true);
     }
 
-    @Override
+/*    @Override
     public CompletableFuture<GetDescriptorResponse> onGetDescriptor(GetDescriptorRequest request) {
         return CompletableFuture.completedFuture(new GetDescriptorResponse(
                 new LocalizedText("Element-" + request.getId()),
                 new LocalizedText("Element with id " + request.getId())));
-    }
+    }*/
 }

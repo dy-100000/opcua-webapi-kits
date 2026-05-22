@@ -149,7 +149,7 @@ export class UaBrowseAdditionalInfo {
         return new UaBrowseAdditionalInfo(
             this._maxReferencesPerNode,
             0,
-            this._taskCheckListMasks & ~taskMask,
+            this._taskCheckListMasks & ~taskMask
         );
     }
 

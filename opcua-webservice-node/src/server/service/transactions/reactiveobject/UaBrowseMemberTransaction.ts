@@ -1,5 +1,5 @@
-import { NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaBrowseDescription, UaExpandedNodeId, UaReferenceDescription, UaNodeId } from "opcua-webapi-ts";
+import { NodeClass } from "opcua-webapi";
+import { UaBrowseDescription, UaExpandedNodeId, UaReferenceDescription, UaNodeId, UaNodeIdType } from "opcua-webapi-ts";
 import { NodeManagerReactiveObject } from "../../../addressspace/nodemanager/NodeManagerReactiveObject";
 import { UaReactiveObjectType } from "../../../addressspace/reactiveobject/UaReactiveObjectType";
 import {
@@ -66,7 +66,7 @@ export class UaBrowseMemberTransaction extends UaBrowseTransaction {
             const objectIdentifier = new UaObjectIdentifier(
                 this.objectType.nodeId.toString(),
                 this.objectId.id,
-                this.objectId.instance?.nodeId.toString() ?? null,
+                (this.objectId.instance) ? this.objectId.instance.nodeId.toString() : null,
             );
 
             const memberIdentifier = new UaChildIdentifier(
@@ -76,15 +76,15 @@ export class UaBrowseMemberTransaction extends UaBrowseTransaction {
             );
 
             const newIdentifier = new UaInstanceIdentifier(objectIdentifier, memberIdentifier);
-            const byteString = newIdentifier.toByteString();
-            if (byteString === null) {
-                this._statusCode = makeUaStatusCode(StatusCodes.BadNodeIdInvalid);
-                continue;
-            }
+            const newNodeId = new UaNodeId(
+                newIdentifier.toByteString(),
+                this.nodeManager.nsIndex(),
+                UaNodeIdType.BYTESTRING
+            );
 
             this._references.push(
                 new UaReferenceDescription(
-                    UaExpandedNodeId.from(new UaNodeId(byteString, this.nodeManager.nsIndex())),
+                    UaExpandedNodeId.from(newNodeId),
                     NodeClass.Variable,
                     item.browseName,
                     item.displayName,

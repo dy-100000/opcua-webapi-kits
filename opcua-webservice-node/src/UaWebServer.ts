@@ -20,6 +20,7 @@ import {
     BrowseContext,
     BrowseNextContext,
     CallContext,
+    FindServerContext,
     HistoryReadContext,
     NodeManagerBase,
     NodeManagerList,
@@ -35,12 +36,20 @@ import {
     UaWriteTransaction,
     WriteContext,
 } from "./server";
+import { UaDiscoveryService } from "./UaDiscoveryService";
 
 import { NodeManagerNs0,NodeManagerNs1 } from "./server/addressspace/nodemanager";
 
 export abstract class UaWebServer extends UaWebServerBase {
+    private discoveryService: UaDiscoveryService | null;
+
     constructor(server: UaExpressServer) {
         super(server);
+        this.discoveryService = null;
+    }
+
+    setDiscoveryService(discoveryService: UaDiscoveryService | null): void {
+        this.discoveryService = discoveryService;
     }
 
     addNodeManager(nodeManager: NodeManagerBase): void {
@@ -96,7 +105,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         await this.onShutDown();
     }   
 
-    async browse(context: BrowseContext): Promise<Array<UaBrowseResult>> {
+    override async browse(context: BrowseContext): Promise<Array<UaBrowseResult>> {
         const transactionManager = new UaTransactionManager<UaBrowseDescription,UaBrowseResult>();
 
         let currentIndex = 0;
@@ -134,7 +143,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         return transactionManager.getMergedResults();
     }
 
-    async browseNext(context: BrowseNextContext): Promise<Array<UaBrowseResult>> {
+    override async browseNext(context: BrowseNextContext): Promise<Array<UaBrowseResult>> {
         const transactionManager = new UaTransactionManager<UaBrowseDescription,UaBrowseResult>();
 
         let currentIndex = 0;
@@ -183,7 +192,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         return transactionManager.getMergedResults();
     }
 
-    async read(context: ReadContext): Promise<Array<UaDataValue>> { 
+    override async read(context: ReadContext): Promise<Array<UaDataValue>> { 
         const transactionManager = new UaTransactionManager2<UaReadValueId, UaDataValue>();
 
         const nodeIds : Array<UaNodeId> = [];        
@@ -211,7 +220,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         return transactionManager.getMergedResults();
     }
 
-    async write(context: WriteContext): Promise<Array<UaStatusCode>> {
+    override async write(context: WriteContext): Promise<Array<UaStatusCode>> {
         const transactionManager = new UaTransactionManager2<UaWriteValue, UaStatusCode>();
         
         const nodeIds : Array<UaNodeId> = [];
@@ -239,7 +248,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         return transactionManager.getMergedResults();
     }
 
-    async call(context: CallContext): Promise<Array<UaCallMethodResult>> {
+    override async call(context: CallContext): Promise<Array<UaCallMethodResult>> {
         const transactionManager = new UaTransactionManager<
             UaCallMethodRequest,
             UaCallMethodResult>();
@@ -261,7 +270,7 @@ export abstract class UaWebServer extends UaWebServerBase {
         return transactionManager.getMergedResults();
     }
 
-    async historyRead(context: HistoryReadContext): Promise<Array<UaHistoryReadResult>> {
+    override async historyRead(context: HistoryReadContext): Promise<Array<UaHistoryReadResult>> {
         const transactionManager = new UaTransactionManager<UaHistoryReadValueId, UaHistoryReadResult>();
 
         let currentIndex = 0;
@@ -280,5 +289,17 @@ export abstract class UaWebServer extends UaWebServerBase {
 
         await transactionManager.execute();
         return transactionManager.getMergedResults();
+    }
+
+    override async findServers(context: FindServerContext): Promise<Array<ApplicationDescription>> {
+        if (this.discoveryService === null) {
+            throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+        }
+        if (context.endpointUrl.length === 0) {
+            throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
+        }
+
+        const results = await this.discoveryService.find(context.endpointUrl, context.serverUris);
+        return UaDiscoveryService.findComplete(results, this.getServerConfigure());
     }
 }

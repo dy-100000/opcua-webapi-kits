@@ -445,6 +445,7 @@ public class UaObjectTransactionManager {
             }
         }
 
+        transactionNothingToDo.setStatusCode(StatusCode.of(StatusCodes.Bad_HistoryOperationUnsupported));
         return transactionNothingToDo;
     }
 }
