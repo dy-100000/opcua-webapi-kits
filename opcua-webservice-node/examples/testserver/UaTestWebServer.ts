@@ -1,5 +1,6 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
 import { UaExpressServer, UaServerConfigure, UaWebServer} from "../../src";
+import { DigitalTwinSpaceTest } from "./testdigitaltwin";
 
 export class UaTestWebServer extends UaWebServer 
 {
@@ -16,6 +17,7 @@ export class UaTestWebServer extends UaWebServer
         configure.productUri = "test";
 
         this.serverConfigure = configure;
+        this.addNodeManager(new DigitalTwinSpaceTest());
     }
 
     static async launch() : Promise<void>

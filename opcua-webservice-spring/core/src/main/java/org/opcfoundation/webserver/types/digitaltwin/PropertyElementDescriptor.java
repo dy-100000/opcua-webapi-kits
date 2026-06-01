@@ -18,7 +18,7 @@ public class PropertyElementDescriptor {
     {
         this.id = propertyId;
         this.displayName = displayName;
-        this.typeId = (null != variableType) ? variableType.nodeId() : NodeIds.BaseDataVariableType;
+        this.typeId = (null != variableType) ? variableType.nodeId() : NodeIds.PropertyType;
     }
 
     public String getId() {

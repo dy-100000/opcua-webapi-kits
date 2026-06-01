@@ -1,0 +1,36 @@
+{
+  "name": "opcua-webservice-node",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "generate": "openapi-generator-cli generate -i opc.ua.openapi.allservices.json -g nodejs-express-server -o src",
+    "dev": "tsx watch --clear-screen=false examples/testserver/Application.ts",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.2",
+    "camelcase": "^5.3.1",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "express-openapi-validator": "^5.6.2",
+    "opcua-webapi": "^1.504.2",
+    "opcua-webapi-ts": "^1.1.10",
+    "winston": "^3.19.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
+    "eslint": "^10.0.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^4.0 || ^5.0"
+  },
+  "author": "",
+  "license": "ISC",
+  "directories": {
+    "test": "test"
+  }
+}

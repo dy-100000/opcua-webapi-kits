@@ -152,7 +152,7 @@ export class UaWebClient
             new UaReadValueId(nodeId, Attributes.NodeClass),
             new UaReadValueId(nodeId, Attributes.BrowseName),
             new UaReadValueId(nodeId, Attributes.DisplayName),
-            new UaReadValueId(nodeId, Attributes.UserWriteMask)
+            new UaReadValueId(nodeId, Attributes.WriteMask)
         ];
 
         if (returnDescription)
@@ -168,12 +168,12 @@ export class UaWebClient
 
         let nodeClassValue = results[0].value;
         let browseNameValue = results[1].value;
-        let displayNameValue = results[2].value;
+        let displayNameValue = results[2].value;  
 
         if (UaVariantType.Int32 != nodeClassValue.type ||
             UaVariantType.QualifiedName != browseNameValue.type ||
             UaVariantType.LocalizedText != displayNameValue.type) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-        
+                 
         let writeMaskValue = (results[3].statusCode.isGood() &&
                 results[3].value.type == UaVariantType.UInt32) ? results[3].value : undefined;
 

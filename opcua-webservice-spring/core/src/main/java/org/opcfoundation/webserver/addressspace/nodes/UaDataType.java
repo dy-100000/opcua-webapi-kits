@@ -37,6 +37,7 @@ public class UaDataType extends UaDefinitionNode {
         return NodeClass.DataType;
     }
 
+    @Nullable
     public OpcUaDataType getValueType()
     {
         if (null != valueType) return valueType;

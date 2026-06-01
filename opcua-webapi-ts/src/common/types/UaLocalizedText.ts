@@ -21,8 +21,14 @@ export class UaLocalizedText
         return this._locale;
     }
 
+    
     toString() : string
     {
         return `Text: ${this._text} Locale: ${this._locale}`;
+    }
+
+    static from(text: string) : UaLocalizedText
+    {
+        return new UaLocalizedText(text);
     }
 }

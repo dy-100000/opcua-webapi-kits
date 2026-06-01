@@ -1,8 +1,8 @@
-import { Attributes, Configuration, NodeClass } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, DataTypeIds, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId } from "../src";
+import { Configuration, NodeClass } from "opcua-webapi";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaChildBrowser, UaDataTypeDictionary, UaLinkBrowser, UaNodeReader, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
+import { UaChildBrowser, UaDataTypeDictionary, UaLinkBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
 
 class Test {
     private client : UaWebClient;
@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4842"
+            basePath: "http://localhost:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -23,7 +23,7 @@ class Test {
     {
         try
         {
-            await this.testDataTypeDictionary();
+            await this.testMethodCall();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -81,9 +81,9 @@ class Test {
     async testReadNodeAttribute()
     {
         console.log("testReadNodeAttribute");
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiRW50cnkiLCJ0IjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbkRpcmVjdG9yeSJ9fQ==");
 
-        let attribute = await this.client.readNodeAttributes(nodeId, true);
+        let attribute = await this.client.readNodeAttributes(nodeId, false);
         console.log(attribute);
     }
 
@@ -100,7 +100,7 @@ class Test {
     {
         console.log("testReadObjectAttribute");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVsZW1lbnRDb2xsZWN0aW9uVGVzdEFUeXBlIiwiaSI6IjAiLCJpZCI6Im5zPTI7cz1TdWJtb2RlbFRlc3RUeXBlLUNvbGxlY3Rpb25BIn19");
+        let nodeId = parseUaNodeId("i=85");
         let attribute = await this.client.readObjectAttributes(nodeId);
         console.log(attribute);
     }
@@ -129,18 +129,16 @@ class Test {
     {
         console.log("testReadValues");
 
-        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkJvb2wifX0=");
-        let nodeId2 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVBlcnNvbmFsRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtUGVyc29uYWxEYXRhIn0sImNpIjp7InAiOiJBZGRyZXNzIn19");
-        let nodeId3 = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZSIsImkiOiIyIiwiaWQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUtRW1wbG95ZWVEYXRhIn0sImNpIjp7InAiOiJTYWxhcnkiLCJwMiI6IkVuZ2luZWVyaW5nVW5pdHMifX0=");
-      
+        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIiwicDIiOiJFVVJhbmdlIn19");
+
         let nodeIds : Array<UaNodeId> = [
-            nodeId1,
-            nodeId2,
-            nodeId3
+            nodeId1
         ];
 
         let values = await this.client.readValues(nodeIds);
         
+        
+
         for (let item of values)
         {
             if (item.statusCode.isGood())
@@ -200,8 +198,8 @@ class Test {
     {
         console.log("testMethodCall");
 
-        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ==");
-        let methodId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ==");
+        let methodId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
 
         let input = UaVariant.string("Hello");
 

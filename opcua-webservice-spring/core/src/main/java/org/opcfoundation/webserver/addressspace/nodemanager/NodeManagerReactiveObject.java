@@ -1,21 +1,16 @@
 package org.opcfoundation.webserver.addressspace.nodemanager;
 
-import org.eclipse.milo.opcua.stack.core.StatusCodes;
-import org.eclipse.milo.opcua.stack.core.UaRuntimeException;
 import org.eclipse.milo.opcua.stack.core.types.builtin.*;
 import org.eclipse.milo.opcua.stack.core.types.enumerated.*;
 import org.eclipse.milo.opcua.stack.core.types.structured.*;
 import org.opcfoundation.webapi.service.types.*;
 import org.opcfoundation.webserver.service.transactions.base.*;
 import org.springframework.lang.Nullable;
-import org.opcfoundation.webserver.addressspace.reactiveobject.UaObjectTransactionManager;
-import org.opcfoundation.webserver.addressspace.nodes.UaDataType;
+import org.opcfoundation.webserver.addressspace.reactiveobject.UaReactiveObjectTransactionManager;
 import org.opcfoundation.webserver.addressspace.nodes.UaNode;
 import org.opcfoundation.webserver.addressspace.nodes.UaObject;
-import org.opcfoundation.webserver.addressspace.nodes.builtin.UaObjects;
 import org.opcfoundation.webserver.addressspace.reactiveobject.UaReactiveObjectType;
 import org.opcfoundation.webserver.types.common.UaBrowseAdditionalInfo;
-import org.opcfoundation.webserver.types.common.UaInstanceIdentifier;
 import org.opcfoundation.webserver.types.common.UaObjectIdentifier;
 
 import java.util.*;
@@ -72,7 +67,7 @@ public class NodeManagerReactiveObject extends NodeManager {
             UaBrowseAdditionalInfo additionalInfo,
             int handleId)
     {
-        return new UaObjectTransactionManager(this).getBrowseTransaction(
+        return new UaReactiveObjectTransactionManager(this).getBrowseTransaction(
                 context,
                 nodeToBrowse,
                 additionalInfo,
@@ -84,7 +79,7 @@ public class NodeManagerReactiveObject extends NodeManager {
             ReadContext context,
             List<Integer> handleIds)
     {
-        return new UaObjectTransactionManager(this).getReadTransactions(context, handleIds);
+        return new UaReactiveObjectTransactionManager(this).getReadTransactions(context, handleIds);
     }
 
     @Override
@@ -92,7 +87,7 @@ public class NodeManagerReactiveObject extends NodeManager {
             WriteContext context,
             List<Integer> handleIds)
     {
-        return new UaObjectTransactionManager(this).getWriteTransactions(context, handleIds);
+        return new UaReactiveObjectTransactionManager(this).getWriteTransactions(context, handleIds);
     }
 
     @Override
@@ -100,7 +95,7 @@ public class NodeManagerReactiveObject extends NodeManager {
             CallContext context,
             int handleId)
     {
-        return new UaObjectTransactionManager(this).getMethodCallTransaction(context, handleId);
+        return new UaReactiveObjectTransactionManager(this).getMethodCallTransaction(context, handleId);
     }
 
     @Override
@@ -108,6 +103,6 @@ public class NodeManagerReactiveObject extends NodeManager {
             HistoryReadContext context,
             int handleId)
     {
-        return new UaObjectTransactionManager(this).getHistoryReadTransaction(context, handleId);
+        return new UaReactiveObjectTransactionManager(this).getHistoryReadTransaction(context, handleId);
     }
 }
