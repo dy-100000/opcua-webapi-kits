@@ -5,7 +5,6 @@ import { NodeManager } from "../../addressspace/nodemanager/NodeManager";
 import { UaModellingRule } from "../../addressspace/nodes/UaModellingRule";
 import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
-import { DigitalTwinCallback } from "../callback/DigitalTwinCallback";
 import {
     BrowseObjectRequest,
     BrowseObjectResponse,
@@ -22,7 +21,7 @@ import { SubmodelDescriptor } from "../../types/digitaltwin/SubmodelDescriptor";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 import { SubmodelTypeBase } from "../submodel";
 
-export abstract class DigitalTwinType extends UaReactiveObjectType implements DigitalTwinCallback {
+export abstract class DigitalTwinType extends UaReactiveObjectType {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -34,10 +33,14 @@ export abstract class DigitalTwinType extends UaReactiveObjectType implements Di
         return this.nodeManager as DigitalTwinSpace;
     }
 
-    // Override to provide object descriptor
+    /**
+     * Override in subclasses to provide the descriptor for a digital twin instance.
+     */
     abstract onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>;
 
-    // Can be override to provide customized submodels
+    /**
+     * Optional override point to provide a custom submodel list.
+     */
     async onGetSubmodels(request: GetSubmodelsRequest): Promise<GetSubmodelsResponse> {
         const response = new GetSubmodelsResponse();
 
@@ -67,7 +70,10 @@ export abstract class DigitalTwinType extends UaReactiveObjectType implements Di
         return newObject;
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
@@ -79,7 +85,10 @@ export abstract class DigitalTwinType extends UaReactiveObjectType implements Di
         );
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to browse child submodels.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) {
             return new BrowseObjectResponse([], false);

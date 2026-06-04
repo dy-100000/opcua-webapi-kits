@@ -40,7 +40,6 @@ import {
 } from "../../service/message";
 import { UaBrowseAdditionalInfo, UaChildId, UaObjectId, UaReferenceDescriptor } from "../../types";
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
-import type { SubmodelCallback } from "../callback/SubmodelCallback";
 import { ElementType } from "../element/ElementType";
 import type { ElementCollectionType } from "../element/ElementCollectionType";
 import type { ElementListType } from "../element/ElementListType";
@@ -49,7 +48,7 @@ import type { ReferenceElementType } from "../element/ReferenceElementType";
 import { SubmodelTypeBase } from "./SubmodelTypeBase";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 
-export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
+export class SubmodelType extends SubmodelTypeBase {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -57,28 +56,38 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         super(typeId, displayName, twinSpace);
     }
 
-    // Override to read property values
+    /**
+     * Override in subclasses to read property values for this submodel.
+     */
     async onReadPropertyValues(_request: ReadPropertyValuesRequest): Promise<ReadPropertyValuesResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to update property value
+    /**
+     * Override in subclasses to write property values for this submodel.
+     */
     async onWritePropertyValues(_request: WritePropertyValuesRequest): Promise<WritePropertyValuesResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to process a method call
+    /**
+     * Override in subclasses to handle method calls for this submodel.
+     */
     async onInvokeOperation(_request: InvokeOperationRequest): Promise<InvokeOperationResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to read history data
+    /**
+     * Override in subclasses to read historical property values.
+     */
     async onReadPropertyHistoryValues(_request: ReadPropertyHistoryValuesRequest): Promise<ReadPropertyHistoryValuesResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Can be override to provide customized descriptor
+    /**
+     * Optional override point to provide a custom descriptor for this instance.
+     */
     async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
     {
         const instance = request.context.objectId.instance;
@@ -90,7 +99,9 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return new GetDescriptorResponse(instance.displayName, instance.description);
     }
 
-    // Can be override to provide customized elements
+    /**
+     * Optional override point to provide a custom child-element list.
+     */
     async onGetElements(_request: GetElementsRequest): Promise<GetElementsResponse>
     {
         const response = new GetElementsResponse();
@@ -105,18 +116,11 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         displayName: UaLocalizedText,
         description: UaLocalizedText,
         dataType: UaDataType,
-        writable: boolean,
-    ): UaVariable;
-    addPropertyElement(
-        name: string,
-        displayName: UaLocalizedText,
-        description: UaLocalizedText,
-        dataType: UaDataType,
-        writable: boolean,
+        writable: boolean = false,        
         historizing = false,
         valueRank: number = -1,
-        variableType: UaVariableType = UaVariableTypes.PropertyType,
         mandatory = true,
+        variableType: UaVariableType = UaVariableTypes.PropertyType        
     ): UaVariable {
         const newVariable = this.addVariableNode(name, displayName, dataType, writable, historizing, valueRank, variableType);
         if (description.text.length > 0) {
@@ -166,14 +170,20 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
         return new ReadObjectAttributeResponse(request.objectId.id, response.displayName, response.description);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to browse child nodes.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         const membersToReturn: Array<UaInstanceNode> = [];
@@ -216,7 +226,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return this.processBrowseObjectChildrenResponse(request.objectId, membersToReturn, response);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to browse member children.
+     * Do not call or override this method directly.
+     */
     override async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         const member = this.getMember(request.childId);
@@ -256,7 +269,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return new BrowseMemberResponse(childDescriptors);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read member attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
         let memberNode = this.getMember(request.childId.id);
 
@@ -271,7 +287,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return ReadMemberAttributeResponse.fromInstanceDeclaration(memberNode);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read variable values.
+     * Do not call or override this method directly.
+     */
     override async onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
         const propertyNames = new Set<string>();
         const subElementNames = new Set<UaChildId>();
@@ -293,7 +312,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return this.processReadVariableValueResponse(subElementNames, readResponse);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to write variable values.
+     * Do not call or override this method directly.
+     */
     override async onWriteVariablesValue(request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
         const elementValues = new Map<string, UaVariant>();
 
@@ -325,7 +347,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return new WriteVariableValueResponse(response.results);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to dispatch method calls.
+     * Do not call or override this method directly.
+     */
     override async onMethodCall(request: MethodCallRequest): Promise<MethodCallResponse> {
         console.log(`onMethodCall`);
 
@@ -337,7 +362,10 @@ export class SubmodelType extends SubmodelTypeBase implements SubmodelCallback {
         return new MethodCallResponse(response.outputArguments);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read history data.
+     * Do not call or override this method directly.
+     */
     override async onReadHistoryData(request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onReadPropertyHistoryValues(

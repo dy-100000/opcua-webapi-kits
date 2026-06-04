@@ -1,7 +1,6 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
 import { makeUaStatusCode, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaVariant } from "opcua-webapi-ts";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
-import { ElementListCallback } from "../callback/ElementListCallback";
 import {
     BrowseMemberRequest,
     BrowseMemberResponse,
@@ -39,7 +38,7 @@ import { ObjectServiceContext } from "../../types/digitaltwin";
 import { ElementType } from "./ElementType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 
-export abstract class ElementListType extends ElementType implements ElementListCallback {
+export abstract class ElementListType extends ElementType {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -47,55 +46,75 @@ export abstract class ElementListType extends ElementType implements ElementList
         super(typeId, displayName, UaObjectTypes.ElementListType, twinSpace);
     }
 
-    // Can be override to switch on onGetObjectElementList()
+    /**
+     * Optional override point to enable dynamic object-element listing.
+     */
     supportObjectElementList(): boolean { return false; }
 
-    // Override to return object elements
+    /**
+     * Override in subclasses to return dynamic object elements.
+     */
     async onGetObjectElementList(request: GetObjectElementListRequest): Promise<GetObjectElementListResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Can be override to switch on onGetPropertyElementList()
+    /**
+     * Optional override point to enable dynamic property-element listing.
+     */
     supportPropertyElementList(): boolean { return false; }
 
-    // Override to return property element list
+    /**
+     * Override in subclasses to return the property element list.
+     */
     async onGetPropertyElementList(request: GetPropertyElementListRequest): Promise<GetPropertyElementListResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to return property descriptor
+    /**
+     * Override in subclasses to return a property descriptor.
+     */
     async onGetPropertyDescriptor(request: GetPropertyDescriptorRequest): Promise<GetPropertyDescriptorResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to read property values
+    /**
+     * Override in subclasses to read property values.
+     */
     async onReadPropertyValues(request: ReadPropertyListValueRequest): Promise<ReadPropertyListValueResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
     
-    // Override to update property value
+    /**
+     * Override in subclasses to write property values.
+     */
     async onWritePropertyValues(request: WritePropertyListValuesRequest): Promise<WritePropertyListValuesResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to read history data
+    /**
+     * Override in subclasses to read historical property values.
+     */
     async onReadPropertyHistoryValues(request: ReadPropertyHistoryValuesRequest): Promise<ReadPropertyHistoryValuesResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Can be override to read sub property elements
+    /**
+     * Optional override point to return sub-elements of a property.
+     */
     async onGetPropertySubElements(request: GetPropertySubElementsRequest): Promise<GetPropertySubElementsResponse>
     {
         return new GetPropertySubElementsResponse();
     }
     
-    // Can be override to provide customized descriptor
+    /**
+     * Optional override point to provide a custom descriptor for this instance.
+     */
     async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
     {
         const instance = request.context.objectId.instance;
@@ -107,7 +126,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return new GetDescriptorResponse(instance.displayName, instance.description);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
@@ -119,7 +141,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         );
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to browse child nodes.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const context = new ObjectServiceContext(request.objectId);
 
@@ -153,7 +178,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return new BrowseObjectResponse([], false);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to browse member children.
+     * Do not call or override this method directly.
+     */
     override async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetPropertySubElements(
@@ -163,7 +191,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return this.processBrowseMemberChildren(response);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read member attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetPropertyDescriptor(
@@ -177,7 +208,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return this.processReadMemberAttributeResponse(request.childId, response);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read variable values.
+     * Do not call or override this method directly.
+     */
     override async onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
         const propertyIds = new Set<string>();
         const subPropertyIds = new Set<UaChildId>();
@@ -203,7 +237,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return response;
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to write variable values.
+     * Do not call or override this method directly.
+     */
     override async onWriteVariablesValue(request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
         const propertyIdAndValues = new Map<string, UaVariant>();
         const subPropertyIdsAndValues = new Map<UaChildId, UaVariant>();
@@ -225,7 +262,10 @@ export abstract class ElementListType extends ElementType implements ElementList
         return new WriteVariableValueResponse(response.results);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read history data.
+     * Do not call or override this method directly.
+     */
     override async onReadHistoryData(request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onReadPropertyHistoryValues(

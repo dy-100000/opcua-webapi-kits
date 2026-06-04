@@ -1,13 +1,26 @@
 {
   "name": "opcua-webapi-ts",
-  "version": "1.1.10",
+  "version": "1.1.12",
   "description": "Provides OPC UA WebAPI wrapper and client based on opcua-webapi-typescript",
   "author": "DingYan",
+  "license": "MIT",
   "main": "./dist/cjs/index.js",
-  "typings": "./dist/index.d.ts",
-  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    }
+  },
   "files": [
     "dist/**/*"
+  ],
+  "keywords": [
+    "opcua",
+    "opc-ua",
+    "webapi",
+    "typescript"
   ],
   "scripts": {
     "build": "tsc && tsc -p tsconfig.cjs.json",

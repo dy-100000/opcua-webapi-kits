@@ -5,11 +5,10 @@ import { UaReferenceTypes } from "../../addressspace/nodes/builtin/UaReferenceTy
 import { BrowseObjectRequest, BrowseObjectResponse, GetDescriptorRequest, GetDescriptorResponse, GetLinkRequest, GetLinkResponse, ReadObjectAttributeRequest, ReadObjectAttributeResponse } from "../../service/message";
 import { UaBrowseAdditionalInfo, UaReferenceDescriptor } from "../../types";
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
-import type { ReferenceElementCallback } from "../callback/ReferenceElementCallback";
 import { ElementType } from "./ElementType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 
-export abstract class ReferenceElementType extends ElementType implements ReferenceElementCallback {
+export abstract class ReferenceElementType extends ElementType {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -17,10 +16,14 @@ export abstract class ReferenceElementType extends ElementType implements Refere
         super(typeId, displayName, UaObjectTypes.ReferenceElementType, twinSpace);
     }
 
-    // Override to read linked objects
+    /**
+     * Override in subclasses to return linked objects.
+     */
     abstract onGetLinks(request: GetLinkRequest): Promise<GetLinkResponse>;
     
-    // Can be override to provide customized descriptor
+    /**
+     * Optional override point to provide a custom descriptor for this instance.
+     */
     async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
     {
         const instance = request.context.objectId.instance;
@@ -32,12 +35,18 @@ export abstract class ReferenceElementType extends ElementType implements Refere
         return new GetDescriptorResponse(instance.displayName, instance.description);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to advertise link support.
+     * Do not call or override this method directly.
+     */
     override isGetLinkSupported(): boolean {
         return true;
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
@@ -49,7 +58,10 @@ export abstract class ReferenceElementType extends ElementType implements Refere
         );
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to browse linked objects.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectLinks(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         if (!referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.References)) &&

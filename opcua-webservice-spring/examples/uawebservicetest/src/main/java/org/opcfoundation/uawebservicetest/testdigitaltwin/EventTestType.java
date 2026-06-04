@@ -26,7 +26,7 @@ public class EventTestType extends EventType {
             String message,
             String customized)
     {
-        EventData data = new EventData("eventId");
+        EventData data = new EventData(eventId);
         data.setTime(time);
         data.setMessage(message);
         data.setFieldData(Customized, Variant.ofString(customized));

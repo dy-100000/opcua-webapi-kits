@@ -1,9 +1,12 @@
 import { Attributes, BrowseDirection, NodeClass } from "opcua-webapi";
 import { ReferenceTypeIds, UaLocalizedText, UaNodeId, UaVariant, UaVariantType, VariableTypeIds } from "opcua-webapi-ts";
-import { UaInstanceNode } from "./UaInstanceNode";
 import { UaReference } from "./UaReference";
-import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
+import type { UaInstanceNode } from "./UaInstanceNode";
 import type { UaVariable } from "./UaVariable";
+
+function getUaReferenceTypes(): typeof import("./builtin/UaReferenceTypes").UaReferenceTypes {
+    return require("./builtin/UaReferenceTypes").UaReferenceTypes;
+}
 
 export abstract class UaNode {
     private readonly _nodeId: UaNodeId;
@@ -145,7 +148,7 @@ export abstract class UaNode {
     }
 
     protected addMemberNode(member: UaInstanceNode) {
-        
+        const UaReferenceTypes = getUaReferenceTypes();
         let reference = UaReferenceTypes.HasComponent;
 
         if (NodeClass.Variable == member.nodeClass) {

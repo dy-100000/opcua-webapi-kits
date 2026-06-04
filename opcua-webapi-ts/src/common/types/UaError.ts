@@ -14,4 +14,9 @@ export class UaError extends Error {
     {
         return this._statusCode;
     }
+
+    static from(code : number) : UaError
+    {
+        return new UaError(new UaStatusCode(code));
+    }
 }

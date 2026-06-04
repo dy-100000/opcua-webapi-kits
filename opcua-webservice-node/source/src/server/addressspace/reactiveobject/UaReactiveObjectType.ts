@@ -213,7 +213,7 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
     }
 
     async onBrowseObjectLinks(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+        return new BrowseObjectResponse([], false);
     }
 
     async onReadObjectAttributes(_request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {

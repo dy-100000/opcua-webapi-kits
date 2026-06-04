@@ -14,12 +14,6 @@ export class GetPropertyDescriptorResponse {
         description: UaLocalizedText,
         dataType: UaDataType,
         writable: boolean,
-    );
-    constructor(
-        displayName: UaLocalizedText,
-        description: UaLocalizedText,
-        dataType: UaDataType,
-        writable: boolean,
         historizing = false,
         valueRank: number = -1
     ) {

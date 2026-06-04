@@ -26,9 +26,33 @@ npm run build
 
 ### Publishing
 
-First build the package then run `npm publish`
+Build the package before publishing:
+
+```bash
+npm install
+npm run build
+```
+
+Then publish it to npm:
+
+```bash
+npm publish
+```
 
 ### Consuming
-npm install opcua-webapi-ts
 
-!Note: Currently, the source code of this module is on AtomGit platform, and it will be available on GitHub soon.
+```bash
+npm install opcua-webapi-ts
+```
+
+CommonJS:
+
+```js
+const { UaWebClient } = require("opcua-webapi-ts")
+```
+
+TypeScript:
+
+```ts
+import { UaWebClient } from "opcua-webapi-ts"
+```

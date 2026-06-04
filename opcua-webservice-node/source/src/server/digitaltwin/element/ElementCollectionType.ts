@@ -8,7 +8,6 @@ import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaVariable } from "../../addressspace/nodes/UaVariable";
 import type { UaVariableType } from "../../addressspace/nodes/UaVariableType";
 import { UaObjectTypes, UaVariableTypes } from "../../addressspace/nodes/builtin";
-import { ElementCollectionCallback } from "../callback/ElementCollectionCallback";
 
 import {
     BrowseMemberRequest,
@@ -48,7 +47,7 @@ import { EventElementType } from "./EventElementType";
 import { ReferenceElementType } from "./ReferenceElementType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 
-export abstract class ElementCollectionType extends ElementType implements ElementCollectionCallback {
+export abstract class ElementCollectionType extends ElementType {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -56,26 +55,39 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         super(typeId, displayName, UaObjectTypes.ElementCollectionType, twinSpace);
     }
 
-    // Override to read property values
-    abstract onReadPropertyValues(request: ReadPropertyValuesRequest): Promise<ReadPropertyValuesResponse>;
+    /**
+     * Override in subclasses to read property values for this element collection.
+     */
+    async onReadPropertyValues(request: ReadPropertyValuesRequest): Promise<ReadPropertyValuesResponse>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
     
-    // Override to update property value
+    /**
+     * Override in subclasses to write property values for this element collection.
+     */
     async onWritePropertyValues(request: WritePropertyValuesRequest): Promise<WritePropertyValuesResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
     
-    // Override to process a method call
+    /**
+     * Override in subclasses to handle method calls for this element collection.
+     */
     async onInvokeOperation(request: InvokeOperationRequest): Promise<InvokeOperationResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Override to read history data
+    /**
+     * Override in subclasses to read historical property values.
+     */
     async onReadPropertyHistoryValues(request: ReadPropertyHistoryValuesRequest): Promise<ReadPropertyHistoryValuesResponse>
     {        
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    // Can be override to provide customized descriptor
+    /**
+     * Optional override point to provide a custom descriptor for this instance.
+     */
     async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
     {
         const instance = request.context.objectId.instance;
@@ -87,7 +99,9 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return new GetDescriptorResponse(instance.displayName, instance.description);
     }
 
-    // Can be override to provide customized elements
+    /**
+     * Optional override point to provide a custom child-element list.
+     */
     async onGetElements(request: GetElementsRequest): Promise<GetElementsResponse>
     {        
         let response = new GetElementsResponse();
@@ -102,18 +116,11 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         displayName: UaLocalizedText,
         description: UaLocalizedText,
         dataType: UaDataType,
-        writable: boolean,
-    ): UaVariable;
-    addPropertyElement(
-        name: string,
-        displayName: UaLocalizedText,
-        description: UaLocalizedText,
-        dataType: UaDataType,
-        writable: boolean,
+        writable: boolean,        
         historizing = false,
         valueRank: number = -1,
-        variableType: UaVariableType = UaVariableTypes.PropertyType,
-        mandatory = true): UaVariable {
+        mandatory = true,
+        variableType: UaVariableType = UaVariableTypes.PropertyType): UaVariable {
         const newVariable = this.addVariableNode(name, displayName, dataType, writable, historizing, valueRank, variableType);
         if (description.text.length > 0) {
             newVariable.description = description;
@@ -162,14 +169,20 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
         return new ReadObjectAttributeResponse(request.objectId.id, response.displayName, response.description);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to browse child nodes.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         const membersToReturn: Array<UaInstanceNode> = [];
@@ -210,7 +223,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return this.processBrowseObjectChildrenResponse(request.objectId, membersToReturn, response);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to browse member children.
+     * Do not call or override this method directly.
+     */
     override async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         const member = this.getMember(request.childId);
@@ -250,7 +266,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return new BrowseMemberResponse(childDescriptors);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to read member attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
         let memberNode = this.getMember(request.childId.id);
 
@@ -265,7 +284,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return ReadMemberAttributeResponse.fromInstanceDeclaration(memberNode);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to read variable values.
+     * Do not call or override this method directly.
+     */
     override async onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
         const propertyNames = new Set<string>();
         const subElementNames = new Set<UaChildId>();
@@ -287,7 +309,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return this.processReadVariableValueResponse(subElementNames, readResponse);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to write variable values.
+     * Do not call or override this method directly.
+     */
     override async onWriteVariablesValue(request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
         const elementValues = new Map<string, UaVariant>();
 
@@ -319,7 +344,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return new WriteVariableValueResponse(response.results);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to dispatch method calls.
+     * Do not call or override this method directly.
+     */
     override async onMethodCall(request: MethodCallRequest): Promise<MethodCallResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onInvokeOperation(
@@ -329,7 +357,10 @@ export abstract class ElementCollectionType extends ElementType implements Eleme
         return new MethodCallResponse(response.outputArguments);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to read history data.
+     * Do not call or override this method directly.
+     */
     override async onReadHistoryData(request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onReadPropertyHistoryValues(

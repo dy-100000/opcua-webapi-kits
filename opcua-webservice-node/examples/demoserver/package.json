@@ -1,0 +1,29 @@
+{
+  "name": "opcua-weapi-demoserver",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/Application.ts",
+    "typecheck": "tsc --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:pull": "prisma db pull"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "opcua-webapi": "^1.504.2",
+    "opcua-webapi-ts": "^1.1.12",
+    "opcua-webservice-node": "^1.0.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
+    "dotenv": "^17.2.3",
+    "eslint": "^10.0.2",
+    "prisma": "^7.8.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

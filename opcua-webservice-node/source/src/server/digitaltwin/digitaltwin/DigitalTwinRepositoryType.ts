@@ -2,7 +2,6 @@ import { NodeClass, StatusCodes } from "opcua-webapi";
 import { makeUaStatusCode, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaNodeIdType } from "opcua-webapi-ts";
 import { UaReactiveObjectType } from "../../addressspace/reactiveobject/UaReactiveObjectType";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
-import { DigitalTwinDirectoryCallback } from "../callback/DigitalTwinDirectoryCallback";
 import {
     BrowseObjectRequest,
     BrowseObjectResponse,
@@ -15,7 +14,7 @@ import { UaBrowseAdditionalInfo, UaInstanceIdentifier, UaObjectIdentifier, UaRef
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 
-export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType implements DigitalTwinDirectoryCallback {
+export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
@@ -27,10 +26,15 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
         return this.nodeManager as DigitalTwinSpace;
     }
 
-    // Override to provide digital twin list
+    /**
+     * Override in subclasses to provide the digital twin list for this repository.
+     */
     abstract onGetDigitalTwinList(request: GetDigitalTwinListRequest): Promise<GetDigitalTwinListResponse>;
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to browse repository children.
+     * Do not call or override this method directly.
+     */
     override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
 
@@ -53,7 +57,10 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType imp
         return this.processBrowseObjectChildrenResponse(response);
     }
 
-    // Implementation of parent type methods, don't override 
+    /**
+     * Internal framework callback used by the base type to read repository attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const objectIdentifier = new UaInstanceIdentifier(
             new UaObjectIdentifier(this.nodeId.toString(), request.objectId.id, null),

@@ -1,42 +1,58 @@
-import { UaEventNotifier, UaHistoryEventFieldList, UaLocalizedText, UaReadEventDetails } from "opcua-webapi-ts";
+import { StatusCodes} from "opcua-webapi";
+import { UaLocalizedText, UaVariant, UaEventNotifier, UaReadEventDetails, UaError, makeUaStatusCode, UaHistoryEventFieldList } from "opcua-webapi-ts";
+import { ElementType } from "./ElementType";
+import { EventType } from "../event/EventType";
+import { DigitalTwinSpace } from "../DigitalTwinSpace";
+import { UaObjectTypes } from "../../addressspace/nodes/builtin/UaObjectTypes";
+import { UaObjectType } from "../../addressspace/nodes/UaObjectType";
 import { UaReference } from "../../addressspace/nodes/UaReference";
-import type { UaObjectType } from "../../addressspace/nodes/UaObjectType";
-import { UaObjectTypes } from "../../addressspace/nodes/builtin";
 import { UaReferenceTypes } from "../../addressspace/nodes/builtin/UaReferenceTypes";
-import { EventElementCallback } from "../callback/EventElementCallback";
-import {
-    GetDescriptorRequest,
+import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
+import { EventData } from "../event/EventData";
+import { ReadObjectAttributeRequest, 
+    ReadObjectAttributeResponse, 
+    GetDescriptorRequest, 
     GetDescriptorResponse,
-    ReadEventsRequest,
-    ReadEventsResponse,
     ReadHistoryEventRequest,
     ReadHistoryEventResponse,
-    ReadObjectAttributeRequest,
-    ReadObjectAttributeResponse,
-} from "../../service/message";
-import { ObjectServiceContext } from "../../types/digitaltwin";
-import { ElementType } from "./ElementType";
-import { DigitalTwinSpace } from "../DigitalTwinSpace";
+    ReadEventsRequest, 
+    ReadEventsResponse } from "../../service/message";
 
-export abstract class EventElementType extends ElementType implements EventElementCallback {
+export abstract class EventElementType extends ElementType {
+    private static readonly DefaultEventField: Set<string> = new Set<string>();
     private readonly eventType: UaObjectType;
 
     constructor(
         typeId: string,
         displayName: UaLocalizedText,
-        generateEventType: UaObjectType | null,
-        twinSpace: DigitalTwinSpace,
-    ) {
-        super(typeId, displayName, UaObjectTypes.EventElementType, twinSpace);
+        generateEventType: EventType | null,
+        twinSpace: DigitalTwinSpace) {
+        super(
+            typeId,
+            displayName,
+            UaObjectTypes.EventElementType,
+            twinSpace,
+        );
+
+        if (EventElementType.DefaultEventField.size === 0) {
+            EventElementType.DefaultEventField.add("EventId");
+            EventElementType.DefaultEventField.add("EventType");
+            EventElementType.DefaultEventField.add("Time");
+            EventElementType.DefaultEventField.add("Message");
+        }
 
         this.eventType = generateEventType ?? UaObjectTypes.BaseEventType;
         this.addReference(new UaReference(this.eventType, UaReferenceTypes.GeneratesEvent, true));
     }
 
-    // Override to read event history data
+    /**
+     * Override in subclasses to read historical events.
+     */
     abstract onReadEvents(request: ReadEventsRequest): Promise<ReadEventsResponse>;
-    
-    // Can be override to provide customized descriptor
+
+    /**
+     * Optional override point to provide a custom descriptor for this instance.
+     */
     async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
     {
         const instance = request.context.objectId.instance;
@@ -46,36 +62,71 @@ export abstract class EventElementType extends ElementType implements EventEleme
         }
 
         return new GetDescriptorResponse(instance.displayName, instance.description);
-    }
+    }    
 
-    // Implementation of parent type methods, don't override
+    /**
+     * Internal framework callback used by the base type to read object attributes.
+     * Do not call or override this method directly.
+     */
     override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
-
         return new ReadObjectAttributeResponse(
-            request.objectId.id,
-            response.displayName,
-            response.description,
-            UaEventNotifier.HistoryRead);
-
+            request.objectId.id, 
+            response.displayName, 
+            response.description, 
+            UaEventNotifier.SubscribeToEvents);
     }
 
-    // Implementation of parent type methods, don't override
-    override async onReadHistoryEvent(request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
+    /**
+     * Internal framework callback used by the base type to read history events.
+     * Do not call or override this method directly.
+     */
+    async onReadHistoryEvent(request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
         const context = new ObjectServiceContext(request.objectId);
-        const details = UaReadEventDetails.fromExtensionObject(request.details);
-        if (details === null) {
-            return new ReadHistoryEventResponse([], false);
-        }
+        let details = UaReadEventDetails.fromExtensionObject(request.details);
+        if (!details) { throw new UaError(makeUaStatusCode(StatusCodes.BadHistoryOperationUnsupported) ); }
 
         const readEventsRequest = ReadEventsRequest.getRequest(context, details, request.offset);
-        const response = await this.onReadEvents(readEventsRequest);
-
-        return this.processReadHistoryEventResponse(response);
+        const readEventResponse = await this.onReadEvents(readEventsRequest);
+        return this.processReadHistoryEventResponse(readEventsRequest, readEventResponse);
     }
 
-    private processReadHistoryEventResponse(response: ReadEventsResponse): ReadHistoryEventResponse {
-        return new ReadHistoryEventResponse(response.eventsData as Array<UaHistoryEventFieldList>, response.containsMoreData);
+    private processReadHistoryEventResponse(request: ReadEventsRequest, response: ReadEventsResponse): ReadHistoryEventResponse {
+        const select = request.select;
+        const eventFieldLists: UaHistoryEventFieldList[] = [];
+
+        for (const item of response.eventsData) {
+            const eventFieldsValue: UaVariant[] = [];
+
+            for (const field of select) {
+                const value = this.getFieldValue(field, item);
+                eventFieldsValue.push(value);
+            }
+
+            eventFieldLists.push(new UaHistoryEventFieldList(eventFieldsValue));
+        }
+
+        return new ReadHistoryEventResponse(eventFieldLists, response.containsMoreData);
+    }
+
+    private getFieldValue(fieldName: string, eventData: EventData): UaVariant {
+        if (EventElementType.DefaultEventField.has(fieldName)) {
+            switch (fieldName) {
+                case "EventId":
+                    return UaVariant.byteString(eventData.eventId);
+                case "EventType":
+                    return UaVariant.nodeId(this.eventType.nodeId);
+                case "Time":
+                    return UaVariant.dateTime(eventData.time ?? new Date());
+                case "Message":
+                    return UaVariant.localizedText(new UaLocalizedText(eventData.message));
+                default:
+                    return UaVariant.null();
+            }
+        } else {
+            const value = eventData.eventData.get(fieldName);
+            return value ?? UaVariant.null();
+        }
     }
 }

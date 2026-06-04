@@ -11,9 +11,7 @@ public interface UaReactiveObjectCallback {
     // Browse object child
     default CompletableFuture<BrowseObjectResponse> onBrowseObjectChildren(BrowseObjectRequest request)
     {
-        return CompletableFuture.supplyAsync(()-> {
-            return new BrowseObjectResponse(new ArrayList<>(),false);
-        });
+        return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(),false));
     }
 
     default CompletableFuture<BrowseMemberResponse> onBrowseMemberChildren(BrowseMemberRequest request)
@@ -34,9 +32,7 @@ public interface UaReactiveObjectCallback {
     // Browse object forward links
     default CompletableFuture<BrowseObjectResponse> onBrowseObjectLinks(BrowseObjectRequest request)
     {
-        return CompletableFuture.supplyAsync(()-> {
-            throw new UaRuntimeException(StatusCodes.Bad_NotImplemented);
-        });
+        return CompletableFuture.completedFuture(new BrowseObjectResponse(new ArrayList<>(),false));
     }
 
     // Read object attributes

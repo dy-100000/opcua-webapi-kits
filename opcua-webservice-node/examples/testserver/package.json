@@ -1,0 +1,23 @@
+{
+  "name": "opcua-weapi-testserver",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "dev": "tsx watch --clear-screen=false src/Application.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "opcua-webapi": "^1.504.2",
+    "opcua-webapi-ts": "^1.1.11",
+    "opcua-webservice-node": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^25.3.3",
+    "eslint": "^10.0.2",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

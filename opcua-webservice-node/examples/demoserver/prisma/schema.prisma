@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/connectors/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model department {
+  ID                 Int                  @id
+  Name               String               @db.VarChar(50)
+  Comment            String?              @db.VarChar(200)
+  ParentDepartmentId Int?
+  department         department?          @relation("departmentTodepartment", fields: [ParentDepartmentId], references: [ID], onDelete: Restrict, map: "FK_Department_ParentDepartment")
+  other_department   department[]         @relation("departmentTodepartment")
+  employeedepartment employeedepartment[]
+
+  @@index([ParentDepartmentId], map: "FK_Department_ParentDepartment")
+}
+
+model employee {
+  ID                 Int                  @id @default(autoincrement())
+  Name               String               @db.VarChar(64)
+  employeecheckin    employeecheckin[]
+  employeedepartment employeedepartment[]
+  employeeinfo       employeeinfo[]
+  employeeskill      employeeskill[]
+}
+
+model employeecheckin {
+  ID         Int      @id @default(autoincrement())
+  Time       DateTime @db.DateTime(0)
+  CheckIn    Boolean
+  Location   String   @db.VarChar(255)
+  Remark     String?  @db.VarChar(500)
+  EmployeeId Int
+  employee   employee @relation(fields: [EmployeeId], references: [ID], onDelete: Cascade, map: "FK_EmployeeCheckIn_Employee")
+
+  @@index([EmployeeId], map: "FK_EmployeeCheckIn_Employee")
+}
+
+model employeedepartment {
+  EmployeeId   Int
+  DepartmentId Int
+  department   department @relation(fields: [DepartmentId], references: [ID], map: "FK_EmployeeDepartment_Department")
+  employee     employee   @relation(fields: [EmployeeId], references: [ID], onDelete: Cascade, map: "FK_EmployeeDepartment_Employee")
+
+  @@id([EmployeeId, DepartmentId])
+  @@index([DepartmentId], map: "FK_EmployeeDepartment_Department")
+  @@index([EmployeeId], map: "FK_EmployeeDepartment_Employee")
+}
+
+model employeeinfo {
+  ID          Int      @id @default(autoincrement())
+  Sex         Boolean
+  Birthday    DateTime @db.DateTime(0)
+  PhoneNumber String   @db.VarChar(16)
+  Address     String   @db.VarChar(64)
+  StartTime   DateTime @db.DateTime(0)
+  Salary      Int
+  EmployeeId  Int
+  employee    employee @relation(fields: [EmployeeId], references: [ID], onDelete: Cascade, map: "FK_EmployeeInfo_Employee")
+
+  @@index([EmployeeId], map: "FK_EmployeeInfo_Employee")
+}
+
+model employeeskill {
+  EmployeeId Int
+  SkillId    Int
+  employee   employee @relation(fields: [EmployeeId], references: [ID], onDelete: Cascade, map: "FK_EmployeeSkill_Employee")
+  skill      skill    @relation(fields: [SkillId], references: [ID], onDelete: Cascade, map: "FK_EmployeeSkill_Skill")
+
+  @@id([EmployeeId, SkillId])
+  @@index([EmployeeId], map: "FK_EmployeeSkill_Employee")
+  @@index([SkillId], map: "FK_EmployeeSkill_Skill")
+}
+
+model skill {
+  ID               Int             @id @default(autoincrement())
+  SkillName        String          @db.VarChar(64)
+  Description      String?         @db.VarChar(200)
+  Level            Int
+  Category         String          @db.VarChar(32)
+  YearOfExperience Int
+  employeeskill    employeeskill[]
+}

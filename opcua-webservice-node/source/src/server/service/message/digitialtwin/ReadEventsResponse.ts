@@ -1,7 +1,7 @@
-import { UaHistoryEventFieldList } from "opcua-webapi-ts";
+import { EventData } from "../../..";
 
 export class ReadEventsResponse {
-    private readonly _eventsData: Array<UaHistoryEventFieldList>;
+    private readonly _eventsData: Array<EventData>;
     private _containsMoreData: boolean;
 
     constructor() {
@@ -9,11 +9,11 @@ export class ReadEventsResponse {
         this._containsMoreData = false;
     }
 
-    addEventData(eventData: UaHistoryEventFieldList): void {
+    addEventData(eventData: EventData): void {
         this._eventsData.push(eventData);
     }
 
-    get eventsData(): Array<UaHistoryEventFieldList> {
+    get eventsData(): Array<EventData> {
         return this._eventsData;
     }
 

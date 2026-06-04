@@ -1,4 +1,3 @@
-export * from "./callback"
 export * from "./event"
 export * from "./digitaltwin"
 export * from "./submodel"

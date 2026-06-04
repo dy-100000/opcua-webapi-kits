@@ -1,5 +1,5 @@
-import { Configuration, NodeClass } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId } from "../src";
+import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
 import { UaChildBrowser, UaDataTypeDictionary, UaLinkBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
@@ -23,7 +23,7 @@ class Test {
     {
         try
         {
-            await this.testMethodCall();
+            await this.testHistoryReadEvent();
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -35,7 +35,7 @@ class Test {
             await this.testWriteValues();
             await this.testMethodCall(); 
             await this.testHistoryReadRawData();
-            await this.testHistroryReadEvent();
+            await this.testHistoryReadEvent();
             await this.testGetGeneratedEvent();
             await this.testDataTypeDictionary();    
             await this.testReferenceTypeDictionary();
@@ -91,7 +91,7 @@ class Test {
     {
         console.log("testReadVariableAttribute");
         
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtRWxlbWVudExpc3QifSwiY2kiOnsicCI6IjAifX0=");
         let attribute = await this.client.readVariableAttributes([nodeId]);
         console.log(attribute);
     }
@@ -129,15 +129,20 @@ class Test {
     {
         console.log("testReadValues");
 
-        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIiwicDIiOiJFVVJhbmdlIn19");
+        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkJvb2wifX0=");
+        let nodeId2 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkRvdWJsZSJ9fQ==");
+        let nodeId3 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IlJhbmdlIn19");
 
         let nodeIds : Array<UaNodeId> = [
-            nodeId1
+            nodeId1,
+            nodeId2,
+            nodeId3,
+            nodeId1,
+            nodeId2,
+            nodeId3
         ];
 
-        let values = await this.client.readValues(nodeIds);
-        
-        
+        let values = await this.client.readValues(nodeIds);   
 
         for (let item of values)
         {
@@ -183,15 +188,31 @@ class Test {
         }
     }
 
-    async testWriteValues()
+    async testWriteValue()
     {
-        console.log("testWriteValues");
+        console.log("testWriteValue");
 
         let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiRG91YmxlIn19");
         let value = UaVariant.double(20);
         //let value = UaVariant.extensionObject(new UaRange(15,50).toExtensionObject())
 
         await this.client.writeValue(nodeId, value);
+    }
+
+    async testWriteValues()
+    {
+        console.log("testWriteValues");
+
+        let nodeId1 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkJvb2wifX0=");
+        let nodeId2 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IkRvdWJsZSJ9fQ==");
+        let nodeId3 = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifSwiY2kiOnsicCI6IlJhbmdlIn19");
+
+        let nodesToWrite: Array<UaWriteValue> = [];
+        nodesToWrite.push(new UaWriteValue(nodeId1, UaVariant.boolean(true)));
+        nodesToWrite.push(new UaWriteValue(nodeId2, UaVariant.double(20)));
+        nodesToWrite.push(new UaWriteValue(nodeId3, UaVariant.extensionObject(new UaRange(15,50).toExtensionObject())));
+
+        await this.client.write(nodesToWrite);
     }
 
     async testMethodCall()
@@ -304,15 +325,15 @@ class Test {
     {
         console.log("testHistoryReadEvent");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLVNlbnNvcnMifX0=");
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGF0YVN1Ym1vZGVsVHlwZS1BdHRlbmRhbmNlIn19");
         let startTime = new Date("2026-01-05T07:00:00");
-        let endTime = new Date("2026-01-07T07:00:00");
+        let endTime = new Date("2026-06-07T07:00:00");
 
         let filters : Array<UaQueryFilter> = [
             new UaQueryFilter("CheckIn", UaQueryFilterType.Equals, UaVariant.boolean(true))
         ];
 
-        let select = ["EventId","EventType","Time","Message",];
+        let select = ["EventId","EventType","Time","Message"];
         let where : UaQuery = new UaQuery(filters);
 
         let historyData = await this.client.historyReadEvent(
@@ -320,7 +341,7 @@ class Test {
             startTime,
             endTime,
             select,
-            where,
+            null,
             15,
             null,            
             true);

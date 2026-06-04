@@ -1,1 +1,9 @@
 .idea
+/opcua-webservice-node/examples/testserver/node_modules
+/opcua-webservice-node/examples/testserver/package-lock.json
+/opcua-webservice-node/examples/testserver/combined.log
+/opcua-webservice-node/examples/testserver/error.log
+/opcua-webservice-node/examples/demoserver/package-lock.json
+/opcua-webservice-node/examples/demoserver/node_modules
+/opcua-webservice-node/examples/demoserver/combined.log
+/opcua-webservice-node/examples/demoserver/error.log

@@ -127,6 +127,4 @@ public class SkillClassType extends ElementCollectionType {
             throw new UaRuntimeException(StatusCodes.Bad_NodeIdUnknown);
         }
     }
-
-
 }

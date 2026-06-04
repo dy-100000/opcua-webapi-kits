@@ -28,6 +28,6 @@ export class WriteVariableValueResponse {
             return id;
         }
 
-        return id.serialize();
+        return id.toString();
     }
 }

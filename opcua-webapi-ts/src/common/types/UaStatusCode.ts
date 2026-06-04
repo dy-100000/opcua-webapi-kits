@@ -46,16 +46,6 @@ export class UaStatusCode {
         return this.checkBit(extraStatusCodeBits.Overflow);
     }
 
-    /** returns true if the semanticChange bit is set */
-    public get hasSemanticChangedBit(): boolean {
-        return this.checkBit(extraStatusCodeBits.SemanticChanged);
-    }
-
-    /** returns true if the structureChange bit is set */
-    public get hasStructureChangedBit(): boolean {
-        return this.checkBit(extraStatusCodeBits.StructureChanged);
-    }
-
     public equals(other: UaStatusCode): boolean {
         return this.value === other.value;
     }
@@ -74,6 +64,10 @@ export class UaStatusCode {
 
     public isUncertain(): boolean {
         return (this.value < 0x80000000 && this.value >= 0x10000000);
+    }
+
+    public static from(code: number): UaStatusCode {
+        return new UaStatusCode(code);
     }
 }
 
@@ -94,5 +88,5 @@ export const extraStatusCodeBits: { [key: string]: number } = {
 
 export function makeUaStatusCode(code? : number) : UaStatusCode
 {
-    return new UaStatusCode(code);
+    return UaStatusCode.from(code);
 }

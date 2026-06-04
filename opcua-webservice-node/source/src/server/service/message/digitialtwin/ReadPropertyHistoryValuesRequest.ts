@@ -50,7 +50,7 @@ export class ReadPropertyHistoryValuesRequest {
             return null;
         }
 
-        return this._details.body;
+        return UaReadProcessedDetails.fromExtensionObject(this._details);
     }
 
     get context(): ObjectServiceContext {
