@@ -1,0 +1,18 @@
+{
+  "name": "opcua-webapi",
+  "version": "1.504.2",
+  "description": "Provides HTTPS based access to an OPC UA server. Adding AddNode/DeleteNode/AddReference/DeleteReference APIs",
+  "author": "OPC Foundation(Modified by DingYan)",
+  "main": "./dist/cjs/index.js",
+  "typings": "./dist/index.d.ts",
+  "module": "./dist/index.js",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc && tsc -p tsconfig.cjs.json",
+    "prepare": "npm run build",
+    "generate": "openapi-generator-cli generate -i opc.ua.openapi.allservices.json -g typescript-axios -o . --skip-validate-spec"
+  },
+  "devDependencies": {
+    "typescript": "^4.0 || ^5.0"
+  }
+}
