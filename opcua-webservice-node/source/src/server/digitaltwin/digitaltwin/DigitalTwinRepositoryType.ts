@@ -40,6 +40,7 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
 
         if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) ||            
             (!referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HierarchicalReferences)) &&
+             !referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.References)) &&
              !referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.Organizes))))
         {
             return new BrowseObjectResponse([], false);

@@ -13,7 +13,7 @@
     "@prisma/client": "^7.8.0",
     "opcua-webapi": "^1.504.2",
     "opcua-webapi-ts": "^1.1.12",
-    "opcua-webservice-node": "^1.0.2"
+    "opcua-webservice-node": "^1.0.3"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

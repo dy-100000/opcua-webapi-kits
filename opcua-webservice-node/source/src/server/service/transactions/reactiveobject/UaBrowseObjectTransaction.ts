@@ -46,12 +46,16 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
                 this.addTypeDefinitionReference(
                     this.objectType.nodeId,
                     this.objectType.browseName,
-                    this.objectType.displayName,
-                );
+                    this.objectType.displayName);
                 this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_DEFINITION_TASK);
             }
 
             this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_PARENT_TASK);
+
+            if (!this.objectType.isGetLinkSupported())
+            {
+                this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_LINK_TASK);
+            }
 
             if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_LINK_TASK)) {
                 const response = await this.objectType.onBrowseObjectLinks(request);
