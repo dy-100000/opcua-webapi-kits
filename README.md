@@ -15,7 +15,7 @@ Developers can access it directly through a browser from the official OPC Founda
 https://opcua-webbrowser-tool.opcfoundation.cn/
 
 ### 4. opcua-webservice-node
-Functionally consistent with opcua-webservice-spring. It is currently under development and will be gradually improved in subsequent updates.
+Functionally consistent with opcua-webservice-spring. It is completed since 2026/06/08.
 
 ### Tutorial video:
 ### 1.English: https://www.youtube.com/watch?v=jUCcu9lo1GE
