@@ -63,11 +63,11 @@ export function BrowsePathFromJSONTyped(json: any, ignoreDiscriminator: boolean)
     };
 }
 
-  export function BrowsePathToJSON(json: any): BrowsePath {
-      return BrowsePathToJSONTyped(json, false);
-  }
+export function BrowsePathToJSON(json: any): BrowsePath {
+    return BrowsePathToJSONTyped(json, false);
+}
 
-  export function BrowsePathToJSONTyped(value?: BrowsePath | null, ignoreDiscriminator: boolean = false): any {
+export function BrowsePathToJSONTyped(value?: BrowsePath | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

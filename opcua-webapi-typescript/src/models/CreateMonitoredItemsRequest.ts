@@ -84,11 +84,11 @@ export function CreateMonitoredItemsRequestFromJSONTyped(json: any, ignoreDiscri
     };
 }
 
-  export function CreateMonitoredItemsRequestToJSON(json: any): CreateMonitoredItemsRequest {
-      return CreateMonitoredItemsRequestToJSONTyped(json, false);
-  }
+export function CreateMonitoredItemsRequestToJSON(json: any): CreateMonitoredItemsRequest {
+    return CreateMonitoredItemsRequestToJSONTyped(json, false);
+}
 
-  export function CreateMonitoredItemsRequestToJSONTyped(value?: CreateMonitoredItemsRequest | null, ignoreDiscriminator: boolean = false): any {
+export function CreateMonitoredItemsRequestToJSONTyped(value?: CreateMonitoredItemsRequest | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

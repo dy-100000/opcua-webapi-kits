@@ -56,11 +56,11 @@ export function RelativePathFromJSONTyped(json: any, ignoreDiscriminator: boolea
     };
 }
 
-  export function RelativePathToJSON(json: any): RelativePath {
-      return RelativePathToJSONTyped(json, false);
-  }
+export function RelativePathToJSON(json: any): RelativePath {
+    return RelativePathToJSONTyped(json, false);
+}
 
-  export function RelativePathToJSONTyped(value?: RelativePath | null, ignoreDiscriminator: boolean = false): any {
+export function RelativePathToJSONTyped(value?: RelativePath | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

@@ -1,5 +1,5 @@
 import { Attributes, BrowseDirection, NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaDataType, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaReferenceType, UaVariable, VariableTypeIds, parseUaNodeId, UaMethod, UaBrowseDescription, UaReferenceDescription, UaReadValueId, ReferenceTypeIds, UaReference, UaDataValue, UaVariableAttributes } from "../../common";
+import { makeUaStatusCode, UaDataType, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaReferenceType, UaVariable, VariableTypeIds, parseUaNodeId, UaMethod, UaBrowseDescription, UaReadValueId, ReferenceTypeIds, UaReference, UaDataValue, OpcUaVariableAttributes } from "../../common";
 import { UaWebClient } from "../UaWebClient"
 
 type CpToBrowse = {
@@ -681,7 +681,7 @@ export class UaNodeReader {
 
         if (0 == nodeIds.length) return;
         
-        let results : Array<UaVariableAttributes> = [];
+        let results : Array<OpcUaVariableAttributes> = [];
         
         if (this._returnAttributes)
         {

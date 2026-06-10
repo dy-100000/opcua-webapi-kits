@@ -98,11 +98,11 @@ export function ReferenceDescriptionFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-  export function ReferenceDescriptionToJSON(json: any): ReferenceDescription {
-      return ReferenceDescriptionToJSONTyped(json, false);
-  }
+export function ReferenceDescriptionToJSON(json: any): ReferenceDescription {
+    return ReferenceDescriptionToJSONTyped(json, false);
+}
 
-  export function ReferenceDescriptionToJSONTyped(value?: ReferenceDescription | null, ignoreDiscriminator: boolean = false): any {
+export function ReferenceDescriptionToJSONTyped(value?: ReferenceDescription | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

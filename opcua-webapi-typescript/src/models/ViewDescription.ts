@@ -62,11 +62,11 @@ export function ViewDescriptionFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-  export function ViewDescriptionToJSON(json: any): ViewDescription {
-      return ViewDescriptionToJSONTyped(json, false);
-  }
+export function ViewDescriptionToJSON(json: any): ViewDescription {
+    return ViewDescriptionToJSONTyped(json, false);
+}
 
-  export function ViewDescriptionToJSONTyped(value?: ViewDescription | null, ignoreDiscriminator: boolean = false): any {
+export function ViewDescriptionToJSONTyped(value?: ViewDescription | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

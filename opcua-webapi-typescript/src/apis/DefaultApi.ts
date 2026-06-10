@@ -17,6 +17,10 @@ import * as runtime from '../runtime';
 import type {
   ActivateSessionRequest,
   ActivateSessionResponse,
+  AddNodesRequest,
+  AddNodesResponse,
+  AddReferencesRequest,
+  AddReferencesResponse,
   BrowseNextRequest,
   BrowseNextResponse,
   BrowseRequest,
@@ -35,6 +39,10 @@ import type {
   CreateSubscriptionResponse,
   DeleteMonitoredItemsRequest,
   DeleteMonitoredItemsResponse,
+  DeleteNodesRequest,
+  DeleteNodesResponse,
+  DeleteReferencesRequest,
+  DeleteReferencesResponse,
   DeleteSubscriptionsRequest,
   DeleteSubscriptionsResponse,
   FindServersRequest,
@@ -77,6 +85,14 @@ import {
     ActivateSessionRequestToJSON,
     ActivateSessionResponseFromJSON,
     ActivateSessionResponseToJSON,
+    AddNodesRequestFromJSON,
+    AddNodesRequestToJSON,
+    AddNodesResponseFromJSON,
+    AddNodesResponseToJSON,
+    AddReferencesRequestFromJSON,
+    AddReferencesRequestToJSON,
+    AddReferencesResponseFromJSON,
+    AddReferencesResponseToJSON,
     BrowseNextRequestFromJSON,
     BrowseNextRequestToJSON,
     BrowseNextResponseFromJSON,
@@ -113,6 +129,14 @@ import {
     DeleteMonitoredItemsRequestToJSON,
     DeleteMonitoredItemsResponseFromJSON,
     DeleteMonitoredItemsResponseToJSON,
+    DeleteNodesRequestFromJSON,
+    DeleteNodesRequestToJSON,
+    DeleteNodesResponseFromJSON,
+    DeleteNodesResponseToJSON,
+    DeleteReferencesRequestFromJSON,
+    DeleteReferencesRequestToJSON,
+    DeleteReferencesResponseFromJSON,
+    DeleteReferencesResponseToJSON,
     DeleteSubscriptionsRequestFromJSON,
     DeleteSubscriptionsRequestToJSON,
     DeleteSubscriptionsResponseFromJSON,
@@ -191,6 +215,14 @@ export interface ActivateSessionOperationRequest {
     activateSessionRequest?: ActivateSessionRequest;
 }
 
+export interface AddNodesOperationRequest {
+    addNodesRequest?: AddNodesRequest;
+}
+
+export interface AddReferencesOperationRequest {
+    addReferencesRequest?: AddReferencesRequest;
+}
+
 export interface BrowseOperationRequest {
     browseRequest?: BrowseRequest;
 }
@@ -225,6 +257,14 @@ export interface CreateSubscriptionOperationRequest {
 
 export interface DeleteMonitoredItemsOperationRequest {
     deleteMonitoredItemsRequest?: DeleteMonitoredItemsRequest;
+}
+
+export interface DeleteNodesOperationRequest {
+    deleteNodesRequest?: DeleteNodesRequest;
+}
+
+export interface DeleteReferencesOperationRequest {
+    deleteReferencesRequest?: DeleteReferencesRequest;
 }
 
 export interface DeleteSubscriptionsOperationRequest {
@@ -313,8 +353,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/activatesession`;
+
         const response = await this.request({
-            path: `/activatesession`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -333,6 +376,66 @@ export class DefaultApi extends runtime.BaseAPI {
 
     /**
      */
+    async addNodesRaw(requestParameters: AddNodesOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AddNodesResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/addnodes`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddNodesRequestToJSON(requestParameters['addNodesRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AddNodesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async addNodes(requestParameters: AddNodesOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AddNodesResponse> {
+        const response = await this.addNodesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async addReferencesRaw(requestParameters: AddReferencesOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<AddReferencesResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/addreferences`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: AddReferencesRequestToJSON(requestParameters['addReferencesRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => AddReferencesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async addReferences(requestParameters: AddReferencesOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<AddReferencesResponse> {
+        const response = await this.addReferencesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async browseRaw(requestParameters: BrowseOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<BrowseResponse>> {
         const queryParameters: any = {};
 
@@ -340,8 +443,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/browse`;
+
         const response = await this.request({
-            path: `/browse`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -367,8 +473,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/browsenext`;
+
         const response = await this.request({
-            path: `/browsenext`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -394,8 +503,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/call`;
+
         const response = await this.request({
-            path: `/call`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -421,8 +533,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/cancel`;
+
         const response = await this.request({
-            path: `/cancel`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -448,8 +563,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/closesession`;
+
         const response = await this.request({
-            path: `/closesession`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -475,8 +593,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/createmonitoreditems`;
+
         const response = await this.request({
-            path: `/createmonitoreditems`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -502,8 +623,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/createsession`;
+
         const response = await this.request({
-            path: `/createsession`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -529,8 +653,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/createsubscription`;
+
         const response = await this.request({
-            path: `/createsubscription`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -556,8 +683,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/deletemonitoreditems`;
+
         const response = await this.request({
-            path: `/deletemonitoreditems`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -576,6 +706,66 @@ export class DefaultApi extends runtime.BaseAPI {
 
     /**
      */
+    async deleteNodesRaw(requestParameters: DeleteNodesOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteNodesResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/deletenodes`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DeleteNodesRequestToJSON(requestParameters['deleteNodesRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DeleteNodesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async deleteNodes(requestParameters: DeleteNodesOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeleteNodesResponse> {
+        const response = await this.deleteNodesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
+    async deleteReferencesRaw(requestParameters: DeleteReferencesOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteReferencesResponse>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        headerParameters['Content-Type'] = 'application/json';
+
+
+        let urlPath = `/deletereferences`;
+
+        const response = await this.request({
+            path: urlPath,
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DeleteReferencesRequestToJSON(requestParameters['deleteReferencesRequest']),
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => DeleteReferencesResponseFromJSON(jsonValue));
+    }
+
+    /**
+     */
+    async deleteReferences(requestParameters: DeleteReferencesOperationRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DeleteReferencesResponse> {
+        const response = await this.deleteReferencesRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     */
     async deleteSubscriptionsRaw(requestParameters: DeleteSubscriptionsOperationRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DeleteSubscriptionsResponse>> {
         const queryParameters: any = {};
 
@@ -583,8 +773,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/deletesubscriptions`;
+
         const response = await this.request({
-            path: `/deletesubscriptions`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -610,8 +803,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/findservers`;
+
         const response = await this.request({
-            path: `/findservers`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -637,8 +833,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/getendpoints`;
+
         const response = await this.request({
-            path: `/getendpoints`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -664,8 +863,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/historyread`;
+
         const response = await this.request({
-            path: `/historyread`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -691,8 +893,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/historyupdate`;
+
         const response = await this.request({
-            path: `/historyupdate`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -718,8 +923,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/modifymonitoreditems`;
+
         const response = await this.request({
-            path: `/modifymonitoreditems`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -745,8 +953,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/modifysubscription`;
+
         const response = await this.request({
-            path: `/modifysubscription`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -772,8 +983,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/publish`;
+
         const response = await this.request({
-            path: `/publish`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -799,8 +1013,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/read`;
+
         const response = await this.request({
-            path: `/read`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -826,8 +1043,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/registernodes`;
+
         const response = await this.request({
-            path: `/registernodes`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -853,8 +1073,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/republish`;
+
         const response = await this.request({
-            path: `/republish`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -880,8 +1103,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/setmonitoringmode`;
+
         const response = await this.request({
-            path: `/setmonitoringmode`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -907,8 +1133,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/setpublishingmode`;
+
         const response = await this.request({
-            path: `/setpublishingmode`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -934,8 +1163,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/settriggering`;
+
         const response = await this.request({
-            path: `/settriggering`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -961,8 +1193,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/transfersubscriptions`;
+
         const response = await this.request({
-            path: `/transfersubscriptions`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -988,8 +1223,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/translate`;
+
         const response = await this.request({
-            path: `/translate`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -1015,8 +1253,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/unregisternodes`;
+
         const response = await this.request({
-            path: `/unregisternodes`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
@@ -1042,8 +1283,11 @@ export class DefaultApi extends runtime.BaseAPI {
 
         headerParameters['Content-Type'] = 'application/json';
 
+
+        let urlPath = `/write`;
+
         const response = await this.request({
-            path: `/write`,
+            path: urlPath,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

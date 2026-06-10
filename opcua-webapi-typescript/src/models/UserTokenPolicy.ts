@@ -76,11 +76,11 @@ export function UserTokenPolicyFromJSONTyped(json: any, ignoreDiscriminator: boo
     };
 }
 
-  export function UserTokenPolicyToJSON(json: any): UserTokenPolicy {
-      return UserTokenPolicyToJSONTyped(json, false);
-  }
+export function UserTokenPolicyToJSON(json: any): UserTokenPolicy {
+    return UserTokenPolicyToJSONTyped(json, false);
+}
 
-  export function UserTokenPolicyToJSONTyped(value?: UserTokenPolicy | null, ignoreDiscriminator: boolean = false): any {
+export function UserTokenPolicyToJSONTyped(value?: UserTokenPolicy | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

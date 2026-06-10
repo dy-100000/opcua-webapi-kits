@@ -7,8 +7,17 @@ import { ViewDescription, BrowseDescription, RequestHeader, BrowseRequestFromJSO
     StatusCodes,
     Variant,
     HistoryReadRequestFromJSON,
-    HistoryReadValueId } from "opcua-webapi";
-import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttributes, UaVariableAttributes, UaNodeId, UaDataValue, 
+    HistoryReadValueId, 
+    ReadResponse,
+    AddNodesRequestFromJSON,
+    AddNodesItem,
+    DeleteNodesItem,
+    DeleteNodesRequestFromJSON,
+    AddReferencesRequestFromJSON,
+    AddReferencesItem,
+    DeleteReferencesRequestFromJSON,
+    DeleteReferencesItem} from "opcua-webapi";
+import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, OpcUaNodeAttributes, OpcUaVariableAttributes, UaNodeId, UaDataValue, 
     UaVariantType, UaVariant, UaStatusCode, UaArgument, UaArrayType, UaExtensionObject, 
     UaHistoryDataResult,
     UaHistoryData,
@@ -16,7 +25,6 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaReadEventDetails,
     UaEventFilter,
     UaSimpleAttributeOperand,
-    UaContentFilter,
     UaObjectAttributes,
     UaMethodArguments,
     UaApplicationDescriptor,
@@ -28,7 +36,14 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, UaNodeAttri
     UaHistoryReadResult,
     UaLocalizedText,
     UaReadProcessedDetails,
-    ObjectIds} from "../common"
+    ObjectIds,
+    UaAddNodesItem,
+    UaAddNodesResult,
+    OpcUaObjectAttributes,
+    UaDeleteNodesItem,
+    UaAddReferencesItem,
+    UaDeleteReferencesItem,
+    UaExpandedNodeId} from "../common"
 import { UaClientConfiguration, UaClientParameters, UaWebClientApi, UaWebClientNative } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult, UaCallMethodRequest, UaCallMethodResult} from "../common";
 
@@ -146,7 +161,7 @@ export class UaWebClient
         if (results[0].isNotGood()) throw new UaError(results[0]);
     }
 
-    async readNodeAttributes(nodeId : UaNodeId, returnDescription? : boolean) : Promise<UaNodeAttributes>
+    async readNodeAttributes(nodeId : UaNodeId, returnDescription? : boolean) : Promise<OpcUaNodeAttributes>
     {        
         let nodesToRead: Array<UaReadValueId> = [
             new UaReadValueId(nodeId, Attributes.NodeClass),
@@ -182,7 +197,7 @@ export class UaWebClient
                 results[4].statusCode.isGood() &&
                 results[4].value.type == UaVariantType.LocalizedText) ? results[4].value : undefined;
 
-        let ret : UaNodeAttributes = {
+        let ret : OpcUaNodeAttributes = {
                 nodeClass : nodeClassValue.value,
                 browseName: browseNameValue.value,
                 displayName: displayNameValue.value,
@@ -193,7 +208,7 @@ export class UaWebClient
         return ret;
     }
     
-    async readVariableAttributes(nodeIds : Array<UaNodeId>) : Promise<Array<UaVariableAttributes>>
+    async readVariableAttributes(nodeIds : Array<UaNodeId>) : Promise<Array<OpcUaVariableAttributes>>
     {
         if (nodeIds.length == 0) return [];
 
@@ -212,7 +227,7 @@ export class UaWebClient
         let results = await this.read(nodesToRead);
 
         let dataValues : Array<UaDataValue> = [];
-        let ret : Array<UaVariableAttributes> = [];
+        let ret : Array<OpcUaVariableAttributes> = [];
 
         for (let item of results)
         {
@@ -314,7 +329,7 @@ export class UaWebClient
         return ret;
     }
 
-    async readObjectAttributes(nodeId: UaNodeId) : Promise<UaObjectAttributes>
+    async readObjectAttributes(nodeId: UaNodeId) : Promise<OpcUaObjectAttributes>
     {
         let nodesToRead: Array<UaReadValueId> = [
             new UaReadValueId(nodeId, Attributes.EventNotifier)
@@ -327,7 +342,7 @@ export class UaWebClient
         let eventNotifierValue = results[0].value;
         if (UaVariantType.Byte != eventNotifierValue.type) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
                 
-        let ret : UaObjectAttributes = {
+        let ret : OpcUaObjectAttributes = {
                 eventNotifier : eventNotifierValue.value };
 
         return ret;
@@ -549,6 +564,38 @@ export class UaWebClient
         return ret;
     }
  
+    async addObject(
+        parentNodeId: UaNodeId,
+        typeDefinitionNodeId: UaNodeId,
+        displayName: UaLocalizedText,
+        browseName?: string,
+        referenceTypeId?: UaNodeId) : Promise<UaNodeId>
+    {
+        let objectAttributes = new UaObjectAttributes(displayName);
+        let extensionObject = objectAttributes.toExtensionObject();
+
+        let nodeToAdd = new UaAddNodesItem(
+            new UaExpandedNodeId(parentNodeId),
+            NodeClass.Object,
+            extensionObject,
+            new UaExpandedNodeId(typeDefinitionNodeId),
+            null,
+            browseName,
+            referenceTypeId);
+        
+        let results = await this.addNodes([nodeToAdd]);
+        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
+        let newNodeId = results[0].addedNodeId;
+        return newNodeId;
+    }
+
+    async deleteNode(nodeId: UaNodeId) : Promise<void>
+    {
+        let nodeToDelete = new UaDeleteNodesItem(nodeId);
+        let results = await this.deleteNodes([nodeToDelete]);
+        if (results[0].isNotGood()) throw new UaError(results[0]);        
+    }
+
     // Native APIs
     async browse(
         nodesToBrowse: Array<UaBrowseDescription>, 
@@ -689,7 +736,7 @@ export class UaWebClient
 
         let timeout = this.requestTimeout(additionalParameters);
 
-        let response;
+        let response : ReadResponse;
         if (timeout > 0 && typeof AbortController !== "undefined") {
             let controller = new AbortController();
             let timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -979,6 +1026,212 @@ export class UaWebClient
 
         return response.Endpoints;
     }
+
+    async addNodes(
+        nodesToAdd: Array<UaAddNodesItem>,
+        additionalParameters?: UaClientParameters) : Promise<Array<UaAddNodesResult>>
+    {
+        if (nodesToAdd.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+
+        let NodesToAdd : Array<AddNodesItem> = [];
+
+        for (let item of nodesToAdd) {
+            NodesToAdd.push(item.toStruct());
+        }
+
+        let request = AddNodesRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            NodesToAdd: NodesToAdd });
+        
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.addNodes(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.addNodes(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+        if (!response.Results) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+        
+        let results : Array<UaAddNodesResult> = [];
+        for (let item of response.Results) {
+            let result = UaAddNodesResult.fromStruct(item);
+            if (null == result) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+            results.push(result);
+        }
+        
+        return results;
+    }
+
+    async deleteNodes(
+        nodesToDelete: Array<UaDeleteNodesItem>,
+        additionalParameters?: UaClientParameters) : Promise<Array<UaStatusCode>>
+    {
+        if (nodesToDelete.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+
+        let NodesToDelete : Array<DeleteNodesItem> = [];
+
+        for (let item of nodesToDelete) {
+            NodesToDelete.push(item.toStruct());
+        }
+
+        let request = DeleteNodesRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            NodesToDelete: NodesToDelete });
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+
+            try {
+                response = await this.api.deleteNodes(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.deleteNodes(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+        if (!response.Results) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+        
+        let results : Array<UaStatusCode> = [];
+        for (let item of response.Results) {
+            let result = UaPayloadMapper.statusCodeFromWebApi(item);            
+            results.push(result);
+        }
+        
+        return results;    
+    }
+
+    async addReferences(
+        referencesToAdd: Array<UaAddReferencesItem>,
+        additionalParameters?: UaClientParameters) : Promise<Array<UaStatusCode>>
+    {
+        if (referencesToAdd.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+        
+        let ReferencesToAdd : Array<AddReferencesItem> = [];
+
+        for (let item of referencesToAdd) {
+            ReferencesToAdd.push(item.toStruct());
+        }
+
+        let request = AddReferencesRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            ReferencesToAdd: ReferencesToAdd });
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.addReferences(request, { signal: controller.signal });
+            }
+            catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.addReferences(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+        if (!response.Results) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+        
+        let results : Array<UaStatusCode> = [];
+        for (let item of response.Results) {
+            let result = UaPayloadMapper.statusCodeFromWebApi(item);            
+            results.push(result);
+        }
+        
+        return results;
+    }
+
+    async deleteReferences(
+        referencesToDelete: Array<UaDeleteReferencesItem>,
+        additionalParameters?: UaClientParameters) : Promise<Array<UaStatusCode>>
+    {
+        if (referencesToDelete.length == 0) throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+        let ReferencesToDelete : Array<DeleteReferencesItem> = [];
+
+        for (let item of referencesToDelete) {
+            ReferencesToDelete.push(item.toStruct());
+        }
+
+        let request = DeleteReferencesRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            ReferencesToDelete: ReferencesToDelete });
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.deleteReferences(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.deleteReferences(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+        if (!response.Results) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));        
+
+        let results : Array<UaStatusCode> = [];
+        for (let item of response.Results) {
+            let result = UaPayloadMapper.statusCodeFromWebApi(item);            
+            results.push(result);
+        }
+        
+        return results;
+    }                   
 
     protected requestHeader(additionalParameters?: UaClientParameters) : RequestHeader
     {

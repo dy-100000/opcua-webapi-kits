@@ -69,11 +69,11 @@ export function ReadValueIdFromJSONTyped(json: any, ignoreDiscriminator: boolean
     };
 }
 
-  export function ReadValueIdToJSON(json: any): ReadValueId {
-      return ReadValueIdToJSONTyped(json, false);
-  }
+export function ReadValueIdToJSON(json: any): ReadValueId {
+    return ReadValueIdToJSONTyped(json, false);
+}
 
-  export function ReadValueIdToJSONTyped(value?: ReadValueId | null, ignoreDiscriminator: boolean = false): any {
+export function ReadValueIdToJSONTyped(value?: ReadValueId | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

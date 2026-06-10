@@ -105,11 +105,11 @@ export function ResponseHeaderFromJSONTyped(json: any, ignoreDiscriminator: bool
     };
 }
 
-  export function ResponseHeaderToJSON(json: any): ResponseHeader {
-      return ResponseHeaderToJSONTyped(json, false);
-  }
+export function ResponseHeaderToJSON(json: any): ResponseHeader {
+    return ResponseHeaderToJSONTyped(json, false);
+}
 
-  export function ResponseHeaderToJSONTyped(value?: ResponseHeader | null, ignoreDiscriminator: boolean = false): any {
+export function ResponseHeaderToJSONTyped(value?: ResponseHeader | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

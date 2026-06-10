@@ -69,11 +69,11 @@ export function RelativePathElementFromJSONTyped(json: any, ignoreDiscriminator:
     };
 }
 
-  export function RelativePathElementToJSON(json: any): RelativePathElement {
-      return RelativePathElementToJSONTyped(json, false);
-  }
+export function RelativePathElementToJSON(json: any): RelativePathElement {
+    return RelativePathElementToJSONTyped(json, false);
+}
 
-  export function RelativePathElementToJSONTyped(value?: RelativePathElement | null, ignoreDiscriminator: boolean = false): any {
+export function RelativePathElementToJSONTyped(value?: RelativePathElement | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

@@ -1,6 +1,6 @@
 import { UaLocalizedText, UaNodeId } from "../types";
 
-export type UaNodeAttributes = {
+export type OpcUaNodeAttributes = {
     nodeClass : number;
     browseName: string;
     displayName: UaLocalizedText;
@@ -8,11 +8,11 @@ export type UaNodeAttributes = {
     description: UaLocalizedText | null;
 }
 
-export type UaObjectAttributes = {
+export type OpcUaObjectAttributes = {
     eventNotifier : number;
 }
 
-export type UaVariableAttributes = {
+export type OpcUaVariableAttributes = {
     dataType : UaNodeId;
     valueRank : number;
     accessLevel : number;

@@ -55,11 +55,11 @@ export function SignatureDataFromJSONTyped(json: any, ignoreDiscriminator: boole
     };
 }
 
-  export function SignatureDataToJSON(json: any): SignatureData {
-      return SignatureDataToJSONTyped(json, false);
-  }
+export function SignatureDataToJSON(json: any): SignatureData {
+    return SignatureDataToJSONTyped(json, false);
+}
 
-  export function SignatureDataToJSONTyped(value?: SignatureData | null, ignoreDiscriminator: boolean = false): any {
+export function SignatureDataToJSONTyped(value?: SignatureData | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

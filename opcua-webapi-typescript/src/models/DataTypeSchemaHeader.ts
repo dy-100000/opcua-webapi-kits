@@ -91,11 +91,11 @@ export function DataTypeSchemaHeaderFromJSONTyped(json: any, ignoreDiscriminator
     };
 }
 
-  export function DataTypeSchemaHeaderToJSON(json: any): DataTypeSchemaHeader {
-      return DataTypeSchemaHeaderToJSONTyped(json, false);
-  }
+export function DataTypeSchemaHeaderToJSON(json: any): DataTypeSchemaHeader {
+    return DataTypeSchemaHeaderToJSONTyped(json, false);
+}
 
-  export function DataTypeSchemaHeaderToJSONTyped(value?: DataTypeSchemaHeader | null, ignoreDiscriminator: boolean = false): any {
+export function DataTypeSchemaHeaderToJSONTyped(value?: DataTypeSchemaHeader | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

@@ -98,11 +98,11 @@ export function ApplicationDescriptionFromJSONTyped(json: any, ignoreDiscriminat
     };
 }
 
-  export function ApplicationDescriptionToJSON(json: any): ApplicationDescription {
-      return ApplicationDescriptionToJSONTyped(json, false);
-  }
+export function ApplicationDescriptionToJSON(json: any): ApplicationDescription {
+    return ApplicationDescriptionToJSONTyped(json, false);
+}
 
-  export function ApplicationDescriptionToJSONTyped(value?: ApplicationDescription | null, ignoreDiscriminator: boolean = false): any {
+export function ApplicationDescriptionToJSONTyped(value?: ApplicationDescription | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

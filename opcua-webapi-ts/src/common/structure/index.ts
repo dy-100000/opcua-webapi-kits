@@ -14,4 +14,5 @@ export * from "./UaReadRawModifiedDetails"
 export * from "./UaReadProcessedDetails"
 export * from "./UaReadEventDetails"
 export * from "./UaSimpleAttributeOperand"
+export * from "./UaObjectAttributes"
 

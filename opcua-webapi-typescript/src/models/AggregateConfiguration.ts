@@ -76,11 +76,11 @@ export function AggregateConfigurationFromJSONTyped(json: any, ignoreDiscriminat
     };
 }
 
-  export function AggregateConfigurationToJSON(json: any): AggregateConfiguration {
-      return AggregateConfigurationToJSONTyped(json, false);
-  }
+export function AggregateConfigurationToJSON(json: any): AggregateConfiguration {
+    return AggregateConfigurationToJSONTyped(json, false);
+}
 
-  export function AggregateConfigurationToJSONTyped(value?: AggregateConfiguration | null, ignoreDiscriminator: boolean = false): any {
+export function AggregateConfigurationToJSONTyped(value?: AggregateConfiguration | null, ignoreDiscriminator: boolean = false): any {
     if (value == null) {
         return value;
     }

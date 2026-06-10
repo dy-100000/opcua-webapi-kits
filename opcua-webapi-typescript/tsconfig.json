@@ -2,8 +2,8 @@
   "compilerOptions": {
     "declaration": true,
     "target": "es6",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "node16",
+    "rootDir": "src",
     "outDir": "dist",
     "typeRoots": [
       "node_modules/@types"
