@@ -63,7 +63,7 @@ export class UaAddReferencesItem
         return addReferencesItem;
     }
 
-    fromStruct(addReferencesItem : AddReferencesItem) : UaAddReferencesItem | null
+    static fromStruct(addReferencesItem : AddReferencesItem) : UaAddReferencesItem | null
     {
         if (addReferencesItem.SourceNodeId === undefined || addReferencesItem.TargetNodeId === undefined) return null;
 

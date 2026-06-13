@@ -227,7 +227,7 @@ export class UaChildBrowser extends UaNodeReferenceBrowser {
     constructor(nodeIds: Array<UaNodeId>, returnDescription?: boolean) {
         super(
             nodeIds, 
-            UaNodeId.from(ReferenceTypeIds.HierarchicalReferences), 
+            UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
             NodeClass.Object | NodeClass.ObjectType| NodeClass.VariableType | NodeClass.DataType | NodeClass.ReferenceType, 
             returnDescription ?? false,
             20);
@@ -249,7 +249,7 @@ export class UaNodeReader {
     private _nodeClassToReturn: number;
     private _returnDescription: boolean;
     private _returnAttributes: boolean;
-    private _returnValue: boolean;    
+    private _returnValue: boolean;
     private static s_variableTypeWithoutMember: Set<string> = null;
     private static s_variablesNameToRead: Set<string> = null;
 
@@ -258,7 +258,7 @@ export class UaNodeReader {
         returnVariable?: boolean | null,
         returnMethod?: boolean | null,
         returnAttributes?: boolean | null,
-        returnValue?: boolean | null) 
+        returnValue?: boolean | null)
     {
         this._returnDescription = (returnDescription) ? returnDescription : false;
         this._returnAttributes = (returnAttributes) ? returnAttributes : false;

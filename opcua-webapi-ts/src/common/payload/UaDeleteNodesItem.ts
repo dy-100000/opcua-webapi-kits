@@ -36,7 +36,7 @@ export class UaDeleteNodesItem
         return item;
     }
 
-    fromStruct(item : DeleteNodesItem) : UaDeleteNodesItem | null
+    static fromStruct(item : DeleteNodesItem) : UaDeleteNodesItem | null
     {
         let nodeId = parseUaNodeIdOrNull(item.NodeId);
         if (!nodeId) return null;
