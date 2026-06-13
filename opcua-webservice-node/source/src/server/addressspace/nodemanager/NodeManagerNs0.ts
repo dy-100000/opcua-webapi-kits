@@ -9,8 +9,9 @@ import {
     UaVariant,
     VariableIds,
 } from "opcua-webapi-ts";
-import { UaBrowseAdditionalInfo, ReadContext, ServiceContext } from "../../types";
-import { UaBrowseNodeTransaction, UaBrowseTransaction, UaReadNodeTransaction, UaReadTransaction } from "../../service/transactions";
+import { UaBrowseAdditionalInfo } from "../../types";
+import { ReadContext, ServiceContext } from "../../service";
+import { UaBrowseNodeTransaction, UaBrowseTransaction, UaReadNodeTransaction, UaReadTransaction } from "../../service";
 import { UaVariable } from "../nodes";
 import { UaDataTypes, UaObjectTypes, UaObjects, UaReferenceTypes, UaVariableTypes } from "../nodes/builtin";
 import { NodeManager } from "./NodeManager";

@@ -23,6 +23,44 @@ const activateSession = ({ activateSessionRequest }) => new Promise(
 );
 /**
 *
+* addNodesRequest AddNodesRequest [Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2). (optional)
+* returns AddNodesResponse
+* */
+const addNodes = ({ path,addNodesRequest,addNodesRequestWithPathRequest }) => new Promise(
+  async (resolve, reject) => {
+    try {
+      const req = addNodesRequest || addNodesRequestWithPathRequest;
+      const responseData = await uaServerApi.addNodes(req, path);
+      resolve(Service.successResponse(responseData));
+    } catch (e) {
+      reject(Service.rejectResponse(
+        e.message || 'Invalid input',
+        e.status || 405,
+      ));
+    }
+  },
+);
+/**
+*
+* addReferencesRequest AddReferencesRequest [Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3). (optional)
+* returns AddReferencesResponse
+* */
+const addReferences = ({ path,addReferencesRequest,addReferencesRequestWithPathRequest }) => new Promise(
+  async (resolve, reject) => {
+    try {
+      const req = addReferencesRequest || addReferencesRequestWithPathRequest;
+      const responseData = await uaServerApi.addReferences(req, path);
+      resolve(Service.successResponse(responseData));
+    } catch (e) {
+      reject(Service.rejectResponse(
+        e.message || 'Invalid input',
+        e.status || 405,
+      ));
+    }
+  },
+);
+/**
+*
 * browseRequest BrowseRequest [Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2). (optional)
 * returns BrowseResponse
 * */
@@ -184,6 +222,44 @@ const deleteMonitoredItems = ({ deleteMonitoredItemsRequest }) => new Promise(
       resolve(Service.successResponse({
         deleteMonitoredItemsRequest,
       }));
+    } catch (e) {
+      reject(Service.rejectResponse(
+        e.message || 'Invalid input',
+        e.status || 405,
+      ));
+    }
+  },
+);
+/**
+*
+* deleteNodesRequest DeleteNodesRequest [Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4). (optional)
+* returns DeleteNodesResponse
+* */
+const deleteNodes = ({ path,deleteNodesRequest,deleteNodesRequestWithPathRequest }) => new Promise(
+  async (resolve, reject) => {
+    try {
+      const req = deleteNodesRequest || deleteNodesRequestWithPathRequest;
+      const responseData = await uaServerApi.deleteNodes(req, path);
+      resolve(Service.successResponse(responseData));
+    } catch (e) {
+      reject(Service.rejectResponse(
+        e.message || 'Invalid input',
+        e.status || 405,
+      ));
+    }
+  },
+);
+/**
+*
+* deleteReferencesRequest DeleteReferencesRequest [Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5). (optional)
+* returns DeleteReferencesResponse
+* */
+const deleteReferences = ({ path,deleteReferencesRequest,deleteReferencesRequestWithPathRequest }) => new Promise(
+  async (resolve, reject) => {
+    try {
+      const req = deleteReferencesRequest || deleteReferencesRequestWithPathRequest;
+      const responseData = await uaServerApi.deleteReferences(req, path);
+      resolve(Service.successResponse(responseData));
     } catch (e) {
       reject(Service.rejectResponse(
         e.message || 'Invalid input',
@@ -536,6 +612,8 @@ const write = ({ path, writeRequest, writeRequestWithPathRequest }) => new Promi
 
 module.exports = {
   activateSession,
+  addNodes,
+  addReferences,
   browse,
   browseNext,
   call,
@@ -545,6 +623,8 @@ module.exports = {
   createSession,
   createSubscription,
   deleteMonitoredItems,
+  deleteNodes,
+  deleteReferences,
   deleteSubscriptions,
   findServers,
   getEndpoints,

@@ -1,7 +1,8 @@
 import { UaBrowseDescription } from "opcua-webapi-ts";
-import { NodeManager } from "../../../addressspace/nodemanager";
-import { ServiceContext, UaBrowseAdditionalInfo } from "../../../types";
+import { NodeManager } from "../../../addressspace";
+import { UaBrowseAdditionalInfo } from "../../../types";
 import { UaBrowseTransaction } from "./UaBrowseTransaction";
+import { ServiceContext } from "../../contexts";
 
 export class UaBrowseNodeTransaction extends UaBrowseTransaction {
     private readonly _nodeManager: NodeManager;

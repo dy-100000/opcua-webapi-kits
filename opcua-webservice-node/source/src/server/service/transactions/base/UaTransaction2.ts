@@ -1,4 +1,4 @@
-import { ServiceContext } from "../../../types/contexts";
+import { ServiceContext } from "../../contexts";
 
 export abstract class UaTransaction2<TRequest, TResponse> {
     protected readonly _serviceContext: ServiceContext;

@@ -16,6 +16,11 @@ export class UaServerConfigure {
     private _historyReadRequestMaxSize : number;
     private _translateRequestMaxSize : number;
 
+    private _addNodesRequestMaxSize : number;
+    private _deleteNodesRequestMaxSize : number;
+    private _addReferencesRequestMaxSize : number;
+    private _deleteReferencesRequestMaxSize : number;
+
     constructor()
     {
         this._applicationUri = "Unknown";
@@ -31,6 +36,11 @@ export class UaServerConfigure {
         this._callRequestMaxSize = 0;
         this._historyReadRequestMaxSize = 0;
         this._translateRequestMaxSize = 0;
+
+        this._addNodesRequestMaxSize = 0;
+        this._deleteNodesRequestMaxSize = 0;
+        this._addReferencesRequestMaxSize = 0;
+        this._deleteReferencesRequestMaxSize = 0;
     }
 
     get applicationType() : ApplicationType 
@@ -121,7 +131,7 @@ export class UaServerConfigure {
     }
 
     set historyReadRequestMaxSize(historyReadRequestMaxSize: number) {
-        this._historyReadRequestMaxSize = historyReadRequestMaxSize;
+        this._historyReadRequestMaxSize = Math.max(historyReadRequestMaxSize, 0);
     }
 
     get translateRequestMaxSize() {
@@ -130,5 +140,37 @@ export class UaServerConfigure {
 
     set translateRequestMaxSize(translateRequestMaxSize : number) {
         this._translateRequestMaxSize = Math.max(translateRequestMaxSize, 0);
+    }
+
+    get addNodesRequestMaxSize() {
+        return this._addNodesRequestMaxSize;
+    }
+
+    set addNodesRequestMaxSize(addNodesRequestMaxSize : number) {
+        this._addNodesRequestMaxSize = Math.max(addNodesRequestMaxSize, 0);
+    }
+
+    get deleteNodesRequestMaxSize() {
+        return this._deleteNodesRequestMaxSize;
+    }
+
+    set deleteNodesRequestMaxSize(deleteNodesRequestMaxSize : number) {
+        this._deleteNodesRequestMaxSize = Math.max(deleteNodesRequestMaxSize, 0);
+    }
+
+    get addReferencesRequestMaxSize() {
+        return this._addReferencesRequestMaxSize;
+    }
+
+    set addReferencesRequestMaxSize(addReferencesRequestMaxSize : number) {
+        this._addReferencesRequestMaxSize = Math.max(addReferencesRequestMaxSize, 0);
+    }
+
+    get deleteReferencesRequestMaxSize() {
+        return this._deleteReferencesRequestMaxSize;
+    }
+
+    set deleteReferencesRequestMaxSize(deleteReferencesRequestMaxSize : number) {
+        this._deleteReferencesRequestMaxSize = Math.max(deleteReferencesRequestMaxSize, 0);
     }
 }

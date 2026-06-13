@@ -1,6 +1,8 @@
 import { ApplicationDescription, EndpointDescription } from "opcua-webapi";
-import { BrowseContext, BrowseNextContext, CallContext, FindServerContext, GetEndpointContext, HistoryReadContext, ReadContext, UaServerConfigure, WriteContext } from "../types";
-import { UaBrowseResult, UaCallMethodResult, UaDataValue, UaHistoryReadResult, UaStatusCode } from "opcua-webapi-ts";
+import { AddReferencesContext, BrowseContext, BrowseNextContext, CallContext, DeleteReferencesContext, FindServerContext, GetEndpointContext, HistoryReadContext, ReadContext, WriteContext } from "./contexts";
+import { UaAddNodesResult, UaBrowseResult, UaCallMethodResult, UaDataValue, UaHistoryReadResult, UaStatusCode } from "opcua-webapi-ts";
+import { AddNodesContext,DeleteNodesContext } from "./contexts";
+import { UaServerConfigure } from "../..";
 
 export interface UaWebService {
     getServerConfigure() : UaServerConfigure;
@@ -20,4 +22,12 @@ export interface UaWebService {
     call(context : CallContext) : Promise<Array<UaCallMethodResult>>;
 
     historyRead(context : HistoryReadContext) : Promise<Array<UaHistoryReadResult>>;
+    
+    addNodes(context : AddNodesContext) : Promise<Array<UaAddNodesResult>>;
+
+    deleteNodes(context : DeleteNodesContext) : Promise<Array<UaStatusCode>>;
+
+    addReferences(context : AddReferencesContext) : Promise<Array<UaStatusCode>>;
+
+    deleteReferences(context : DeleteReferencesContext) : Promise<Array<UaStatusCode>>;
 }

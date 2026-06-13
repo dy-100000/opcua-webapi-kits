@@ -1,5 +1,6 @@
 import { UaBrowseDescription } from "opcua-webapi-ts";
-import { ReadContext, ServiceContext, UaBrowseAdditionalInfo } from "../../types";
+import { UaBrowseAdditionalInfo } from "../../types";
+import { ReadContext, ServiceContext } from "../../service";
 import {
     UaBrowseNodeTransaction,
     UaBrowseTransaction,

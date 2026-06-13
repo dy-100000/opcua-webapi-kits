@@ -153,6 +153,114 @@
         }
       }
     },
+    "/addnodes": {
+      "post": {
+        "operationId": "AddNodes",
+        "requestBody": {
+          "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddNodesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddNodesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/addreferences": {
+      "post": {
+        "operationId": "AddReferences",
+        "requestBody": {
+          "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddReferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddReferencesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deletenodes": {
+      "post": {
+        "operationId": "DeleteNodes",
+        "requestBody": {
+          "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteNodesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteNodesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/deletereferences": {
+      "post": {
+        "operationId": "DeleteReferences",
+        "requestBody": {
+          "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5).",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteReferencesRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeleteReferencesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/browse": {
       "post": {
         "operationId": "Browse",
@@ -3534,6 +3642,503 @@
           }
         },
         "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.45)."
+      },
+      "NodeAttributes": {
+        "type": "object",
+        "properties": {
+          "SpecifiedAttributes": {
+            "maximum": 4294967295,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          },
+          "DisplayName": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "Description": {
+            "$ref": "#/components/schemas/LocalizedText"
+          },
+          "WriteMask": {
+            "maximum": 4294967295,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          },
+          "UserWriteMask": {
+            "maximum": 4294967295,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "ObjectAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "EventNotifier": {
+            "maximum": 4294967295,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "VariableAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "Value": {
+            "$ref": "#/components/schemas/DataValue"
+          },
+          "DataType": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "ValueRank": {
+            "maximum": 32767,
+            "minimum": -2,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          },
+          "ArrayDimensions": {
+            "type": "array",
+            "items": {
+              "maximum": 4294967295,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "AccessLevel": {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          "UserAccessLevel": {
+            "maximum": 255,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          "MinimumSamplingInterval": {
+            "type": "number",
+            "format": "double",
+            "default": 0
+          },
+          "Historizing": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "MethodAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "Executable": {
+            "type": "boolean",
+            "default": false
+          },
+          "UserExecutable": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "ObjectTypeAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "IsAbstract": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "VariableTypeAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "Value": {
+            "$ref": "#/components/schemas/DataValue"
+          },
+          "DataType": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "ValueRank": {
+            "maximum": 32767,
+            "minimum": -2,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          },
+          "ArrayDimensions": {
+            "type": "array",
+            "items": {
+              "maximum": 4294967295,
+              "minimum": 0,
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "IsAbstract": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "ReferenceTypeAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "IsAbstract": {
+            "type": "boolean",
+            "default": false
+          },
+          "Symmetric": {
+            "type": "boolean",
+            "default": false
+          },
+          "InverseName": {
+            "$ref": "#/components/schemas/LocalizedText"
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "DataTypeAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "IsAbstract": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "ViewAttributes": {
+        "type": "object",
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NodeAttributes"
+          }
+        ],
+        "properties": {
+          "ContainsNoLoops": {
+            "type": "boolean",
+            "default": false
+          },
+          "EventNotifier": {
+            "maximum": 4294967295,
+            "minimum": 0,
+            "type": "integer",
+            "format": "int64",
+            "default": 0
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      },
+      "AddNodesItem": {
+        "type": "object",
+        "properties": {
+          "ParentNodeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "ReferenceTypeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "RequestedNewNodeId": {
+            "type": "string",
+            "format": "UaExpandedNodeId"
+          },
+          "BrowseName": {
+            "type": "string",
+            "format": "UaQualifiedName"
+          },
+          "NodeClass": {
+            "type": "integer",
+            "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part5/12.2.5/#12.2.5.2).",
+            "format": "NodeClass"
+          },
+          "NodeAttributes": {
+            "$ref": "#/components/schemas/ExtensionObject"
+          },
+          "TypeDefinition": {
+            "type": "string",
+            "format": "UaExpandedNodeId"
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      },
+      "AddNodesResult": {
+        "type": "object",
+        "properties": {
+          "StatusCode": {
+            "$ref": "#/components/schemas/StatusCode"
+          },
+          "AddedNodeId": {
+            "type": "string",
+            "format": "UaExpandedNodeId"
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      },
+      "AddNodesRequest": {
+        "type": "object",
+        "properties": {
+          "RequestHeader": {
+            "$ref": "#/components/schemas/RequestHeader"
+          },
+          "NodesToAdd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddNodesItem"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      },
+      "AddNodesResponse": {
+        "type": "object",
+        "properties": {
+          "ResponseHeader": {
+            "$ref": "#/components/schemas/ResponseHeader"
+          },
+          "Results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddNodesResult"
+            }
+          },
+          "DiagnosticInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticInfo"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      },
+      "AddReferencesItem": {
+        "type": "object",
+        "properties": {
+          "SourceNodeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "ReferenceTypeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "IsForward": {
+            "type": "boolean",
+            "default": true
+          },
+          "TargetNodeId": {
+            "type": "string",
+            "format": "UaExpandedNodeId"
+          },
+          "TargetNodeClass": {
+            "type": "integer",
+            "description": "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part5/12.2.5/#12.2.5.2).",
+            "format": "NodeClass"
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      },
+      "AddReferencesRequest": {
+        "type": "object",
+        "properties": {
+          "RequestHeader": {
+            "$ref": "#/components/schemas/RequestHeader"
+          },
+          "ReferencesToAdd": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddReferencesItem"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      },
+      "AddReferencesResponse": {
+        "type": "object",
+        "properties": {
+          "ResponseHeader": {
+            "$ref": "#/components/schemas/ResponseHeader"
+          },
+          "Results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusCode"
+            }
+          },
+          "DiagnosticInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticInfo"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      },
+      "DeleteNodesItem": {
+        "type": "object",
+        "properties": {
+          "NodeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "DeleteTargetReferences": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      },
+      "DeleteNodesRequest": {
+        "type": "object",
+        "properties": {
+          "RequestHeader": {
+            "$ref": "#/components/schemas/RequestHeader"
+          },
+          "NodesToDelete": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeleteNodesItem"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      },
+      "DeleteNodesResponse": {
+        "type": "object",
+        "properties": {
+          "ResponseHeader": {
+            "$ref": "#/components/schemas/ResponseHeader"
+          },
+          "Results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusCode"
+            }
+          },
+          "DiagnosticInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticInfo"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      },
+      "DeleteReferencesItem": {
+        "type": "object",
+        "properties": {
+          "SourceNodeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "ReferenceTypeId": {
+            "type": "string",
+            "format": "UaNodeId"
+          },
+          "IsForward": {
+            "type": "boolean",
+            "default": true
+          },
+          "TargetNodeId": {
+            "type": "string",
+            "format": "UaExpandedNodeId"
+          },
+          "DeleteBidirectional": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      },
+      "DeleteReferencesRequest": {
+        "type": "object",
+        "properties": {
+          "RequestHeader": {
+            "$ref": "#/components/schemas/RequestHeader"
+          },
+          "ReferencesToDelete": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DeleteReferencesItem"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      },
+      "DeleteReferencesResponse": {
+        "type": "object",
+        "properties": {
+          "ResponseHeader": {
+            "$ref": "#/components/schemas/ResponseHeader"
+          },
+          "Results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StatusCode"
+            }
+          },
+          "DiagnosticInfos": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DiagnosticInfo"
+            }
+          }
+        },
+        "description": "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
       },
       "BrowseDescription": {
         "type": "object",

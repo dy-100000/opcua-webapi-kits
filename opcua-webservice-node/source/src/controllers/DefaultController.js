@@ -12,6 +12,14 @@ const activateSession = async (request, response) => {
   await Controller.handleRequest(request, response, service.activateSession);
 };
 
+const addNodes = async (request, response) => {
+  await Controller.handleRequest(request, response, service.addNodes);
+};
+
+const addReferences = async (request, response) => {
+  await Controller.handleRequest(request, response, service.addReferences);
+};
+
 const browse = async (request, response) => {
   await Controller.handleRequest(request, response, service.browse);
 };
@@ -46,6 +54,14 @@ const createSubscription = async (request, response) => {
 
 const deleteMonitoredItems = async (request, response) => {
   await Controller.handleRequest(request, response, service.deleteMonitoredItems);
+};
+
+const deleteNodes = async (request, response) => {
+  await Controller.handleRequest(request, response, service.deleteNodes);
+};
+
+const deleteReferences = async (request, response) => {
+  await Controller.handleRequest(request, response, service.deleteReferences);
 };
 
 const deleteSubscriptions = async (request, response) => {
@@ -123,6 +139,8 @@ const write = async (request, response) => {
 
 module.exports = {
   activateSession,
+  addNodes,
+  addReferences,
   browse,
   browseNext,
   call,
@@ -132,6 +150,8 @@ module.exports = {
   createSession,
   createSubscription,
   deleteMonitoredItems,
+  deleteNodes,
+  deleteReferences,
   deleteSubscriptions,
   findServers,
   getEndpoints,

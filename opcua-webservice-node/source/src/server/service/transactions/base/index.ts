@@ -9,3 +9,7 @@ export * from "./UaReadNodeTransaction";
 export * from "./UaWriteTransaction";
 export * from "./UaMethodCallTransaction";
 export * from "./UaHistoryReadTransaction";
+export * from "./UaAddNodesTransaction";
+export * from "./UaDeleteNodesTransaction";
+export * from "./UaAddReferencesTransaction";
+export * from "./UaDeleteReferencesTransaction";

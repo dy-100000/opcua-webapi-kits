@@ -28,55 +28,9 @@ paths:
                 $ref: "#/components/schemas/ReadResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
       x-eov-operation-handler: controllers/DefaultController
-  /{path}/read:
-    post:
-      operationId: ReadWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ReadRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ReadResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
-      x-eov-operation-handler: controllers/DefaultController
   /write:
     post:
       operationId: Write
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/WriteRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.4/#5.11.4.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/WriteResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.4/#5.11.4.2)."
-      x-eov-operation-handler: controllers/DefaultController
-  /{path}/write:
-    post:
-      operationId: WriteWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -108,55 +62,9 @@ paths:
                 $ref: "#/components/schemas/CallResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
       x-eov-operation-handler: controllers/DefaultController
-  /{path}/call:
-    post:
-      operationId: CallWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CallRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CallResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
-      x-eov-operation-handler: controllers/DefaultController
   /historyread:
     post:
       operationId: HistoryRead
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/HistoryReadRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.3/#5.11.3.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HistoryReadResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.3/#5.11.3.2)."
-      x-eov-operation-handler: controllers/DefaultController
-  /{path}/historyread:
-    post:
-      operationId: HistoryReadWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -187,33 +95,78 @@ paths:
               schema:
                 $ref: "#/components/schemas/HistoryUpdateResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.5/#5.11.5.2)."
-      x-eov-operation-handler: controllers/DefaultController 
-  /browse:
+      x-eov-operation-handler: controllers/DefaultController
+  /addnodes:
     post:
-      operationId: Browse
+      operationId: AddNodes
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BrowseRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."
+              $ref: "#/components/schemas/AddNodesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/BrowseResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."
+                $ref: "#/components/schemas/AddNodesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
       x-eov-operation-handler: controllers/DefaultController
-  /{path}/browse:
+  /addreferences:
     post:
-      operationId: BrowseWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
+      operationId: AddReferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddReferencesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddReferencesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3)."
+      x-eov-operation-handler: controllers/DefaultController
+  /deletenodes:
+    post:
+      operationId: DeleteNodes
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteNodesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNodesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4)."
+      x-eov-operation-handler: controllers/DefaultController
+  /deletereferences:
+    post:
+      operationId: DeleteReferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteReferencesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteReferencesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5)."
+      x-eov-operation-handler: controllers/DefaultController
+  /browse:
+    post:
+      operationId: Browse
       requestBody:
         content:
           application/json:
@@ -245,55 +198,9 @@ paths:
                 $ref: "#/components/schemas/BrowseNextResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
       x-eov-operation-handler: controllers/DefaultController
-  /{path}/browsenext:
-    post:
-      operationId: BrowseNextWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BrowseNextRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/BrowseNextResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
-      x-eov-operation-handler: controllers/DefaultController
   /translate:
     post:
       operationId: TranslateBrowsePathsToNodeIds
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/TranslateBrowsePathsToNodeIdsRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.4/#5.9.4.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/TranslateBrowsePathsToNodeIdsResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.4/#5.9.4.2)."
-      x-eov-operation-handler: controllers/DefaultController
-  /{path}/translate:
-    post:
-      operationId: TranslateBrowsePathsToNodeIdsWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -328,29 +235,6 @@ paths:
   /getendpoints:
     post:
       operationId: GetEndpoints
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GetEndpointsRequest"
-        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetEndpointsResponse"
-          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
-      x-eov-operation-handler: controllers/DefaultController
-  /{path}/getendpoints:
-    post:
-      operationId: GetEndpointsWithPath
-      parameters:
-        - name: path
-          in: path
-          required: true
-          schema:
-            type: string
       requestBody:
         content:
           application/json:
@@ -3268,6 +3152,675 @@ components:
           maximum: 4294967295
           minimum: 0
           type: integer
+      type: object
+    NodeAttributes:
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        SpecifiedAttributes:
+          default: 0
+          format: int64
+          maximum: 4294967295
+          minimum: 0
+          type: integer
+        DisplayName:
+          $ref: "#/components/schemas/LocalizedText"
+        Description:
+          $ref: "#/components/schemas/LocalizedText"
+        WriteMask:
+          default: 0
+          format: int64
+          maximum: 4294967295
+          minimum: 0
+          type: integer
+        UserWriteMask:
+          default: 0
+          format: int64
+          maximum: 4294967295
+          minimum: 0
+          type: integer
+      type: object
+    ObjectAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        EventNotifier:
+          default: 0
+          format: int64
+          maximum: 4294967295
+          minimum: 0
+          type: integer
+      type: object
+    VariableAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        Value:
+          $ref: "#/components/schemas/DataValue"
+        DataType:
+          format: UaNodeId
+          type: string
+        ValueRank:
+          default: -1
+          format: int32
+          maximum: 32767
+          minimum: -2
+          type: integer
+        ArrayDimensions:
+          items:
+            format: int64
+            maximum: 4294967295
+            minimum: 0
+            type: integer
+          type: array
+        AccessLevel:
+          default: 0
+          format: int32
+          maximum: 255
+          minimum: 0
+          type: integer
+        UserAccessLevel:
+          default: 0
+          format: int32
+          maximum: 255
+          minimum: 0
+          type: integer
+        MinimumSamplingInterval:
+          default: 0
+          format: double
+          type: number
+        Historizing:
+          default: false
+          type: boolean
+      type: object
+    MethodAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        Executable:
+          default: false
+          type: boolean
+        UserExecutable:
+          default: false
+          type: boolean
+      type: object
+    ObjectTypeAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        IsAbstract:
+          default: false
+          type: boolean
+      type: object
+    VariableTypeAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        Value:
+          $ref: "#/components/schemas/DataValue"
+        DataType:
+          format: UaNodeId
+          type: string
+        ValueRank:
+          default: -1
+          format: int32
+          maximum: 32767
+          minimum: -2
+          type: integer
+        ArrayDimensions:
+          items:
+            format: int64
+            maximum: 4294967295
+            minimum: 0
+            type: integer
+          type: array
+        IsAbstract:
+          default: false
+          type: boolean
+      type: object
+    ReferenceTypeAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        IsAbstract:
+          default: false
+          type: boolean
+        Symmetric:
+          default: false
+          type: boolean
+        InverseName:
+          $ref: "#/components/schemas/LocalizedText"
+      type: object
+    DataTypeAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        IsAbstract:
+          default: false
+          type: boolean
+      type: object
+    ViewAttributes:
+      allOf:
+      - $ref: "#/components/schemas/NodeAttributes"
+      description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/7.2)."
+      properties:
+        ContainsNoLoops:
+          default: false
+          type: boolean
+        EventNotifier:
+          default: 0
+          format: int64
+          maximum: 4294967295
+          minimum: 0
+          type: integer
+      type: object
+    AddNodesItem:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      example:
+        NodeClass: 0
+        RequestedNewNodeId: RequestedNewNodeId
+        BrowseName: BrowseName
+        NodeAttributes:
+          UaTypeId: UaTypeId
+          UaEncoding: 180
+          UaBody: UaBody
+        ReferenceTypeId: ReferenceTypeId
+        ParentNodeId: ParentNodeId
+        TypeDefinition: TypeDefinition
+      properties:
+        ParentNodeId:
+          format: UaNodeId
+          type: string
+        ReferenceTypeId:
+          format: UaNodeId
+          type: string
+        RequestedNewNodeId:
+          format: UaExpandedNodeId
+          type: string
+        BrowseName:
+          format: UaQualifiedName
+          type: string
+        NodeClass:
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part5/12.2.5/#12.2.5.2)."
+          format: NodeClass
+          type: integer
+        NodeAttributes:
+          $ref: "#/components/schemas/ExtensionObject"
+        TypeDefinition:
+          format: UaExpandedNodeId
+          type: string
+      type: object
+    AddNodesResult:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      example:
+        AddedNodeId: AddedNodeId
+        StatusCode:
+          Symbol: Symbol
+          Code: 2588772717
+      properties:
+        StatusCode:
+          $ref: "#/components/schemas/StatusCode"
+        AddedNodeId:
+          format: UaExpandedNodeId
+          type: string
+      type: object
+    AddNodesRequest:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      example:
+        NodesToAdd:
+        - NodeClass: 0
+          RequestedNewNodeId: RequestedNewNodeId
+          BrowseName: BrowseName
+          NodeAttributes:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          ReferenceTypeId: ReferenceTypeId
+          ParentNodeId: ParentNodeId
+          TypeDefinition: TypeDefinition
+        - NodeClass: 0
+          RequestedNewNodeId: RequestedNewNodeId
+          BrowseName: BrowseName
+          NodeAttributes:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          ReferenceTypeId: ReferenceTypeId
+          ParentNodeId: ParentNodeId
+          TypeDefinition: TypeDefinition
+        RequestHeader:
+          AuthenticationToken: AuthenticationToken
+          RequestHandle: 343953088
+          AuditEntryId: AuditEntryId
+          ReturnDiagnostics: 2588772717
+          TimeoutHint: 629561881
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        RequestHeader:
+          $ref: "#/components/schemas/RequestHeader"
+        NodesToAdd:
+          items:
+            $ref: "#/components/schemas/AddNodesItem"
+          type: array
+      type: object
+    AddNodesResponse:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      example:
+        ResponseHeader:
+          StringTable:
+          - StringTable
+          - StringTable
+          ServiceResult:
+            Symbol: Symbol
+            Code: 2588772717
+          RequestHandle: 343953088
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+          ServiceDiagnostics:
+            Locale: 5
+            AdditionalInfo: AdditionalInfo
+            NamespaceUri: 5
+            SymbolicId: 1
+            InnerDiagnosticInfo: null
+            LocalizedText: 2
+            InnerStatusCode:
+              Symbol: Symbol
+              Code: 2588772717
+        Results:
+        - AddedNodeId: AddedNodeId
+          StatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        - AddedNodeId: AddedNodeId
+          StatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        DiagnosticInfos:
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+      properties:
+        ResponseHeader:
+          $ref: "#/components/schemas/ResponseHeader"
+        Results:
+          items:
+            $ref: "#/components/schemas/AddNodesResult"
+          type: array
+        DiagnosticInfos:
+          items:
+            $ref: "#/components/schemas/DiagnosticInfo"
+          type: array
+      type: object
+    AddReferencesItem:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      example:
+        TargetNodeClass: 0
+        SourceNodeId: SourceNodeId
+        TargetNodeId: TargetNodeId
+        ReferenceTypeId: ReferenceTypeId
+        IsForward: true
+      properties:
+        SourceNodeId:
+          format: UaNodeId
+          type: string
+        ReferenceTypeId:
+          format: UaNodeId
+          type: string
+        IsForward:
+          default: true
+          type: boolean
+        TargetNodeId:
+          format: UaExpandedNodeId
+          type: string
+        TargetNodeClass:
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part5/12.2.5/#12.2.5.2)."
+          format: NodeClass
+          type: integer
+      type: object
+    AddReferencesRequest:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      example:
+        ReferencesToAdd:
+        - TargetNodeClass: 0
+          SourceNodeId: SourceNodeId
+          TargetNodeId: TargetNodeId
+          ReferenceTypeId: ReferenceTypeId
+          IsForward: true
+        - TargetNodeClass: 0
+          SourceNodeId: SourceNodeId
+          TargetNodeId: TargetNodeId
+          ReferenceTypeId: ReferenceTypeId
+          IsForward: true
+        RequestHeader:
+          AuthenticationToken: AuthenticationToken
+          RequestHandle: 343953088
+          AuditEntryId: AuditEntryId
+          ReturnDiagnostics: 2588772717
+          TimeoutHint: 629561881
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        RequestHeader:
+          $ref: "#/components/schemas/RequestHeader"
+        ReferencesToAdd:
+          items:
+            $ref: "#/components/schemas/AddReferencesItem"
+          type: array
+      type: object
+    AddReferencesResponse:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.3)."
+      example:
+        ResponseHeader:
+          StringTable:
+          - StringTable
+          - StringTable
+          ServiceResult:
+            Symbol: Symbol
+            Code: 2588772717
+          RequestHandle: 343953088
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+          ServiceDiagnostics:
+            Locale: 5
+            AdditionalInfo: AdditionalInfo
+            NamespaceUri: 5
+            SymbolicId: 1
+            InnerDiagnosticInfo: null
+            LocalizedText: 2
+            InnerStatusCode:
+              Symbol: Symbol
+              Code: 2588772717
+        Results:
+        - Symbol: Symbol
+          Code: 2588772717
+        - Symbol: Symbol
+          Code: 2588772717
+        DiagnosticInfos:
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+      properties:
+        ResponseHeader:
+          $ref: "#/components/schemas/ResponseHeader"
+        Results:
+          items:
+            $ref: "#/components/schemas/StatusCode"
+          type: array
+        DiagnosticInfos:
+          items:
+            $ref: "#/components/schemas/DiagnosticInfo"
+          type: array
+      type: object
+    DeleteNodesItem:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        NodeId: NodeId
+        DeleteTargetReferences: false
+      properties:
+        NodeId:
+          format: UaNodeId
+          type: string
+        DeleteTargetReferences:
+          default: false
+          type: boolean
+      type: object
+    DeleteNodesRequest:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        NodesToDelete:
+        - NodeId: NodeId
+          DeleteTargetReferences: false
+        - NodeId: NodeId
+          DeleteTargetReferences: false
+        RequestHeader:
+          AuthenticationToken: AuthenticationToken
+          RequestHandle: 343953088
+          AuditEntryId: AuditEntryId
+          ReturnDiagnostics: 2588772717
+          TimeoutHint: 629561881
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+      properties:
+        RequestHeader:
+          $ref: "#/components/schemas/RequestHeader"
+        NodesToDelete:
+          items:
+            $ref: "#/components/schemas/DeleteNodesItem"
+          type: array
+      type: object
+    DeleteNodesResponse:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        ResponseHeader:
+          StringTable:
+          - StringTable
+          - StringTable
+          ServiceResult:
+            Symbol: Symbol
+            Code: 2588772717
+          RequestHandle: 343953088
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+          ServiceDiagnostics:
+            Locale: 5
+            AdditionalInfo: AdditionalInfo
+            NamespaceUri: 5
+            SymbolicId: 1
+            InnerDiagnosticInfo: null
+            LocalizedText: 2
+            InnerStatusCode:
+              Symbol: Symbol
+              Code: 2588772717
+        Results:
+        - Symbol: Symbol
+          Code: 2588772717
+        - Symbol: Symbol
+          Code: 2588772717
+        DiagnosticInfos:
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+      properties:
+        ResponseHeader:
+          $ref: "#/components/schemas/ResponseHeader"
+        Results:
+          items:
+            $ref: "#/components/schemas/StatusCode"
+          type: array
+        DiagnosticInfos:
+          items:
+            $ref: "#/components/schemas/DiagnosticInfo"
+          type: array
+      type: object
+    DeleteReferencesItem:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        SourceNodeId: SourceNodeId
+        TargetNodeId: TargetNodeId
+        ReferenceTypeId: ReferenceTypeId
+        DeleteBidirectional: false
+        IsForward: true
+      properties:
+        SourceNodeId:
+          format: UaNodeId
+          type: string
+        ReferenceTypeId:
+          format: UaNodeId
+          type: string
+        IsForward:
+          default: true
+          type: boolean
+        TargetNodeId:
+          format: UaExpandedNodeId
+          type: string
+        DeleteBidirectional:
+          default: false
+          type: boolean
+      type: object
+    DeleteReferencesRequest:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        RequestHeader:
+          AuthenticationToken: AuthenticationToken
+          RequestHandle: 343953088
+          AuditEntryId: AuditEntryId
+          ReturnDiagnostics: 2588772717
+          TimeoutHint: 629561881
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+        ReferencesToDelete:
+        - SourceNodeId: SourceNodeId
+          TargetNodeId: TargetNodeId
+          ReferenceTypeId: ReferenceTypeId
+          DeleteBidirectional: false
+          IsForward: true
+        - SourceNodeId: SourceNodeId
+          TargetNodeId: TargetNodeId
+          ReferenceTypeId: ReferenceTypeId
+          DeleteBidirectional: false
+          IsForward: true
+      properties:
+        RequestHeader:
+          $ref: "#/components/schemas/RequestHeader"
+        ReferencesToDelete:
+          items:
+            $ref: "#/components/schemas/DeleteReferencesItem"
+          type: array
+      type: object
+    DeleteReferencesResponse:
+      description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.4)."
+      example:
+        ResponseHeader:
+          StringTable:
+          - StringTable
+          - StringTable
+          ServiceResult:
+            Symbol: Symbol
+            Code: 2588772717
+          RequestHandle: 343953088
+          AdditionalHeader:
+            UaTypeId: UaTypeId
+            UaEncoding: 180
+            UaBody: UaBody
+          Timestamp: 2000-01-23T04:56:07.000+00:00
+          ServiceDiagnostics:
+            Locale: 5
+            AdditionalInfo: AdditionalInfo
+            NamespaceUri: 5
+            SymbolicId: 1
+            InnerDiagnosticInfo: null
+            LocalizedText: 2
+            InnerStatusCode:
+              Symbol: Symbol
+              Code: 2588772717
+        Results:
+        - Symbol: Symbol
+          Code: 2588772717
+        - Symbol: Symbol
+          Code: 2588772717
+        DiagnosticInfos:
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+        - Locale: 5
+          AdditionalInfo: AdditionalInfo
+          NamespaceUri: 5
+          SymbolicId: 1
+          InnerDiagnosticInfo: null
+          LocalizedText: 2
+          InnerStatusCode:
+            Symbol: Symbol
+            Code: 2588772717
+      properties:
+        ResponseHeader:
+          $ref: "#/components/schemas/ResponseHeader"
+        Results:
+          items:
+            $ref: "#/components/schemas/StatusCode"
+          type: array
+        DiagnosticInfos:
+          items:
+            $ref: "#/components/schemas/DiagnosticInfo"
+          type: array
       type: object
     BrowseDescription:
       description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."

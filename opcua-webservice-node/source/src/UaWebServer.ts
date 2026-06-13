@@ -1,11 +1,16 @@
 import { ApplicationDescription, BrowseDirection, StatusCodes } from "opcua-webapi";
 import {
     makeUaStatusCode,
+    UaAddNodesItem,
+    UaAddNodesResult,
+    UaAddReferencesItem,
     UaBrowseDescription,
     UaBrowseResult,
     UaCallMethodRequest,
     UaCallMethodResult,
     UaDataValue,
+    UaDeleteNodesItem,
+    UaDeleteReferencesItem,
     UaError,
     UaHistoryReadResult,
     UaHistoryReadValueId,
@@ -16,29 +21,39 @@ import {
 } from "opcua-webapi-ts";
 import { UaExpressServer } from "./UaExpressServer";
 import { UaWebServerBase } from "./UaWebServerBase";
+import {    
+    NodeManagerBase,
+    NodeManagerList,   
+    NodeManagerNs0,
+    NodeManagerNs1   
+} from "./server/addressspace";
 import {
+    UaBrowseTransaction,    
+    UaReadTransaction,
+    UaWriteTransaction,
+    UaHistoryReadTransaction,
+    UaMethodCallTransaction,
+    UaAddNodesTransaction,
+    UaAddReferencesTransaction,
+    UaDeleteNodesTransaction,
+    UaDeleteReferencesTransaction,
+    UaTransactionManager,
+    UaTransactionManager2,  
+    ReadContext,    
     BrowseContext,
     BrowseNextContext,
     CallContext,
     FindServerContext,
     HistoryReadContext,
-    NodeManagerBase,
-    NodeManagerList,
-    ReadContext,
-    UaBrowseAdditionalInfo,
-    UaBrowseContinuationPoint,
-    UaBrowseTransaction,
-    UaHistoryReadTransaction,
-    UaMethodCallTransaction,
-    UaReadTransaction,
-    UaTransactionManager,
-    UaTransactionManager2,
-    UaWriteTransaction,
     WriteContext,
-} from "./server";
-import { UaDiscoveryService } from "./UaDiscoveryService";
+    AddNodesContext,
+    DeleteNodesContext,
+    AddReferencesContext,
+    DeleteReferencesContext
+} from "./server/service"
 
-import { NodeManagerNs0,NodeManagerNs1 } from "./server/addressspace/nodemanager";
+import { UaDiscoveryService } from "./UaDiscoveryService";
+import { UaBrowseAdditionalInfo, UaBrowseContinuationPoint } from "./server";
 
 export abstract class UaWebServer extends UaWebServerBase {
     private discoveryService: UaDiscoveryService | null;
@@ -282,6 +297,94 @@ export abstract class UaWebServer extends UaWebServerBase {
             const transaction = (nodeManager !== null) ?
                      nodeManager.getHistoryReadTransaction(context, currentIndex)
                     : new UaHistoryReadTransaction(context, currentIndex);
+
+            transactionManager.addTransaction(transaction);
+            currentIndex += 1;
+        }
+
+        await transactionManager.execute();
+        return transactionManager.getMergedResults();
+    }
+
+    override async addNodes(context : AddNodesContext) : Promise<Array<UaAddNodesResult>>
+    {
+        const transactionManager = new UaTransactionManager<UaAddNodesItem, UaAddNodesResult>();
+    
+        let currentIndex = 0;
+        for (const item of context.nodesToAdd) {
+            let nodeId = item.parentNodeId.getNodeId();
+
+            let nodeManager: NodeManagerBase | null = null;
+            if (nodeId != null) {
+                nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
+            }
+
+            const transaction = (nodeManager !== null) ?
+                     nodeManager.getAddNodesTransaction(context, currentIndex)
+                    : new UaAddNodesTransaction(context, currentIndex);
+
+            transactionManager.addTransaction(transaction);
+            currentIndex += 1;
+        }
+
+        await transactionManager.execute();
+        return transactionManager.getMergedResults();
+    }
+
+    override async deleteNodes(context : DeleteNodesContext) : Promise<Array<UaStatusCode>>
+    {
+        const transactionManager = new UaTransactionManager<UaDeleteNodesItem, UaStatusCode>();
+    
+        let currentIndex = 0;
+        for (const item of context.nodesToDelete) {
+            let nodeId = item.nodeId;
+            let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
+            
+            const transaction = (nodeManager !== null) ?
+                     nodeManager.getDeleteNodesTransaction(context, currentIndex)
+                    : new UaDeleteNodesTransaction(context, currentIndex);
+
+            transactionManager.addTransaction(transaction);
+            currentIndex += 1;
+        }
+
+        await transactionManager.execute();
+        return transactionManager.getMergedResults();
+    }
+
+    override async addReferences(context : AddReferencesContext) : Promise<Array<UaStatusCode>>
+    {
+        const transactionManager = new UaTransactionManager<UaAddReferencesItem, UaStatusCode>();
+    
+        let currentIndex = 0;
+        for (const item of context.referencesToAdd) {
+            let nodeId = item.sourceNodeId;
+            let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
+            
+            const transaction = (nodeManager !== null) ?
+                     nodeManager.getAddReferencesTransaction(context, currentIndex)
+                    : new UaAddReferencesTransaction(context, currentIndex);
+
+            transactionManager.addTransaction(transaction);
+            currentIndex += 1;
+        }
+
+        await transactionManager.execute();
+        return transactionManager.getMergedResults();
+    }
+
+    override async deleteReferences(context : DeleteReferencesContext) : Promise<Array<UaStatusCode>>
+    {
+        const transactionManager = new UaTransactionManager<UaDeleteReferencesItem, UaStatusCode>();
+    
+        let currentIndex = 0;
+        for (const item of context.referencesToDelete) {
+            let nodeId = item.sourceNodeId;
+            let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
+            
+            const transaction = (nodeManager !== null) ?
+                     nodeManager.getDeleteReferencesTransaction(context, currentIndex)
+                    : new UaDeleteReferencesTransaction(context, currentIndex);
 
             transactionManager.addTransaction(transaction);
             currentIndex += 1;

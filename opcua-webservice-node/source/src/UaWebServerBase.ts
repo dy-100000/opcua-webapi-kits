@@ -1,7 +1,7 @@
 import { ApplicationDescription, DataValueToJSON, EndpointDescription, MessageSecurityMode, StatusCodes } from "opcua-webapi";
-import { UaWebService , UaServerConfigure, HistoryReadContext } from "./server";
+import { UaWebService , UaServerConfigure, HistoryReadContext, AddNodesContext, DeleteNodesContext, AddReferencesContext, DeleteReferencesContext } from "./server";
 import { UaExpressServer } from "./UaExpressServer";
-import { makeUaStatusCode, UaError, UaPayloadMapper } from "opcua-webapi-ts";
+import { makeUaStatusCode, UaAddNodesResult, UaError, UaPayloadMapper } from "opcua-webapi-ts";
 import { GetEndpointContext, BrowseContext, BrowseNextContext, CallContext, FindServerContext, ReadContext, uaServerApi, WriteContext } from "./server";
 import { UaBrowseResult, UaCallMethodResult, UaDataValue, UaHistoryReadResult, UaStatusCode } from "opcua-webapi-ts";
 
@@ -91,6 +91,26 @@ export class UaWebServerBase implements UaWebService {
     }
 
     async historyRead(context : HistoryReadContext) : Promise<Array<UaHistoryReadResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async addNodes(context : AddNodesContext) : Promise<Array<UaAddNodesResult>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async deleteNodes(context : DeleteNodesContext) : Promise<Array<UaStatusCode>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async addReferences(context : AddReferencesContext) : Promise<Array<UaStatusCode>>
+    {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async deleteReferences(context : DeleteReferencesContext) : Promise<Array<UaStatusCode>>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }

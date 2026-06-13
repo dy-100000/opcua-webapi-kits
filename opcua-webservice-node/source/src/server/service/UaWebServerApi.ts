@@ -1,8 +1,8 @@
-import { ApplicationDescription, BrowseNextRequestFromJSON, BrowseRequestFromJSON, BrowseResponse, BrowseResult, CallMethodResult, CallRequestFromJSON, CallResponse, DataValue, EndpointDescription, FindServersRequestFromJSON, FindServersResponse, GetEndpointsRequestFromJSON, GetEndpointsResponse, GetEndpointsResponseToJSONTyped, HistoryReadRequestFromJSON, HistoryReadResponse, HistoryReadResult, ReadRequestFromJSON, ReadResponse, ResponseHeader, StatusCode, StatusCodeFromJSON, StatusCodes, TranslateBrowsePathsToNodeIdsRequestFromJSON, TranslateBrowsePathsToNodeIdsResponse, WriteRequestFromJSON, WriteResponse } from "opcua-webapi";
-import { GetEndpointContext } from "../types/contexts/GetEndpointContext";
+import { AddNodesRequestFromJSON, AddNodesResponse, AddNodesResult, AddReferencesRequestFromJSON, AddReferencesResponse, ApplicationDescription, BrowseNextRequestFromJSON, BrowseRequestFromJSON, BrowseResponse, BrowseResult, CallMethodResult, CallRequestFromJSON, CallResponse, DataValue, DeleteNodesRequestFromJSON, DeleteNodesResponse, DeleteReferencesRequestFromJSON, DeleteReferencesResponse, EndpointDescription, FindServersRequestFromJSON, FindServersResponse, GetEndpointsRequestFromJSON, GetEndpointsResponse, GetEndpointsResponseToJSONTyped, HistoryReadRequestFromJSON, HistoryReadResponse, HistoryReadResult, ReadRequestFromJSON, ReadResponse, ResponseHeader, StatusCode, StatusCodeFromJSON, StatusCodes, TranslateBrowsePathsToNodeIdsRequestFromJSON, TranslateBrowsePathsToNodeIdsResponse, WriteRequestFromJSON, WriteResponse } from "opcua-webapi";
+import { GetEndpointContext } from "./contexts/GetEndpointContext";
 import { UaWebService } from "./UaWebService";
-import { makeUaStatusCode, UaBrowseDescription, UaCallMethodRequest, UaError, UaHistoryReadValueId, UaPayloadMapper, UaReadValueId, UaWriteValue } from "opcua-webapi-ts";
-import { BrowseContext, BrowseNextContext, CallContext, FindServerContext, HistoryReadContext, ReadContext, WriteContext } from "../types";
+import { makeUaStatusCode, UaAddNodesItem, UaAddNodesResult, UaAddReferencesItem, UaBrowseDescription, UaCallMethodRequest, UaDeleteNodesItem, UaDeleteReferencesItem, UaError, UaHistoryReadValueId, UaPayloadMapper, UaReadValueId, UaWriteValue } from "opcua-webapi-ts";
+import { AddNodesContext, AddReferencesContext, BrowseContext, BrowseNextContext, CallContext, DeleteNodesContext, DeleteReferencesContext, FindServerContext, HistoryReadContext, ReadContext, WriteContext } from "./contexts";
 
 export class UaWebServerApi {
     private _service : UaWebService | null;
@@ -435,6 +435,225 @@ export class UaWebServerApi {
             Results: results
         };
 
+        return response;
+    }
+
+    async addNodes(request: any, path?: string) : Promise<any>
+    {
+        let statusCode = StatusCodes.Good;
+        let results : Array<AddNodesResult> | undefined = undefined;
+
+        try
+        {            
+            if (null == this._service) throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+            let serverConfigure = this._service.getServerConfigure();
+            let addNodesRequest = AddNodesRequestFromJSON(request);
+
+            if (!addNodesRequest.NodesToAdd || addNodesRequest.NodesToAdd.length == 0) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+            }
+
+            if (serverConfigure.addNodesRequestMaxSize > 0 && addNodesRequest.NodesToAdd.length > serverConfigure.addNodesRequestMaxSize) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadTooManyOperations));
+            }
+
+            let nodesToAdd: Array<UaAddNodesItem> = [];
+
+            for (let item of addNodesRequest.NodesToAdd) {
+                let nodeToAdd = UaAddNodesItem.fromStruct(item);
+                if (null == nodeToAdd) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                nodesToAdd.push(nodeToAdd);
+            }
+
+            let context = new AddNodesContext(
+                nodesToAdd,
+                path,
+                addNodesRequest.RequestHeader);
+
+            let addNodesResults = await this._service.addNodes(context);
+            results = [];
+
+            for (let item of addNodesResults) {
+                let addNodesResult = item.toStruct();
+                results.push(addNodesResult);
+            }
+        } catch (err) {            
+            if (err instanceof UaError) 
+            {
+                statusCode = (err as UaError).statusCode.value;
+            } else {
+                statusCode = StatusCodes.BadUnexpectedError;
+            }
+        }
+
+        let responseHeader = this._getResponseHeader(statusCode);
+        let response : AddNodesResponse = {
+            ResponseHeader: responseHeader,
+            Results: results
+        };
+
+        return response;
+    }
+
+    async deleteNodes(request: any, path?: string) : Promise<any>
+    {
+        let statusCode = StatusCodes.Good;
+        let results : Array<StatusCode> | undefined = undefined;
+
+        try
+        {            
+            if (null == this._service) throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+            let serverConfigure = this._service.getServerConfigure();
+
+            let deleteNodesRequest = DeleteNodesRequestFromJSON(request);
+
+            if (!deleteNodesRequest.NodesToDelete || deleteNodesRequest.NodesToDelete.length == 0) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+            }
+
+            if (serverConfigure.deleteNodesRequestMaxSize > 0 && deleteNodesRequest.NodesToDelete.length > serverConfigure.deleteNodesRequestMaxSize) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadTooManyOperations));
+            }
+
+            let nodesToDelete: Array<UaDeleteNodesItem> = [];
+
+            for (let item of deleteNodesRequest.NodesToDelete) {
+                let nodeToDelete = UaDeleteNodesItem.fromStruct(item);
+                if (null == nodeToDelete) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                nodesToDelete.push(nodeToDelete);
+            }
+
+            let context = new DeleteNodesContext(
+                nodesToDelete,
+                path,
+                deleteNodesRequest.RequestHeader);
+            
+            let statusCodes = await this._service.deleteNodes(context);
+            results = [];
+
+            for (let item of statusCodes) {
+                let statusCode = UaPayloadMapper.statusCodeToWebApi(item);
+                results.push(statusCode);
+            }
+        } catch (err) {            
+            if (err instanceof UaError) 
+            {
+                statusCode = (err as UaError).statusCode.value;
+            } else {
+                statusCode = StatusCodes.BadUnexpectedError;
+            }
+        }
+
+        let responseHeader = this._getResponseHeader(statusCode);
+        let response : DeleteNodesResponse = {
+            ResponseHeader: responseHeader,
+            Results: results
+        };
+
+        return response;
+    }
+
+    async addReferences(request: any, path?: string) : Promise<any>
+    {
+        let statusCode = StatusCodes.Good;
+        let results : Array<StatusCode> | undefined = undefined;
+        try
+        {            
+            if (null == this._service) throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+
+            let addReferencesRequest = AddReferencesRequestFromJSON(request);
+
+            if (!addReferencesRequest.ReferencesToAdd || addReferencesRequest.ReferencesToAdd.length == 0) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+            }
+
+            let referencesToAdd: Array<UaAddReferencesItem> = [];
+            for (let item of addReferencesRequest.ReferencesToAdd) {
+                let referenceToAdd = UaAddReferencesItem.fromStruct(item);
+                if (null == referenceToAdd) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                referencesToAdd.push(referenceToAdd);
+            }
+
+            let context = new AddReferencesContext(
+                referencesToAdd,
+                path,
+                addReferencesRequest.RequestHeader);
+
+            let statusCodes = await this._service.addReferences(context);
+            results = [];
+
+            for (let item of statusCodes) {
+                let statusCode = UaPayloadMapper.statusCodeToWebApi(item);
+                results.push(statusCode);
+            }
+
+
+        } catch (err) {            
+            if (err instanceof UaError) 
+            {
+                statusCode = (err as UaError).statusCode.value;
+            } else {
+                statusCode = StatusCodes.BadUnexpectedError;
+            }
+        }
+
+        let responseHeader = this._getResponseHeader(statusCode);
+        let response : AddReferencesResponse = {
+            ResponseHeader: responseHeader,
+            Results: results
+        };
+
+        return response;
+    }
+
+    async deleteReferences(request: any, path?: string) : Promise<any>
+    {
+        let statusCode = StatusCodes.Good;
+        let results : Array<StatusCode> | undefined = undefined;
+
+        try
+        {            
+            if (null == this._service) throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+
+            let deleteReferencesRequest = DeleteReferencesRequestFromJSON(request);
+            if (!deleteReferencesRequest.ReferencesToDelete || deleteReferencesRequest.ReferencesToDelete.length == 0) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
+            }
+
+            let referencesToDelete: Array<UaDeleteReferencesItem> = [];
+            for (let item of deleteReferencesRequest.ReferencesToDelete) {
+                let referenceToDelete = UaDeleteReferencesItem.fromStruct(item);
+                if (null == referenceToDelete) throw new UaError(makeUaStatusCode(StatusCodes.BadDecodingError));
+                referencesToDelete.push(referenceToDelete);
+            }
+
+            let context = new DeleteReferencesContext(
+                referencesToDelete,
+                path,
+                deleteReferencesRequest.RequestHeader);
+
+            let statusCodes = await this._service.deleteReferences(context);
+            results = [];
+
+            for (let item of statusCodes) {
+                let statusCode = UaPayloadMapper.statusCodeToWebApi(item);
+                results.push(statusCode);
+            }
+        } catch (err) {            
+            if (err instanceof UaError) 
+            {
+                statusCode = (err as UaError).statusCode.value;
+            } else {
+                statusCode = StatusCodes.BadUnexpectedError;
+            }
+        }
+
+        let responseHeader = this._getResponseHeader(statusCode);
+        let response : DeleteReferencesResponse = {
+            ResponseHeader: responseHeader,
+            Results: results
+        };
+            
         return response;
     }
 

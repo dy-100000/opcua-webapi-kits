@@ -1,8 +1,9 @@
 import { StatusCodes } from "opcua-webapi";
 import { makeUaStatusCode, UaBrowseDescription, UaNodeId } from "opcua-webapi-ts";
 import { UaNode } from "../nodes";
-import { CallContext, HistoryReadContext, ReadContext, ServiceContext, UaBrowseAdditionalInfo, WriteContext } from "../../types";
-import { UaBrowseTransaction, UaHistoryReadTransaction, UaMethodCallTransaction, UaReadTransaction, UaWriteTransaction } from "../../service/transactions";
+import { UaBrowseAdditionalInfo } from "../../types";
+import { UaAddNodesTransaction, UaAddReferencesTransaction, UaBrowseTransaction, UaDeleteNodesTransaction, UaDeleteReferencesTransaction, UaHistoryReadTransaction, UaMethodCallTransaction, UaReadTransaction, UaWriteTransaction } from "../../service/transactions";
+import { ServiceContext, CallContext, HistoryReadContext, ReadContext, WriteContext, AddNodesContext, AddReferencesContext, DeleteNodesContext, DeleteReferencesContext } from "../../..";
 
 export abstract class NodeManagerBase {
         abstract nsIndex(): number;
@@ -57,5 +58,29 @@ export abstract class NodeManagerBase {
                 context: HistoryReadContext,
                 handleId: number): UaHistoryReadTransaction {
                 return new UaHistoryReadTransaction(context, handleId);
+        }
+
+        getAddNodesTransaction(
+                context: AddNodesContext,
+                handleId: number): UaAddNodesTransaction {
+                return new UaAddNodesTransaction(context, handleId);
+        }
+
+        getDeleteNodesTransaction(
+                context: DeleteNodesContext,
+                handleId: number): UaDeleteNodesTransaction {
+                return new UaDeleteNodesTransaction(context, handleId);
+        }
+
+        getAddReferencesTransaction(
+                context: AddReferencesContext,
+                handleId: number): UaAddReferencesTransaction {
+                return new UaAddReferencesTransaction(context, handleId);
+        }
+
+        getDeleteReferencesTransaction(
+                context: DeleteReferencesContext,
+                handleId: number): UaDeleteReferencesTransaction {
+                return new UaDeleteReferencesTransaction(context, handleId);
         }
 }
