@@ -1,4 +1,4 @@
-import { ObjectServiceContext } from "../../../types/digitaltwin/ObjectServiceContext";
+import { ObjectServiceContext } from "../../../types/digitaltwin";
 
 export class GetDescriptorRequest {
     private readonly _id: string;

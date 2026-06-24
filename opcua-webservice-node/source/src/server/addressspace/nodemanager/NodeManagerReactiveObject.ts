@@ -5,10 +5,17 @@ import {
     UaObjectIdentifier    
 } from "../../types";
 import { 
+    AddNodesContext,
+    AddReferencesContext,
     CallContext,
+    DeleteNodesContext,
+    DeleteReferencesContext,
     HistoryReadContext,
     ReadContext,
-    ServiceContext,
+    ServiceContext,    
+    UaAddReferenceTransaction,    
+    UaDeleteNodeTransaction,    
+    UaDeleteReferenceTransaction,    
     WriteContext
 } from "../../service";
 import {
@@ -17,6 +24,7 @@ import {
     UaMethodCallTransaction,
     UaReadTransaction,
     UaWriteTransaction,
+    UaAddNodeTransaction
 } from "../../service/transactions";
 import { UaReactiveObjectTransactionManager } from "../reactiveobject/UaReactiveObjectTransactionManager";
 import { UaObject } from "../nodes";
@@ -66,7 +74,7 @@ export class NodeManagerReactiveObject extends NodeManager {
         return instanceDeclaration as UaObject;
     }
 
-    getBrowseTransaction(
+    override getBrowseTransaction(
         context: ServiceContext,
         nodeToBrowse: UaBrowseDescription,
         additionalInfo: UaBrowseAdditionalInfo,
@@ -80,31 +88,55 @@ export class NodeManagerReactiveObject extends NodeManager {
         );
     }
 
-    getReadTransactions(
+    override getReadTransactions(
         context: ReadContext,
         handleIds: Array<number>,
     ): Array<UaReadTransaction> {
         return new UaReactiveObjectTransactionManager(this).getReadTransactions(context, handleIds);
     }
 
-    getWriteTransactions(
+    override getWriteTransactions(
         context: WriteContext,
         handleIds: Array<number>,
     ): Array<UaWriteTransaction> {
         return new UaReactiveObjectTransactionManager(this).getWriteTransactions(context, handleIds);
     }
 
-    getMethodCallTransaction(
+    override getMethodCallTransaction(
         context: CallContext,
         handleId: number,
     ): UaMethodCallTransaction {
         return new UaReactiveObjectTransactionManager(this).getMethodCallTransaction(context, handleId);
     }
 
-    getHistoryReadTransaction(
+    override getHistoryReadTransaction(
         context: HistoryReadContext,
         handleId: number,
     ): UaHistoryReadTransaction {
         return new UaReactiveObjectTransactionManager(this).getHistoryReadTransaction(context, handleId);
+    }
+
+    override getAddNodeTransaction(
+        context: AddNodesContext,
+        handleId: number): UaAddNodeTransaction {
+        return new UaReactiveObjectTransactionManager(this).getAddNodeTransaction(context, handleId);
+    }
+
+    override getDeleteNodeTransaction(
+        context: DeleteNodesContext,
+        handleId: number): UaDeleteNodeTransaction {
+        return new UaReactiveObjectTransactionManager(this).getDeleteNodeTransaction(context, handleId);
+    }
+
+    override getAddReferenceTransaction(
+        context: AddReferencesContext,
+        handleId: number): UaAddReferenceTransaction {
+        return new UaReactiveObjectTransactionManager(this).getAddReferenceTransaction(context, handleId);
+    }
+
+    override getDeleteReferenceTransaction(
+        context: DeleteReferencesContext, 
+        handleId: number): UaDeleteReferenceTransaction {
+        return new UaReactiveObjectTransactionManager(this).getDeleteReferenceTransaction(context, handleId);
     }
 }

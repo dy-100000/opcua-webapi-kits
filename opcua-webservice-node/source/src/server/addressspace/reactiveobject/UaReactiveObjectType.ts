@@ -27,6 +27,14 @@ import {
     ReadVariableValueResponse,
     WriteVariableValueRequest,
     WriteVariableValueResponse,
+    AddObjectRequest,
+    AddObjectResponse,
+    DeleteObjectRequest,
+    DeleteObjectResponse,
+    AddReferenceRequest,
+    AddReferenceResponse,
+    DeleteReferenceRequest,
+    DeleteReferenceResponse
 } from "../../service/message";
 import { NodeManager } from "../nodemanager";
 import { UaDataType } from "../nodes/UaDataType";
@@ -241,6 +249,22 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
     }
 
     async onReadHistoryEvent(_request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async onAddObject(request: AddObjectRequest): Promise<AddObjectResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async onDeleteObject(request: DeleteObjectRequest): Promise<DeleteObjectResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+    
+    async onAddReference(request: AddReferenceRequest): Promise<AddReferenceResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+    
+    async onDeleteReference(request: DeleteReferenceRequest): Promise<DeleteReferenceResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 

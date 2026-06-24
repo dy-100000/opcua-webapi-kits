@@ -5912,10 +5912,10 @@ onetime@^5.1.2:
   dependencies:
     mimic-fn "^2.1.0"
 
-opcua-webapi-ts@^1.0.27:
-  version "1.0.27"
-  resolved "https://registry.npmjs.org/opcua-webapi-ts/-/opcua-webapi-ts-1.0.27.tgz#329ee0265a12fd141627eba8f2be21d3fb85a499"
-  integrity sha512-aUpPRmmggkNYgATF5dmhgLWNYKhmmfUrWVYhUICGvG+aqJNVFJk/l6Zn6lYqMVlnJE7IdKSD1HPjWY63G01yVA==
+opcua-webapi-ts@^1.1.5:
+  version "1.1.5"
+  resolved "https://registry.npmjs.org/opcua-webapi-ts/-/opcua-webapi-ts-1.1.5.tgz#f378024aa8edee5c484ff373e1f58492e2e5014f"
+  integrity sha512-CetGtKnHa6uti8L9Mrfo66G9M3zlty0Oub1EJ+D0FrnPPkeAOeTDzUM68De7yjzEkxw2d3kDYSyTkppcoXTvAw==
   dependencies:
     opcua-webapi "^1.504.2"
     typescript "^6.0.2"

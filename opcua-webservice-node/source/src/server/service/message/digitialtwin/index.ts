@@ -32,3 +32,10 @@ export * from "./WritePropertyListValuesRequest";
 export * from "./WritePropertyListValuesResponse";
 export * from "./WritePropertyValuesRequest";
 export * from "./WritePropertyValuesResponse";
+export * from "./AddDigitalTwinRequest"
+export * from "./DeleteDigitalTwinRequest"
+export * from "./DeleteDigitalTwinResponse"
+export * from "./AddElementRequest"
+export * from "./AddElementResponse"
+export * from "./DeleteElementRequest"
+export * from "./DeleteElementResponse"

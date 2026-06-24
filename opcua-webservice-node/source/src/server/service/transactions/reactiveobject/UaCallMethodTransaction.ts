@@ -45,7 +45,6 @@ export class UaCallMethodTransaction extends UaMethodCallTransaction {
             const response = await objectType.onMethodCall(request);
             this._outputArguments.push(...response.outputArguments);
         } catch (error) {
-            console.error(error);
             this._outputArguments.length = 0;
             this._statusCode = makeUaStatusCode(StatusCodes.BadUnexpectedError);
 

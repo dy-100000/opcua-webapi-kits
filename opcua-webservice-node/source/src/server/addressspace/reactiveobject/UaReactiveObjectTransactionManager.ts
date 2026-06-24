@@ -1,5 +1,5 @@
-import { Attributes, StatusCodes } from "opcua-webapi";
-import { DataTypeIds, makeUaStatusCode, UaBrowseDescription, UaDataValue, UaNodeId, UaNodeIdType } from "opcua-webapi-ts";
+import { Attributes, NodeClass, StatusCodes } from "opcua-webapi";
+import { DataTypeIds, makeUaStatusCode, UaBrowseDescription, UaDataValue, UaNodeId, UaNodeIdType, UaObjectAttributes, UaStatusCode } from "opcua-webapi-ts";
 import {
     UaBrowseAdditionalInfo,
     UaChildId,
@@ -10,10 +10,17 @@ import {
     WriteVariableValue,
 } from "../../types";
 import {     
+    AddNodesContext,
+    AddReferencesContext,
     CallContext,
+    DeleteNodesContext,
+    DeleteReferencesContext,
     HistoryReadContext,
     ReadContext,
     ServiceContext,    
+    UaAddReferenceTransaction,    
+    UaDeleteNodeTransaction,    
+    UaDeleteReferenceTransaction,    
     WriteContext } from "../../service"
 import {
     UaBrowseNodeTransaction,
@@ -23,7 +30,7 @@ import {
     UaReadNodeTransaction,
     UaReadTransaction,
     UaWriteTransaction,
-} from "../../service/transactions/base";
+} from "../../service/transactions";
 import { 
     UaBrowseMemberTransaction ,
     UaBrowseObjectTransaction,
@@ -35,8 +42,13 @@ import {
     UaReadVariableValueTransaction,
     UaWriteNodeTransaction,
     UaWriteObjectAttributeTransaction,
-    UaWriteVariableValueTransaction } from "../../service/transactions/reactiveobject";
+    UaWriteVariableValueTransaction,
+    UaAddNodeTransaction } from "../../service/transactions";
 import { NodeManagerReactiveObject } from "../nodemanager/NodeManagerReactiveObject";
+import { UaAddObjectTransaction } from "../../service/transactions/reactiveobject/UaAddObjectTransaction";
+import { UaAddObjectReferenceTransaction } from "../../service/transactions/reactiveobject/UaAddObjectReferenceTransaction";
+import { UaDeleteObjectTransaction } from "../../service/transactions/reactiveobject/UaDeleteObjectTransaction";
+import { UaDeleteObjectReferenceTransaction } from "../../service/transactions/reactiveobject/UaDeleteObjectReferenceTransaction";
 
 type GroupedObjectHandles = {
     objectId: UaObjectIdentifier;
@@ -331,6 +343,7 @@ export class UaReactiveObjectTransactionManager {
         const transactionNothingToDo = new UaHistoryReadTransaction(context, handleId);
         const nodeToRead = context.nodesToRead[handleId];
         if (nodeToRead === undefined || !this.isReactiveObjectNodeId(nodeToRead.nodeId)) {
+            transactionNothingToDo.setStatusCode(makeUaStatusCode(StatusCodes.BadNodeIdInvalid));
             return transactionNothingToDo;
         }
 
@@ -353,8 +366,7 @@ export class UaReactiveObjectTransactionManager {
         } else if (
             context.historyReadDetails.typeId.equal(UaNodeId.from(DataTypeIds.ReadRawModifiedDetails)) ||
             context.historyReadDetails.typeId.equal(UaNodeId.from(DataTypeIds.ReadAtTimeDetails)) ||
-            context.historyReadDetails.typeId.equal(UaNodeId.from(DataTypeIds.ReadProcessedDetails))
-        ) {
+            context.historyReadDetails.typeId.equal(UaNodeId.from(DataTypeIds.ReadProcessedDetails))) {
             return new UaReadDataHistoryTransaction(context, handleId, identifier, this.nodeManager);
         }
 
@@ -362,15 +374,157 @@ export class UaReactiveObjectTransactionManager {
         return transactionNothingToDo;
     }
 
+    getAddNodeTransaction(
+            context: AddNodesContext,
+            handleId: number): UaAddNodeTransaction
+    {
+        const transactionNothingToDo = new UaAddNodeTransaction(context, handleId);
+        const nodeToAdd = context.nodesToAdd[handleId];
+        const parentNodeId = nodeToAdd.parentNodeId.getNodeId();
+        let typeDefinitionId = null;
+        
+        if (nodeToAdd.typeDefinition)
+        {
+            typeDefinitionId = nodeToAdd.typeDefinition.getNodeId();
+        }
+
+        let objectAttributes = UaObjectAttributes.fromExtensionObject(nodeToAdd.nodeAttributes);
+
+        if (nodeToAdd.nodeClass !== NodeClass.Object ||
+            null == objectAttributes ||
+            null == parentNodeId ||
+            typeDefinitionId == null)
+        {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadInvalidArgument));
+            return transactionNothingToDo;
+        }
+
+        if (!this.isReactiveObjectNodeId(parentNodeId)) {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadNodeIdInvalid));
+            return transactionNothingToDo;
+        }
+        
+        const parentIdentifier = this.getInstanceIdentifier(parentNodeId);
+        if (parentIdentifier === null) {
+            transactionNothingToDo.setStatusCode(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
+            return transactionNothingToDo;
+        }
+      
+        let addObjectTransaction = new UaAddObjectTransaction(
+            context,
+            handleId,
+            parentIdentifier,
+            typeDefinitionId,
+            nodeToAdd.browseName,
+            objectAttributes.displayName,
+            this.nodeManager);
+        
+        return addObjectTransaction;
+    }
+
+    getAddReferenceTransaction(
+        context: AddReferencesContext,
+        handleId: number): UaAddReferenceTransaction
+    {
+        const transactionNothingToDo = new UaAddReferenceTransaction(context, handleId);
+        const referenceToAdd = context.referencesToAdd[handleId];
+        const sourceNodeId = referenceToAdd.sourceNodeId;
+        const targetNodeId = referenceToAdd.targetNodeId.getNodeId();
+
+        if (null == targetNodeId ||
+            referenceToAdd.targetNodeClass !== NodeClass.Object ||
+            !referenceToAdd.isForward)
+        {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadInvalidArgument));
+            return transactionNothingToDo;
+        }
+
+        if (!this.isReactiveObjectNodeId(sourceNodeId) || 
+            !this.isReactiveObjectNodeId(targetNodeId)) {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadNodeIdInvalid));
+            return transactionNothingToDo;
+        }
+
+        const sourceIdentifier = this.getInstanceIdentifier(sourceNodeId);
+        const targetIdentifier = this.getInstanceIdentifier(targetNodeId);
+
+        if (sourceIdentifier === null || targetIdentifier === null) {
+            transactionNothingToDo.setStatusCode(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
+            return transactionNothingToDo;
+        }
+
+        return new UaAddObjectReferenceTransaction(
+            context,
+            handleId,
+            sourceIdentifier,
+            targetIdentifier,
+            referenceToAdd.referenceTypeId,
+            this.nodeManager,
+        );
+    }
+
+    getDeleteNodeTransaction(context: DeleteNodesContext, handleId: number): UaDeleteNodeTransaction {
+        const transactionNothingToDo = new UaDeleteNodeTransaction(context, handleId);
+        const nodeToDelete = context.nodesToDelete[handleId];
+        const nodeId = nodeToDelete.nodeId;
+
+        if (!this.isReactiveObjectNodeId(nodeId)) {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadNodeIdInvalid));
+            return transactionNothingToDo;
+        }
+
+        const identifier = this.getInstanceIdentifier(nodeId);
+        if (identifier === null) {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadNodeIdUnknown));
+            return transactionNothingToDo;
+        }
+        
+        return new UaDeleteObjectTransaction(context, handleId, identifier, this.nodeManager);
+    }
+
+    getDeleteReferenceTransaction(context: DeleteReferencesContext, handleId: number): UaDeleteReferenceTransaction {
+        const transactionNothingToDo = new UaDeleteReferenceTransaction(context, handleId);
+        const referenceToDelete = context.referencesToDelete[handleId];
+        const sourceNodeId = referenceToDelete.sourceNodeId;
+        const targetNodeId = referenceToDelete.targetNodeId.getNodeId();
+
+        if (null == targetNodeId ||
+            !referenceToDelete.isForward)
+        {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadInvalidArgument));
+            return transactionNothingToDo;
+        }
+
+        if (!this.isReactiveObjectNodeId(sourceNodeId) || 
+            !this.isReactiveObjectNodeId(targetNodeId)) {
+            transactionNothingToDo.setStatusCode(UaStatusCode.from(StatusCodes.BadNodeIdInvalid));
+            return transactionNothingToDo;
+        }
+
+        const sourceIdentifier = this.getInstanceIdentifier(sourceNodeId);
+        const targetIdentifier = this.getInstanceIdentifier(targetNodeId);
+
+        if (sourceIdentifier === null || targetIdentifier === null) {
+            transactionNothingToDo.setStatusCode(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
+            return transactionNothingToDo;
+        }
+
+        return new UaDeleteObjectReferenceTransaction(
+            context,
+            handleId,
+            sourceIdentifier,
+            targetIdentifier,
+            referenceToDelete.referenceTypeId,
+            this.nodeManager,
+        );
+    }
+
     private isReactiveObjectNodeId(nodeId: UaNodeId): boolean {
         return nodeId.identifierType === UaNodeIdType.BYTESTRING;
     }
 
     private getInstanceIdentifier(nodeId: UaNodeId): UaInstanceIdentifier | null {
-        if (!this.isReactiveObjectNodeId(nodeId)) {
-            return null;
-        }
-
+        if (!this.isReactiveObjectNodeId(nodeId)) return null;
         const value = nodeId.value;
         return typeof value === "string" ? UaInstanceIdentifier.fromByteString(value) : null;
     }

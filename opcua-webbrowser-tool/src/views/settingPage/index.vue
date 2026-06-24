@@ -233,7 +233,6 @@
                     <span class="header-index">Index</span>
                     <span class="header-name">Name</span>
                     <span class="header-type">DataType</span>
-                    <span class="header-his">Historizing</span>
                     <span class="header-value">Value</span>
                   </div>
                   <div v-for="(item, index) in sortedMergedNodeData" :key="item.nodeId" label-width="100px">
@@ -275,9 +274,6 @@
                       <div class="property-type property-name-col">
                         <div class="property-name-main">{{ item.dataType }}</div>
                       </div>
-                      <div class="property-his property-name-col">
-                        <div class="property-name-main">{{ item.Historizing ? 'true' : 'false' }}</div>
-                      </div>
                       <div class="property-value">
                         <!-- 展示模式：显示当前值 -->
                         <div 
@@ -302,6 +298,14 @@
                             >{{ formatDisplayValue(item._editValue, item) }}</span>
                           </el-tooltip>
                           <div class="value-actions" v-if="!item._isChildData">
+                            <el-icon
+                              v-if="item.Historizing"
+                              class="history-trend-icon"
+                              title="查看历史数据"
+                              @click.stop="openHistoryTrendTab(item)"
+                            >
+                              <TrendCharts />
+                            </el-icon>
                             <el-icon 
                               v-if="isDataTypeEditable(item)"
                               @click="startEditValue(item)"
@@ -1033,50 +1037,78 @@
                   </div>
                 </div>
               </div>
-              <div v-else-if="tab.type === 'History Trend'" class="history-trend-panel">
-                <div class="panel-header">
+              <div v-else-if="tab.type === 'History'" class="history-trend-panel">
+                <!-- <div class="panel-header">
                   <span>{{ tab.value }}</span>
-                </div>
+                </div> -->
                 <div class="history-trend-toolbar">
-                  <div class="history-trend-node-info">
+                  <!-- <div class="history-trend-node-info">
                     <span class="history-trend-node-name">{{ historyTrendNode?.name || '未选择变量' }}</span>
                     <span class="history-trend-node-meta" v-if="historyTrendNode?.dataType">
                       {{ historyTrendNode.dataType }}
                     </span>
-                  </div>
+                  </div> -->
                   <div class="history-trend-controls">
-                    <div class="history-trend-control-item">
-                      <span class="history-trend-control-label">开始时间</span>
-                      <el-date-picker
-                        v-model="historyTrendStartTime"
-                        type="datetime"
-                        placeholder="选择开始时间"
-                        format="YYYY-MM-DD HH:mm:ss"
-                        value-format="YYYY-MM-DD HH:mm:ss"
-                        class="history-trend-time-picker"
-                        clearable
-                      />
+                    <div class="history-trend-time-row">
+                      <div class="history-trend-control-item">
+                        <span class="history-trend-control-label">开始时间</span>
+                        <el-date-picker
+                          v-model="historyTrendStartTime"
+                          type="datetime"
+                          placeholder="选择开始时间"
+                          format="YYYY-MM-DD HH:mm:ss"
+                          value-format="YYYY-MM-DD HH:mm:ss"
+                          class="history-trend-time-picker"
+                          :disabled="historyTrendLoading"
+                          clearable
+                        />
+                      </div>
+                      <div class="history-trend-control-item">
+                        <span class="history-trend-control-label">结束时间</span>
+                        <el-date-picker
+                          v-model="historyTrendEndTime"
+                          type="datetime"
+                          placeholder="选择结束时间"
+                          format="YYYY-MM-DD HH:mm:ss"
+                          value-format="YYYY-MM-DD HH:mm:ss"
+                          class="history-trend-time-picker"
+                          :disabled="historyTrendLoading"
+                          clearable
+                        />
+                      </div>
                     </div>
-                    <div class="history-trend-control-item">
-                      <span class="history-trend-control-label">结束时间</span>
-                      <el-date-picker
-                        v-model="historyTrendEndTime"
-                        type="datetime"
-                        placeholder="选择结束时间"
-                        format="YYYY-MM-DD HH:mm:ss"
-                        value-format="YYYY-MM-DD HH:mm:ss"
-                        class="history-trend-time-picker"
-                        clearable
-                      />
+                    <div class="history-trend-step-row">
+                      <div class="history-trend-step-box">
+                      <el-checkbox
+                        v-model="historyTrendUseStep"
+                        class="history-trend-step-checkbox"
+                        :disabled="historyTrendLoading"
+                      >
+                        步长选择
+                      </el-checkbox>
+                      <el-select
+                        v-model="historyTrendProcessingInterval"
+                        class="history-trend-step-select"
+                        placeholder="选择步长"
+                        :disabled="!historyTrendUseStep || historyTrendLoading"
+                      >
+                        <el-option
+                          v-for="option in historyTrendStepOptions"
+                          :key="option.value"
+                          :label="option.label"
+                          :value="option.value"
+                        />
+                      </el-select>
+                      </div>
+                      <el-button
+                        type="primary"
+                        :icon="Search"
+                        :loading="historyTrendLoading"
+                        @click="loadHistoryTrendData"
+                      >
+                        搜索
+                      </el-button>
                     </div>
-                    <el-button
-                      type="primary"
-                      :icon="Refresh"
-                      :loading="historyTrendLoading"
-                      @click="loadHistoryTrendData"
-                    >
-                      刷新
-                    </el-button>
                   </div>
                 </div>
                 <div class="history-trend-chart-wrapper">
@@ -2050,8 +2082,8 @@ import { getBrowseData, getBrowseNextData, getOpcuaData } from '@/api/index.js';
 import { onMounted, onUnmounted, reactive, ref,computed, watch,nextTick, unref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {ElDrawer, ElMessageBox, ElDialog, ElButton, ElMessage, stepProps } from 'element-plus';
-import { Configuration, NodeClass, BrowseDirection } from "opcua-webapi";
-import { Document, CircleCheck, ArrowDown, ArrowRight, Edit, Check, Close, DocumentCopy, Loading, Lock, EditPen, QuestionFilled, DocumentAdd, Delete, Plus, Minus, Share, Search, Refresh, Link, TrendCharts } from '@element-plus/icons-vue';
+import { Configuration, NodeClass, BrowseDirection, TimestampsToReturn } from "opcua-webapi";
+import { Document, CircleCheck, ArrowDown, ArrowRight, Edit, Check, Close, DocumentCopy, Loading, Lock, EditPen, QuestionFilled, DocumentAdd, Delete, Plus, Minus, Share, Search, Link, TrendCharts } from '@element-plus/icons-vue';
 import moment from 'moment';
 import {
   UaWebClient,
@@ -2106,6 +2138,12 @@ const vFocus = {
 };
 
 const pageStore = usePageStore();
+const OPC_UA_REQUEST_TIMEOUT_MS = 20000;
+const createOpcUaClientConfiguration = (apiConfig) => {
+  const clientConfig = new UaClientConfiguration(apiConfig);
+  clientConfig.defaultTimeout = OPC_UA_REQUEST_TIMEOUT_MS;
+  return clientConfig;
+};
 const DISCOVERY_NODE_ID = 'discovery-root';
 const DISCOVERY_STORAGE_KEY = 'settingPage.discovery.config';
 const DISCOVERY_SEARCH_HISTORY_KEY = 'settingPage.discovery.searchHistory';
@@ -2364,6 +2402,7 @@ const state = reactive({
   nodeDetailsData:[
     {key:'1',value:'Variables',type:'Variables'},
     {key:'2',value:'References',type:'References'},
+    {key:'history-trend',value:'History',type:'History'},
     {key:'3',value:'Event History',type:'Event History'}
   ],
   folderArr:[],
@@ -2502,7 +2541,7 @@ const getCurrentConfig = () => {
     securityMode: 'None',
     securityPolicy: 'None',
     sessionTimeout: 60000,
-    connectionTimeout: 10000,
+    connectionTimeout: OPC_UA_REQUEST_TIMEOUT_MS,
     selectedNodeId: selectedNodeId.value,
     treeDataCount: state.bottomTreeData.length,
     mergedDataCount: state.mergedNodeData.length
@@ -3937,7 +3976,7 @@ const getDetialCard =  (e)=> {
         let apiConfig = new Configuration({
           basePath: url
         });
-        let clientConfig = new UaClientConfiguration(apiConfig);
+        let clientConfig = createOpcUaClientConfiguration(apiConfig);
         let testOpcServer = new UaWebClient(clientConfig);
         
         let readNodeIds = [];
@@ -5070,7 +5109,7 @@ const detailsMessage = async (nodeIDs, url) => {
       let apiConfig = new Configuration({
         basePath: cacheUrl
       });
-      let clientConfig = new UaClientConfiguration(apiConfig);
+      let clientConfig = createOpcUaClientConfiguration(apiConfig);
       let testOpcServer = new UaWebClient(clientConfig);
 
       // 并行执行两个请求，提高性能
@@ -5190,7 +5229,7 @@ const singleDetailsMessage = async (nodeIDs, url) => {
       let apiConfig = new Configuration({
         basePath: cacheUrl
       });
-      let clientConfig = new UaClientConfiguration(apiConfig);
+      let clientConfig = createOpcUaClientConfiguration(apiConfig);
       let testOpcServer = new UaWebClient(clientConfig);
 
       // 并行执行两个请求，提高性能
@@ -5275,7 +5314,7 @@ const detailsVariableMessage = async(nodeIDs,item) => {
     let apiConfig = new Configuration({
       basePath: url
     });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
 
     let nodeAttributesArr  = await testOpcServer.readNodeAttributes(nodeId,true);
@@ -5714,9 +5753,10 @@ const expandedNodeIdToString = (obj) => {
   return parts.join(', ');
 }
 const handleMenuClick = (tab) => {
-  activeFolder.value = '1';
+  const tabName = tab?.props?.name ?? tab?.paneName ?? tab?.name ?? activeFolder.value;
+  activeFolder.value = tabName;
   // 根据点击的tab获取对应的数据
-  const currentItem = state.nodeDetailsData.find(item => item.key === tab.name);
+  const currentItem = state.nodeDetailsData.find(item => item.key === tabName);
   if (currentItem) {
   }
 };
@@ -5898,11 +5938,11 @@ const handleDiscoveryFindSearch = async () => {
       basePath: address,
       fetchApi,
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
     const testOpcServer = new UaWebClient(clientConfig);
     const servers = await withTimeout(
       testOpcServer.findServer(address, []),
-      10000,
+      OPC_UA_REQUEST_TIMEOUT_MS,
       'Discovery Find 超时',
       controller
     );
@@ -6155,7 +6195,7 @@ const handleDialogConfirm = useThrottleFn(() => {
           let apiConfig = new Configuration({
               basePath: url
           });
-          let clientConfig = new UaClientConfiguration(apiConfig);
+          let clientConfig = createOpcUaClientConfiguration(apiConfig);
           let testOpcServer = new UaWebClient(clientConfig);
           let dataTypeDictionary = new UaDataTypeDictionary();
           await dataTypeDictionary.read(testOpcServer);
@@ -6186,7 +6226,7 @@ const handleDialogConfirm = useThrottleFn(() => {
       let apiConfig = new Configuration({
           basePath: url
       });
-      let clientConfig = new UaClientConfiguration(apiConfig);
+      let clientConfig = createOpcUaClientConfiguration(apiConfig);
       let testOpcServer = new UaWebClient(clientConfig);
       let referenceTypeDictionary = new UaReferenceTypeDictionary( );
       await referenceTypeDictionary.read(testOpcServer);
@@ -6218,7 +6258,7 @@ const handleDialogConfirm = useThrottleFn(() => {
       let apiConfig = new Configuration({
           basePath: url
       });
-      let clientConfig = new UaClientConfiguration(apiConfig);
+      let clientConfig = createOpcUaClientConfiguration(apiConfig);
       let testOpcServer = new UaWebClient(clientConfig);
       let UaObjectTypeDictionarys = new UaObjectTypeDictionary( );
       await UaObjectTypeDictionarys.read(testOpcServer);
@@ -7248,9 +7288,10 @@ const handleAddDocumentConfirm = () => {
     // 添加 History tab
     state.nodeDetailsData.push({
       key: '3',
-      value: 'History',
+      value: 'Event History',
       type: 'Event History'
     });
+    sortHistoryTabsBeforeEventHistory();
     // 切换到 History 选项卡
     nextTick(() => {
       activeFolder.value = '3';
@@ -7612,6 +7653,57 @@ const getResolvedTypeDefinitionId = (nodeMeta) => {
   );
 };
 
+const getBrowseResultContinuationPoint = (browseResult) => {
+  return browseResult?.continuationPoint || browseResult?.ContinuationPoint || null;
+};
+
+const normalizeBrowseReferenceResults = (referenceResults = [], options = {}) => {
+  const { fallbackHasChildren = false } = options;
+
+  return referenceResults.map((ref) => {
+    let refNodeId = ref.nodeId || ref.NodeId;
+    if (typeof refNodeId === 'string') {
+      refNodeId = UaNodeId.parse(refNodeId);
+    }
+
+    return {
+      nodeId: refNodeId,
+      browseName: ref.browseName || ref.BrowseName || '',
+      displayName: ref.displayName || ref.DisplayName || { text: '', Text: '' },
+      nodeClass: ref.nodeClass || ref.NodeClass || 0,
+      typeDefinition: ref.typeDefinition || ref.TypeDefinition || null,
+      hasChildren: ref.hasChildren !== undefined ? ref.hasChildren : fallbackHasChildren,
+    };
+  });
+};
+
+const createLoadMoreTreeNode = (parentNodeId) => ({
+  nodeId: null,
+  nodeIdNum: `__load_more_${parentNodeId}`,
+  label: '...',
+  isLeaf: true,
+  nodeClass: -1,
+  NodeClassType: -1,
+  hasChildren: false,
+  children: [],
+  isLoadMore: true,
+  parentNodeId,
+  className: 'load-more-tree-node',
+});
+
+const appendLoadMoreNodeIfNeeded = (nodes, parentNodeId, continuationPoint) => {
+  const normalizedNodes = Array.isArray(nodes) ? [...nodes] : [];
+  const filteredNodes = normalizedNodes.filter(
+    (item) => !(item?.isLoadMore && item?.parentNodeId === parentNodeId)
+  );
+
+  if (continuationPoint && parentNodeId) {
+    filteredNodes.push(createLoadMoreTreeNode(parentNodeId));
+  }
+
+  return filteredNodes;
+};
+
 const shouldUseObjectOnlyNodeClassMask = (nodeMeta) => {
   if (!nodeMeta) return false;
 
@@ -7621,33 +7713,38 @@ const shouldUseObjectOnlyNodeClassMask = (nodeMeta) => {
     nodeMeta?.data?.objectNodeClassDisplayName ||
     '';
 
-  return (
-    Boolean(typeDefinitionId) &&
-    /Reference/i.test(typeDefinitionId) &&
-    objectNodeClassDisplayName === 'ReferenceElementType'
-  );
+  return Boolean(typeDefinitionId) && objectNodeClassDisplayName === 'ReferenceElementType';
+};
+
+const logReferenceBrowseFlow = (stage, payload = {}) => {
+  console.log(`[ReferenceBrowse] ${stage}`, payload);
+};
+
+const logReferenceElementTypeApi = (apiName, payload = {}) => {
+  console.log(`[ReferenceElementType] api=${apiName}`, payload);
 };
 
 const normalizeBrowseNodeClassMask = (nodeIdLike, defaultMask, nodeMeta = null) => {
   const resolvedNodeMeta = resolveBrowseNodeMeta(nodeIdLike, nodeMeta);
   if (shouldUseObjectOnlyNodeClassMask(resolvedNodeMeta)) {
-    console.warn('[BrowseMask] force NodeClassMask=Object because typeDefinitionId contains Reference and node is ReferenceElementType', {
+    logReferenceBrowseFlow('normalize-node-class-mask', {
       nodeId: stringifyNodeId(nodeIdLike),
       typeDefinitionId: getResolvedTypeDefinitionId(resolvedNodeMeta),
       objectNodeClassDisplayName:
         resolvedNodeMeta?.objectNodeClassDisplayName ||
         resolvedNodeMeta?.data?.objectNodeClassDisplayName,
+      nodeClassMask: Number(NodeClass.Object),
     });
     return Number(NodeClass.Object);
   }
-  return Number(
+  return Number(defaultMask ?? (
     NodeClass.Object
     | NodeClass.Method
     | NodeClass.ObjectType
     | NodeClass.VariableType
     | NodeClass.DataType
     | NodeClass.ReferenceType
-  );
+  ));
 };
 
 const normalizeBrowseReferenceTypeId = (nodeIdLike, defaultReferenceTypeId) => {
@@ -7676,31 +7773,10 @@ const loadNode =  (node, resolve) => {
   ensureFixedNodeExpanded();
   selectedNodeId.value = nodeid2;
   const currentNodeIdStr = nodeIdNum || node.data?.nodeId?._nodeId?.toString?.() || node.data?.nodeId?.toString?.() || '';
-  const typeDefinitionIdStr =
-    node.data?.typeDefinitionId ||
-    node.data?.typeDefinition?._nodeId?.toString?.() ||
-    node.data?.typeDefinition?.toString?.() ||
-    '';
+  const objectNodeClassDisplayName = node.data?.objectNodeClassDisplayName || '';
   const isReferenceElementTypeDefinitionNode = currentNodeIdStr === 'ns=1;i=14';
   const isReferenceElementTypeInstanceNode =
-    currentNodeIdStr !== 'ns=1;i=14' &&
-    node.data.objectNodeClassDisplayName === 'ReferenceElementType';
-  const isReferenceOnlyObjectNode =
-    (node.data?.BrowseName === 'Reference' ||
-      node.data?.browseName === 'Reference' ||
-      node.data?.label === 'Reference') &&
-    Number(node.data?.nodeClass) === NodeClass.Object &&
-    /ReferenceElementTestType/i.test(typeDefinitionIdStr);
-  const isEmployeesDebugNode =
-    currentNodeIdStr === 'ns=2;b=eyJvaSI6eyJpIjoiMiIsImlkIjoibnM9MjtzPURlcGFydG1lbnRUeXBlLUVtcGxveWVlcyJ9fQ==' ||
-    node.data?.label === 'Employees';
-  const isLeafDebugNode =
-    currentNodeIdStr === 'i=2253' ||
-    currentNodeIdStr === 'ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ==' ||
-    node.data?.label === 'Server' ||
-    node.data?.label === 'PersonalData' ||
-    node.data?.browseName === 'Server' ||
-    node.data?.browseName === 'PersonalData';
+    shouldUseObjectOnlyNodeClassMask(node.data);
   const isKnownLeafNode =
     currentNodeIdStr === 'i=2253' ||
     currentNodeIdStr === 'ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ==' ||
@@ -7720,72 +7796,50 @@ const loadNode =  (node, resolve) => {
   ), node.data);
 
   const fallbackToDefaultBrowse = async () => {
-    if (isEmployeesDebugNode) {
-      console.warn('[Employees Debug] fallbackToDefaultBrowse:start', {
-        currentNodeIdStr,
-        label: node.data?.label,
-        objectNodeClass: node.data?.objectNodeClass,
-        objectNodeClassDisplayName: node.data?.objectNodeClassDisplayName,
-      });
-    }
+    logReferenceBrowseFlow('fallback-default-browse:start', {
+      nodeId: currentNodeIdStr,
+      label: node.data?.label,
+      objectNodeClassDisplayName,
+      fallbackNodeClassMask,
+    });
 
     const firstRes = await getBrowseDatas(fallbackNodeClassMask, 10, nodeid2);
-    if (isEmployeesDebugNode) {
-      console.warn('[Employees Debug] fallbackToDefaultBrowse:firstRes', {
-        resultsLength: firstRes?.results?.length || 0,
-        continuationPoint: firstRes?.continuationPoint || null,
-      });
-    }
+    logReferenceBrowseFlow('fallback-default-browse:result', {
+      nodeId: currentNodeIdStr,
+      resultsLength: firstRes?.results?.length || 0,
+      continuationPoint: firstRes?.continuationPoint || null,
+    });
 
     const allArr = firstRes?.results || [];
     const slim = processNodeDataItems(allArr);
-
-    if (isEmployeesDebugNode) {
-      console.warn('[Employees Debug] fallbackToDefaultBrowse:processed', {
-        allArrLength: allArr.length,
-        slimLength: slim.length,
-      });
-    }
+    logReferenceBrowseFlow('fallback-default-browse:processed', {
+      nodeId: currentNodeIdStr,
+      allArrLength: allArr.length,
+      slimLength: slim.length,
+    });
 
     resolve(slim);
   };
 
-  if (isEmployeesDebugNode) {
-    console.warn('[Employees Debug] loadNode triggered', {
-      currentNodeIdStr,
-      browseName: node.data?.browseName,
+  logReferenceBrowseFlow('load-node', {
+    nodeId: currentNodeIdStr,
+    label: node.data?.label,
+    browseName: node.data?.browseName,
+    nodeLevel,
+    objectNodeClassDisplayName,
+    isReferenceElementTypeDefinitionNode,
+    isReferenceElementTypeInstanceNode,
+    isKnownLeafNode,
+  });
+
+  if (isKnownLeafNode) {
+    logReferenceBrowseFlow('load-node:skip-leaf', {
+      nodeId: currentNodeIdStr,
       label: node.data?.label,
-      objectNodeClass: node.data?.objectNodeClass,
-      objectNodeClassDisplayName: node.data?.objectNodeClassDisplayName,
-      nodeLevel,
-      nodeData: node.data,
-    });
-  }
-  if (isLeafDebugNode) {
-    console.warn('[Leaf Debug] loadNode triggered', {
-      currentNodeIdStr,
-      label: node.data?.label,
-      browseName: node.data?.browseName,
       isLeaf: node.data?.isLeaf,
       hasChildren: node.data?.hasChildren,
       typeDefinitionId: node.data?.typeDefinitionId,
-      objectNodeClass: node.data?.objectNodeClass,
-      objectNodeClassDisplayName: node.data?.objectNodeClassDisplayName,
-      nodeData: node.data,
     });
-  }
-
-  if (isKnownLeafNode) {
-    if (isLeafDebugNode) {
-      console.warn('[Leaf Debug] skip loadNode for leaf-like node', {
-        currentNodeIdStr,
-        label: node.data?.label,
-        isLeaf: node.data?.isLeaf,
-        hasChildren: node.data?.hasChildren,
-        typeDefinitionId: node.data?.typeDefinitionId,
-        isKnownLeafNode,
-      });
-    }
     resolve([]);
     return;
   }
@@ -7806,7 +7860,7 @@ const loadNode =  (node, resolve) => {
     const apiConfig = new Configuration({
       basePath: url
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
     const testOpcServer = new UaWebClient(clientConfig);
 
     let browseHierarchy = ReferenceTypeIds?.HierarchicalReferences ? `i=${ReferenceTypeIds.HierarchicalReferences}` : 'i=33';
@@ -7831,6 +7885,23 @@ const loadNode =  (node, resolve) => {
     }
     browseHierarchy = normalizeBrowseReferenceTypeId(targetNodeId, browseHierarchy);
     nodeClassMask = normalizeBrowseNodeClassMask(targetNodeId, nodeClassMask, node.data);
+    logReferenceElementTypeApi('browseReference', {
+      branch: 'definition',
+      nodeId: stringifyNodeId(targetNodeId),
+      objectNodeClassDisplayName,
+      nodeClassMask,
+      browseDirection,
+      browseHierarchy,
+      limit: 100,
+    });
+    logReferenceBrowseFlow('definition-browseReference:request', {
+      nodeId: stringifyNodeId(targetNodeId),
+      objectNodeClassDisplayName,
+      nodeClassMask,
+      browseDirection,
+      browseHierarchy,
+      limit: 100,
+    });
 
     // 调用 browseReference 方法获取引用
     testOpcServer.browseReference(
@@ -7841,27 +7912,29 @@ const loadNode =  (node, resolve) => {
       100
     ).then((browseResult) => {
       // 处理返回结果，转换为树节点格式
-      let referenceResults = [];
-      if (browseResult && browseResult.results && browseResult.results.length > 0) {
-        referenceResults = browseResult.results.map(ref => {
-          // 解析节点ID
-          let refNodeId = ref.nodeId || ref.NodeId;
-          if (typeof refNodeId === 'string') {
-            refNodeId = UaNodeId.parse(refNodeId);
-          }
+      const referenceResults = normalizeBrowseReferenceResults(
+        browseResult?.results || [],
+        { fallbackHasChildren: true }
+      );
+      const continuationPoint = getBrowseResultContinuationPoint(browseResult);
+      const slim = processNodeDataItems(referenceResults);
+      let resolvedSlim = slim;
 
-          return {
-            nodeId: refNodeId,
-            browseName: ref.browseName || ref.BrowseName || '',
-            displayName: ref.displayName || ref.DisplayName || { text: '', Text: '' },
-            nodeClass: ref.nodeClass || ref.NodeClass || 0,
-            typeDefinition: ref.typeDefinition || ref.TypeDefinition || null,
-            hasChildren: ref.hasChildren !== undefined ? ref.hasChildren : true,
-          };
-        });
+      if (nodeLevel !== 1 && nodeIdNum) {
+        if (continuationPoint) {
+          nodeContinuationPoints.value.set(nodeIdNum, continuationPoint);
+          resolvedSlim = appendLoadMoreNodeIfNeeded(slim, nodeIdNum, continuationPoint);
+        } else {
+          nodeContinuationPoints.value.delete(nodeIdNum);
+        }
       }
 
-      const slim = processNodeDataItems(referenceResults);
+      logReferenceBrowseFlow('definition-browseReference:result', {
+        nodeId: stringifyNodeId(targetNodeId),
+        resultsLength: browseResult?.results?.length || 0,
+        continuationPoint,
+        processedLength: slim.length,
+      });
       if (slim.length === 0) {
         fallbackToDefaultBrowse().catch((fallbackError) => {
           console.error('Fallback browse failed for ReferenceElementType definition:', fallbackError);
@@ -7870,7 +7943,7 @@ const loadNode =  (node, resolve) => {
         });
         return;
       }
-      resolve(slim);
+      resolve(resolvedSlim);
     }).catch((error) => {
       console.error('Error loading ReferenceElementType references:', error);
       fallbackToDefaultBrowse().catch((fallbackError) => {
@@ -7886,13 +7959,6 @@ const loadNode =  (node, resolve) => {
   // 当 objectNodeClass 为 'ns=1;i=14' 时，调用 browseReference 获取 Nonhierarchy 引用
   // console.log(node,'node.data.objectNodeClass----')
   if (isReferenceElementTypeInstanceNode) {
-    if (isEmployeesDebugNode) {
-      console.warn('[Employees Debug] instance branch entered', {
-        currentNodeIdStr,
-        objectNodeClass: node.data?.objectNodeClass,
-        objectNodeClassDisplayName: node.data?.objectNodeClassDisplayName,
-      });
-    }
     // 获取URL配置
     const allData = urlDatas.getDataByKey(selectedTopNodeId.value);
     let url = allData?.url || urlForm.value.url;
@@ -7907,22 +7973,15 @@ const loadNode =  (node, resolve) => {
     const apiConfig = new Configuration({
       basePath: url
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
     const testOpcServer = new UaWebClient(clientConfig);
     
     // 设置 Nonhierarchy 参数
     let browseHierarchy = ReferenceTypeIds?.NonHierarchicalReferences ? `i=${ReferenceTypeIds.NonHierarchicalReferences}` : 'i=32';
     const browseDirection = BrowseDirection?.Forward ?? 0;
     
-    // 特定 Reference 测试节点只需要返回 Object，其他节点保持原有过滤逻辑。
-    let nodeClassMask = isReferenceOnlyObjectNode
-      ? Number(NodeClass.Object)
-      : Number(
-        NodeClass.Object
-        | NodeClass.Variable
-        | NodeClass.ObjectType
-        | NodeClass.VariableType
-      );
+    // ReferenceElementType 实例节点统一只返回 Object，其余参数保持原有逻辑。
+    let nodeClassMask = Number(NodeClass.Object);
     
     // 解析节点ID
     let targetNodeId = nodeid2;
@@ -7934,8 +7993,23 @@ const loadNode =  (node, resolve) => {
       }
     }
     browseHierarchy = normalizeBrowseReferenceTypeId(targetNodeId, browseHierarchy);
-    nodeClassMask = normalizeBrowseNodeClassMask(targetNodeId, nodeClassMask, node.data);
-    
+    logReferenceElementTypeApi('browseReference', {
+      branch: 'instance',
+      nodeId: stringifyNodeId(targetNodeId),
+      objectNodeClassDisplayName,
+      nodeClassMask,
+      browseDirection,
+      browseHierarchy,
+      limit: 10,
+    });
+    logReferenceBrowseFlow('instance-browseReference:request', {
+      nodeId: stringifyNodeId(targetNodeId),
+      objectNodeClassDisplayName,
+      nodeClassMask,
+      browseDirection,
+      browseHierarchy,
+      limit: 10,
+    });
     // 调用 browseReference 方法，使用 .then() 处理 Promise
     testOpcServer.browseReference(
       targetNodeId, 
@@ -7945,38 +8019,33 @@ const loadNode =  (node, resolve) => {
       10
     ).then((browseResult) => {
       // 处理返回结果，转换为树节点格式
-      let referenceResults = [];
-      if (browseResult && browseResult.results && browseResult.results.length > 0) {
-        referenceResults = browseResult.results.map(ref => {
-          // 解析节点ID
-          let refNodeId = ref.nodeId || ref.NodeId;
-          if (typeof refNodeId === 'string') {
-            refNodeId = UaNodeId.parse(refNodeId);
-          }
-          
-          return {
-            nodeId: refNodeId,
-            browseName: ref.browseName || ref.BrowseName || '',
-            displayName: ref.displayName || ref.DisplayName || { text: '', Text: '' },
-            nodeClass: ref.nodeClass || ref.NodeClass || 0,
-            typeDefinition: ref.typeDefinition || ref.TypeDefinition || null,
-            hasChildren: false, // 非层次引用默认无子节点
-          };
-        });
-      }
-      
-      if (isEmployeesDebugNode) {
-        console.warn('[Employees Debug] instance browseReference result', {
-          browseResultResultsLength: browseResult?.results?.length || 0,
-          referenceResultsLength: referenceResults.length,
-        });
+      const referenceResults = normalizeBrowseReferenceResults(
+        browseResult?.results || [],
+        { fallbackHasChildren: false }
+      );
+      const continuationPoint = getBrowseResultContinuationPoint(browseResult);
+      const slim = processNodeDataItems(referenceResults);
+      let resolvedSlim = slim;
+
+      if (nodeLevel !== 1 && nodeIdNum) {
+        if (continuationPoint) {
+          nodeContinuationPoints.value.set(nodeIdNum, continuationPoint);
+          resolvedSlim = appendLoadMoreNodeIfNeeded(slim, nodeIdNum, continuationPoint);
+        } else {
+          nodeContinuationPoints.value.delete(nodeIdNum);
+        }
       }
 
-      const slim = processNodeDataItems(referenceResults);
+      logReferenceBrowseFlow('instance-browseReference:result', {
+        nodeId: stringifyNodeId(targetNodeId),
+        resultsLength: browseResult?.results?.length || 0,
+        continuationPoint,
+        processedLength: slim.length,
+      });
       if (slim.length === 0) {
-        if (isEmployeesDebugNode) {
-          console.warn('[Employees Debug] instance browseReference empty, fallback to default browse');
-        }
+        logReferenceBrowseFlow('instance-browseReference:empty-result', {
+          nodeId: stringifyNodeId(targetNodeId),
+        });
         fallbackToDefaultBrowse().catch((fallbackError) => {
           console.error('Fallback browse failed for ReferenceElementType instance:', fallbackError);
           ElMessage.warning('加载非层次引用失败: ' + (fallbackError.message || '未知错误'));
@@ -7984,7 +8053,7 @@ const loadNode =  (node, resolve) => {
         });
         return;
       }
-      resolve(slim);
+      resolve(resolvedSlim);
     }).catch((error) => {
       console.error('Error loading Nonhierarchy references:', error);
       fallbackToDefaultBrowse().catch((fallbackError) => {
@@ -8000,7 +8069,7 @@ const loadNode =  (node, resolve) => {
   // 当不满足条件时，调用 getBrowseDatas
   getBrowseDatas(normalizeBrowseNodeClassMask(nodeid2 || currentNodeIdStr, undefined, node.data), 10, null, node.data).then(async (firstRes) => {
     let allArr = firstRes?.results || []; // 初始化累计数组
-    let continuationPoint = firstRes?.continuationPoint;
+    let continuationPoint = getBrowseResultContinuationPoint(firstRes);
     
     // 如果是非一级节点（level != 1），只加载第一页，保存 continuationPoint
     if (nodeLevel !== 1) {
@@ -8023,7 +8092,7 @@ const loadNode =  (node, resolve) => {
         }
 
         // 更新继续点
-        continuationPoint = nextRes?.ContinuationPoint;
+        continuationPoint = getBrowseResultContinuationPoint(nextRes);
       } catch (error) {
         break; // 出错时终止循环
         }
@@ -8034,31 +8103,9 @@ const loadNode =  (node, resolve) => {
     const slim = processNodeDataItems(allArr);
       // 如果是非一级节点且有 continuationPoint，添加一个特殊的加载更多节点
       if (nodeLevel !== 1) {
-        
-        // 先移除可能存在的旧加载更多节点（防止重复）
-        const existingLoadMoreIndex = slim.findIndex(
-          item => item.isLoadMore && item.parentNodeId === nodeIdNum
-        );
-        if (existingLoadMoreIndex !== -1) {
-          slim.splice(existingLoadMoreIndex, 1);
-        }
-        
-        // 只有当 continuationPoint 存在时才添加加载更多节点
+        const resolvedSlim = appendLoadMoreNodeIfNeeded(slim, nodeIdNum, continuationPoint);
         if (continuationPoint && nodeIdNum) {
           const loadMoreNodeId = `__load_more_${nodeIdNum}`;
-          slim.push({
-            nodeId: null,
-            nodeIdNum: loadMoreNodeId,
-            label: '...',
-            isLeaf: true,
-            nodeClass: -1, // 特殊标记
-            NodeClassType: -1,
-            hasChildren: false,
-            children: [],
-            isLoadMore: true, // 标记为加载更多按钮
-            parentNodeId: nodeIdNum,
-            className: 'load-more-tree-node', // 添加类名用于 CSS 选择器
-          });
           
           // 在节点渲染后隐藏展开图标
           nextTick(() => {
@@ -8104,6 +8151,9 @@ const loadNode =  (node, resolve) => {
             nodeContinuationPoints.value.delete(nodeIdNum);
           }
         }
+
+        resolve(resolvedSlim);
+        return;
       }
 
       resolve(slim);              // 传给 el-tree，秒级完成
@@ -8132,12 +8182,6 @@ const loadNextPageForNode = async (parentNodeId) => {
       return;
     }
     
-    // 判断节点的 objectNodeClass，如果是 'ns=1;i=14'，则不支持加载更多
-    if (parentNode.data.objectNodeClass == 'ns=1;i=14') {
-      ElMessage.info('非层次引用不支持分页加载');
-      return;
-    }
-    
     // 获取正确的URL
     const allData = urlDatas.getDataByKey(selectedTopNodeId.value);
     let url = allData?.url || urlForm.value.url;
@@ -8151,7 +8195,7 @@ const loadNextPageForNode = async (parentNodeId) => {
     const apiConfig = new Configuration({
       basePath: url
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
     const testOpcServer = new UaWebClient(clientConfig);
     
     // 使用 browseNextByCP 加载下一页
@@ -8166,31 +8210,22 @@ const loadNextPageForNode = async (parentNodeId) => {
     }
 
     // 处理新数据
-    const newResults = nextResult.results || [];
+    const isReferenceDefinitionNode = stringifyNodeId(parentNode.data?.nodeId) === 'ns=1;i=14';
+    const isReferenceInstanceNode = shouldUseObjectOnlyNodeClassMask(parentNode.data);
+    const newResults = (isReferenceDefinitionNode || isReferenceInstanceNode)
+      ? normalizeBrowseReferenceResults(nextResult.results || [], {
+          fallbackHasChildren: isReferenceDefinitionNode,
+        })
+      : (nextResult.results || []);
     
     // 使用公共函数处理数据
     const regularNodes = processNodeDataItems(newResults);
 
-    // 更新 continuationPoint（使用小写字段名）
-    const newContinuationPoint = nextResult?.continuationPoint;
-    let loadMoreNode = null;
+    // 更新 continuationPoint
+    const newContinuationPoint = getBrowseResultContinuationPoint(nextResult);
     
     if (newContinuationPoint) {
       nodeContinuationPoints.value.set(parentNodeId, newContinuationPoint);
-      // 创建加载更多节点（但不立即添加到数组）
-      loadMoreNode = {
-        nodeId: null,
-        nodeIdNum: `__load_more_${parentNodeId}`,
-        label: '...',
-        isLeaf: true,
-        nodeClass: -1,
-        NodeClassType: -1,
-        hasChildren: false,
-        children: [],
-        isLoadMore: true,
-        parentNodeId: parentNodeId,
-        className: 'load-more-tree-node' // 添加类名用于 CSS 选择器
-      };
     } else {
       // 没有更多数据，移除 continuationPoint 和加载更多节点
       nodeContinuationPoints.value.delete(parentNodeId);
@@ -8199,7 +8234,11 @@ const loadNextPageForNode = async (parentNodeId) => {
     }
     
     // 确保加载更多节点在最后
-    const newNodes = loadMoreNode ? [...regularNodes, loadMoreNode] : regularNodes;
+    const newNodes = appendLoadMoreNodeIfNeeded(
+      regularNodes,
+      parentNodeId,
+      newContinuationPoint
+    );
 
     // 找到父节点并添加新节点（addNodesToParent 内部会处理移除旧的加载更多节点）
     addNodesToParent(parentNodeId, newNodes);
@@ -9220,7 +9259,7 @@ const loadNodetemp = async (node, resolve) => {
     
     // ⚡ 优化6: 动态页面大小和超时策略
     const pageSize = getOptimalPageSize(nodeLevel);
-    const timeout = Math.min(5000 + nodeLevel * 1000, 12000); // 动态超时
+    const timeout = OPC_UA_REQUEST_TIMEOUT_MS;
     
     // ⚡ 优化7: 客户端复用
     const allData = urlDatas.getDataByKey(selectedTopNodeId.value);
@@ -9235,7 +9274,7 @@ const loadNodetemp = async (node, resolve) => {
     let opcClient = opcClientCache.value.get(baseUrl);
     if (!opcClient) {
       const apiConfig = new Configuration({ basePath: baseUrl });
-      const clientConfig = new UaClientConfiguration(apiConfig);
+      const clientConfig = createOpcUaClientConfiguration(apiConfig);
       opcClient = new UaWebClient(clientConfig);
       opcClientCache.value.set(baseUrl, opcClient);
     }
@@ -9400,7 +9439,7 @@ const optimizedLoadNode = async (node, resolve) => {
     
     // ⚡ 优化6: 动态页面大小和超时策略
     const pageSize = getOptimalPageSize(nodeLevel);
-    const timeout = Math.min(5000 + nodeLevel * 1000, 12000);
+    const timeout = OPC_UA_REQUEST_TIMEOUT_MS;
     
     // ⚡ 优化7: 客户端复用
     const allData = urlDatas.getDataByKey(selectedTopNodeId.value);
@@ -9415,7 +9454,7 @@ const optimizedLoadNode = async (node, resolve) => {
     let opcClient = opcClientCache.value.get(baseUrl);
     if (!opcClient) {
       const apiConfig = new Configuration({ basePath: baseUrl });
-      const clientConfig = new UaClientConfiguration(apiConfig);
+      const clientConfig = createOpcUaClientConfiguration(apiConfig);
       opcClient = new UaWebClient(clientConfig);
       opcClientCache.value.set(baseUrl, opcClient);
     }
@@ -9847,12 +9886,12 @@ const getBrowseDatas = async (passNodeClass, pageSize = 10, overrideNodeId = nul
           basePath: currentUrl,
           fetchApi
         } );
-      let clientConfig = new UaClientConfiguration(apiConfig2);
+      let clientConfig = createOpcUaClientConfiguration(apiConfig2);
       let testOpcServer = new UaWebClient(clientConfig);
 
       const result = await withTimeout(
         testOpcServer.browseChild(validNodeId, nodeClassToReturn, pageSize),
-        10000,
+        OPC_UA_REQUEST_TIMEOUT_MS,
         '请求超时',
         controller
       );
@@ -9876,6 +9915,73 @@ const getBrowseDatas = async (passNodeClass, pageSize = 10, overrideNodeId = nul
   } catch (error) {
     console.error('getBrowseDatas error:', error);
     return { results: [], ContinuationPoint: null };
+  }
+};
+
+const getReferenceElementBrowseDatas = async (pageSize = 10, overrideNodeId = null, browseNodeMeta = null) => {
+  let nodeId = '';
+
+  if (!connectFlag.value) {
+    console.warn('No connection established, skipping getReferenceElementBrowseDatas');
+    return { results: [], continuationPoint: null };
+  }
+
+  if (overrideNodeId) {
+    nodeId = overrideNodeId;
+  } else if (selectedNodeId.value) {
+    nodeId = selectedNodeId.value;
+  } else {
+    return { results: [], continuationPoint: null };
+  }
+
+  const allData = urlDatas.getDataByKey(selectedTopNodeId.value);
+  if (!allData?.url && !urlForm.value.url) {
+    console.warn('No valid URL configuration found, skipping getReferenceElementBrowseDatas');
+    return { results: [], continuationPoint: null };
+  }
+
+  try {
+    let validNodeId = nodeId;
+    if (nodeId && typeof nodeId === 'object' && nodeId._nodeId) {
+      validNodeId = nodeId._nodeId;
+    }
+
+    const currentUrl = allData?.url || urlForm.value.url || 'http://localhost:4840';
+    const apiConfig = new Configuration({
+      basePath: currentUrl,
+    });
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
+    const testOpcServer = new UaWebClient(clientConfig);
+
+    const browseDirection = BrowseDirection?.Forward ?? 0;
+    const browseHierarchy = normalizeBrowseReferenceTypeId(
+      validNodeId,
+      ReferenceTypeIds?.NonHierarchicalReferences ? `i=${ReferenceTypeIds.NonHierarchicalReferences}` : 'i=32'
+    );
+    const nodeClassToReturn = Number(NodeClass.Object);
+
+    logReferenceElementTypeApi('browseReference', {
+      source: 'handleNodeClick',
+      nodeId: stringifyNodeId(validNodeId),
+      objectNodeClassDisplayName:
+        browseNodeMeta?.objectNodeClassDisplayName ||
+        browseNodeMeta?.data?.objectNodeClassDisplayName,
+      nodeClassMask: nodeClassToReturn,
+      browseDirection,
+      browseHierarchy,
+      limit: pageSize,
+    });
+
+    return await testOpcServer.browseReference(
+      validNodeId,
+      nodeClassToReturn,
+      browseDirection,
+      browseHierarchy,
+      pageSize
+    );
+  } catch (error) {
+    console.error('getReferenceElementBrowseDatas error:', error);
+    return { results: [], continuationPoint: null };
   }
 };
 
@@ -9909,7 +10015,7 @@ const getRightBrowseDatas = async () => {
     basePath: url,
     fetchApi
   });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
 
   try {
@@ -9929,7 +10035,7 @@ const getRightBrowseDatas = async () => {
     );
     const result = await withTimeout(
       testOpcServer.browseChild(validNodeId, nodeClassToReturn, 20),
-      10000,
+      OPC_UA_REQUEST_TIMEOUT_MS,
       '请求超时',
       controller
     );
@@ -9969,7 +10075,7 @@ const getRightDetailsBrowseDatas = async (url) => {
     basePath: url,
     fetchApi
   });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
 
   try {
@@ -9977,7 +10083,7 @@ const getRightDetailsBrowseDatas = async (url) => {
     const nodeClassToReturn = Number(NodeClass.Variable);
     const result = await withTimeout(
       testOpcServer.browseChild(validNodeId, nodeClassToReturn, 10),
-      10000,
+      OPC_UA_REQUEST_TIMEOUT_MS,
       '请求超时',
       controller
     );
@@ -10060,7 +10166,7 @@ const runOpcuaTest = async () => {
   let apiConfig = new Configuration({
     basePath: url
   });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
   try {
     let nodeId = new UaNodeId("BuildingAutomation",4,UaNodeIdType.STRING);
@@ -10202,22 +10308,6 @@ const handleRowClick = (row) => {
 
 const handleNodeClick = (data,node) => { 
   setTreeSelectedNodeMeta(data);
-  const isLeafDebugNode =
-    data?.label === 'Server' ||
-    data?.label === 'PersonalData' ||
-    data?.browseName === 'Server' ||
-    data?.browseName === 'PersonalData';
-
-  if (isLeafDebugNode) {
-    console.warn('[Leaf Debug] handleNodeClick input', {
-      label: data?.label,
-      browseName: data?.browseName,
-      isLeaf: data?.isLeaf,
-      hasChildren: data?.hasChildren,
-      nodeIdNum: data?.nodeIdNum,
-      typeDefinitionId: data?.typeDefinitionId,
-    });
-  }
   if (isDiscoveryNode(data)) {
     selectedNodeId.value = '';
     state.bottomTreeData = [];
@@ -10248,50 +10338,54 @@ const handleNodeClick = (data,node) => {
   state.detailsArr = tempArr
   Object.assign(nodeDetails, data || {});
   if(node.level != 1){
-    //  getBrowseDatas()
     try{
+      const isReferenceElementTypeClick =
+        data?.objectNodeClassDisplayName === 'ReferenceElementType';
+
+      if (isReferenceElementTypeClick) {
+        getReferenceElementBrowseDatas(10, null, data).then((browseResult) => {
+          const referenceResults = (browseResult?.results || []).map(ref => {
+            let refNodeId = ref.nodeId || ref.NodeId;
+            if (typeof refNodeId === 'string') {
+              refNodeId = UaNodeId.parse(refNodeId);
+            }
+
+            return {
+              nodeId: refNodeId,
+              browseName: ref.browseName || ref.BrowseName || '',
+              displayName: ref.displayName || ref.DisplayName || { text: '', Text: '' },
+              nodeClass: ref.nodeClass || ref.NodeClass || 0,
+              typeDefinition: ref.typeDefinition || ref.TypeDefinition || null,
+              hasChildren: false,
+            };
+          });
+
+          const slim = processNodeDataItems(referenceResults);
+          state.bottomTreeData = slim;
+        });
+        return;
+      }
+
       getBrowseDatas(undefined, 10, null, data).then(async (firstRes) => {
-        let allArr = firstRes?.results || []; // 初始化累计数组
+        let allArr = firstRes?.results || [];
         let continuationPoint = firstRes?.ContinuationPoint;
 
-        // 循环获取后续页数据
         while (continuationPoint) {
-          continuationPoints.value = continuationPoint; // 设置继续点
+          continuationPoints.value = continuationPoint;
           try {
             const nextRes = await getBrowseNextDatas();
-
-            // 合并数据
             if (nextRes?.results) {
               allArr = allArr.concat(nextRes.results);
             }
-
-            // 更新继续点
             continuationPoint = nextRes?.ContinuationPoint;
           } catch (error) {
-            break; // 出错时终止循环
+            break;
           }
         }
-        // if(!allArr || allArr.length == 0 ){
-        //   state.bottomTreeData = []
-          
-        //   return
-        // }
-        const slim = processNodeDataItems(allArr);
-        if (isLeafDebugNode) {
-          console.warn('[Leaf Debug] handleNodeClick mapped children', slim.map((item) => ({
-            label: item.label,
-            nodeIdNum: item.nodeIdNum,
-            isLeaf: item.isLeaf,
-            hasChildren: item.hasChildren,
-            nodeClass: item.nodeClass,
-            typeDefinitionId: item.typeDefinitionId,
-            objectNodeClassDisplayName: item.objectNodeClassDisplayName,
-          })));
-        }
-        state.bottomTreeData = slim
-        // return resolve(allArr);
-     });
 
+        const slim = processNodeDataItems(allArr);
+        state.bottomTreeData = slim
+     });
      }
      catch(e){
         connectFlag.value = false
@@ -10526,7 +10620,7 @@ const currentHistoryOpcServer = ref(null); // 保存当前历史查询的 OPC �
 const childNodeIds = ref(null); // 存储 getGeneratedEventType 返回的子节点
 // 初始化时间为当前日期（开始时间为今天00:00:00，结束时间为今天23:59:59）
 const getDefaultStartTime = () => {
-  return moment().format('YYYY-MM-DD HH:mm:ss');
+  return moment().startOf('day').format('YYYY-MM-DD HH:mm:ss');
 };
 
 const getDefaultEndTime = () => {
@@ -10548,10 +10642,40 @@ const historyTrendChartRef = ref(null);
 const historyTrendNode = ref(null);
 const historyTrendStartTime = ref(getDefaultStartTime());
 const historyTrendEndTime = ref(getDefaultEndTime());
+const historyTrendUseStep = ref(false);
+const historyTrendProcessingInterval = ref(60000);
+const historyTrendStepOptions = [
+  { label: '1 秒', value: 1000 },
+  { label: '5 秒', value: 5000 },
+  { label: '10 秒', value: 10000 },
+  { label: '30 秒', value: 30000 },
+  { label: '1 分钟', value: 60000 },
+  { label: '5 分钟', value: 300000 },
+  { label: '15 分钟', value: 900000 },
+  { label: '30 分钟', value: 1800000 },
+  { label: '1 小时', value: 3600000 }
+];
 const historyTrendLoading = ref(false);
 const historyTrendPoints = ref([]);
 const historyTrendEmptyText = ref('点击变量右侧图标查看历史趋势');
+const HISTORY_TREND_MAX_AXIS_LABELS = 10;
+const HISTORY_TREND_MAX_DATA_COUNT = 2000;
+const HISTORY_TREND_TOO_LONG_TEXT = '数据过长，无法显示';
 let historyTrendChart = null;
+let historyTrendRequestId = 0;
+let historyTrendLastResponseSignature = null;
+
+const clearHistoryTrendChart = () => {
+  if (historyTrendChart) {
+    historyTrendChart.clear();
+  }
+};
+
+const resetHistoryTrendDisplay = (emptyText = '点击搜索查看历史趋势') => {
+  historyTrendPoints.value = [];
+  historyTrendEmptyText.value = emptyText;
+  clearHistoryTrendChart();
+};
 
 // 扁平化树数据用于下拉选择
 const flattenedTreeOptions = computed(() => {
@@ -10872,7 +10996,20 @@ const setVariablesTableRowRef = (el, index) => {
 
 const getHistoryTrendTabLabel = (item) => {
   const name = getDisplayName(item) || item?.name || item?.browseName || 'Variable';
-  return `Event History - ${name}`;
+  return `History`;
+};
+
+const sortHistoryTabsBeforeEventHistory = () => {
+  const historyIndex = state.nodeDetailsData.findIndex(tab => tab.key === HISTORY_TREND_TAB_KEY);
+  const eventHistoryIndex = state.nodeDetailsData.findIndex(tab => tab.type === 'Event History');
+
+  if (historyIndex === -1 || eventHistoryIndex === -1 || historyIndex < eventHistoryIndex) {
+    return;
+  }
+
+  const [historyTab] = state.nodeDetailsData.splice(historyIndex, 1);
+  const nextEventHistoryIndex = state.nodeDetailsData.findIndex(tab => tab.type === 'Event History');
+  state.nodeDetailsData.splice(nextEventHistoryIndex, 0, historyTab);
 };
 
 const ensureHistoryTrendTab = (item) => {
@@ -10881,15 +11018,22 @@ const ensureHistoryTrendTab = (item) => {
 
   if (existingTab) {
     existingTab.value = label;
+    existingTab.type = 'History';
+    sortHistoryTabsBeforeEventHistory();
     return existingTab;
   }
 
   const newTab = {
     key: HISTORY_TREND_TAB_KEY,
     value: label,
-    type: 'History Trend'
+    type: 'History'
   };
-  state.nodeDetailsData.push(newTab);
+  const eventHistoryIndex = state.nodeDetailsData.findIndex(tab => tab.type === 'Event History');
+  if (eventHistoryIndex === -1) {
+    state.nodeDetailsData.push(newTab);
+  } else {
+    state.nodeDetailsData.splice(eventHistoryIndex, 0, newTab);
+  }
   return newTab;
 };
 
@@ -10919,19 +11063,78 @@ const resolveHistoryTrendNodeId = (nodeIdValue) => {
   return null;
 };
 
-const normalizeHistoryTrendValue = (variant) => {
-  if (!variant) return null;
+const normalizeHistoryTrendTimestamp = (timestamp) => {
+  if (!timestamp && timestamp !== 0) return null;
+
+  if (timestamp instanceof Date) {
+    const time = timestamp.getTime();
+    return Number.isNaN(time) ? null : time;
+  }
+
+  if (typeof timestamp === 'number') {
+    const time = timestamp < 1000000000000 ? timestamp * 1000 : timestamp;
+    return Number.isFinite(time) ? time : null;
+  }
+
+  const parsedTime = new Date(timestamp).getTime();
+  return Number.isNaN(parsedTime) ? null : parsedTime;
+};
+
+const parseHistoryTrendDateTime = (value) => {
+  if (value instanceof Date) {
+    return Number.isNaN(value.getTime()) ? null : value;
+  }
+
+  const strictValue = moment(value, 'YYYY-MM-DD HH:mm:ss', true);
+  if (strictValue.isValid()) {
+    return strictValue.toDate();
+  }
+
+  const fallbackDate = new Date(value);
+  return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
+};
+
+const getHistoryTrendTimestamp = (dataValue) => {
+  if (!dataValue) return null;
+
+  return normalizeHistoryTrendTimestamp(
+    dataValue.sourceTimestamp ??
+    dataValue.SourceTimestamp ??
+    dataValue._sourceTimestamp ??
+    dataValue.serverTimestamp ??
+    dataValue.ServerTimestamp ??
+    dataValue._serverTimestamp ??
+    dataValue.timestamp ??
+    dataValue.Time
+  );
+};
+
+const normalizeHistoryTrendValue = (valueSource) => {
+  if (valueSource === null || valueSource === undefined) return null;
+
+  if (typeof valueSource === 'number') {
+    return Number.isFinite(valueSource) ? valueSource : null;
+  }
+
+  if (typeof valueSource === 'boolean') {
+    return valueSource ? 1 : 0;
+  }
+
+  if (typeof valueSource === 'string') {
+    const parsedValue = Number(valueSource);
+    return Number.isNaN(parsedValue) ? null : parsedValue;
+  }
 
   try {
-    if (typeof variant.toNumber === 'function') {
-      const numericValue = variant.toNumber();
+    if (typeof valueSource.toNumber === 'function') {
+      const numericValue = valueSource.toNumber();
       if (numericValue !== null && !Number.isNaN(Number(numericValue))) {
         return Number(numericValue);
       }
     }
 
-    if (typeof variant.toBoolean === 'function') {
-      const booleanValue = variant.toBoolean();
+    if (typeof valueSource.toBoolean === 'function') {
+      const booleanValue = valueSource.toBoolean();
       if (typeof booleanValue === 'boolean') {
         return booleanValue ? 1 : 0;
       }
@@ -10940,147 +11143,153 @@ const normalizeHistoryTrendValue = (variant) => {
     console.warn('解析历史趋势值失败:', error);
   }
 
-  const rawValue = variant?.value?.value ?? variant?.value;
+  const rawValue =
+    valueSource?.value?.value ??
+    valueSource?.value?.Value ??
+    valueSource?.value ??
+    valueSource?._value ??
+    valueSource?.Value;
 
-  if (typeof rawValue === 'number' && !Number.isNaN(rawValue)) {
-    return rawValue;
-  }
-
-  if (typeof rawValue === 'boolean') {
-    return rawValue ? 1 : 0;
-  }
-
-  if (typeof rawValue === 'string') {
-    const parsedValue = Number(rawValue);
-    return Number.isNaN(parsedValue) ? null : parsedValue;
-  }
-
-  return null;
+  return rawValue === valueSource ? null : normalizeHistoryTrendValue(rawValue);
 };
 
-const generateMockHistoryTrendPoints = (startTime, endTime, itemName = 'Variable') => {
-  const start = startTime instanceof Date ? startTime.getTime() : new Date(startTime).getTime();
-  const end = endTime instanceof Date ? endTime.getTime() : new Date(endTime).getTime();
-  const safeStart = Number.isNaN(start) ? Date.now() - 24 * 60 * 60 * 1000 : start;
-  const safeEnd = Number.isNaN(end) ? Date.now() : end;
-  const pointCount = 24;
-  const duration = Math.max(safeEnd - safeStart, 60 * 60 * 1000);
-  const step = duration / Math.max(pointCount - 1, 1);
-  const seed = String(itemName)
-    .split('')
-    .reduce((total, char) => total + char.charCodeAt(0), 0);
+const getHistoryTrendDataValues = (historyResult) => {
+  const historyData =
+    historyResult?.historyData ??
+    historyResult?._historyData ??
+    historyResult?.dataValues ??
+    historyResult?.DataValues ??
+    [];
 
-  return Array.from({ length: pointCount }, (_, index) => {
-    const time = safeStart + step * index;
-    const wave = Math.sin(index / 3 + seed / 50) * 8;
-    const trend = index * 1.6;
-    const noise = ((seed + index * 17) % 9) - 4;
+  if (Array.isArray(historyData)) {
+    return historyData;
+  }
 
-    return {
-      time,
-      value: Number((45 + wave + trend + noise).toFixed(2))
-    };
-  });
+  return historyData?.dataValues ?? historyData?.DataValues ?? [];
+};
+
+const buildHistoryTrendPoints = (historyValues) => {
+  return historyValues
+    .map(item => {
+      const time = getHistoryTrendTimestamp(item);
+      const value = normalizeHistoryTrendValue(item?.value?._value);
+      if (time === null || value === null) {
+        return null;
+      }
+
+      return { time, value };
+    })
+    .filter(Boolean)
+    .sort((left, right) => left.time - right.time);
+};
+
+const buildHistoryTrendResponseSignature = (points) => {
+  return points.map(point => `${point.time}:${point.value}`).join('|');
+};
+
+const logHistoryTrendDebug = (requestInfo, historyValues, points) => {
+  const responseSignature = buildHistoryTrendResponseSignature(points);
+  const sameAsPrevious = historyTrendLastResponseSignature !== null && responseSignature === historyTrendLastResponseSignature;
+  historyTrendLastResponseSignature = responseSignature;
+
+  console.groupCollapsed('[History Read] 查询结果');
+  console.log('请求参数:', requestInfo);
+  console.log('服务返回原始条数:', historyValues.length);
+  console.log('可展示点数:', points.length);
+  console.log('返回数据是否与上次相同:', sameAsPrevious);
+  console.log('首个点:', points[0] ? {
+    time: moment(points[0].time).format('YYYY-MM-DD HH:mm:ss'),
+    value: points[0].value
+  } : null);
+  console.log('最后点:', points.length > 0 ? {
+    time: moment(points[points.length - 1].time).format('YYYY-MM-DD HH:mm:ss'),
+    value: points[points.length - 1].value
+  } : null);
+  console.groupEnd();
+};
+
+const getHistoryTrendAxisLabelInterval = (total) => {
+  if (total <= HISTORY_TREND_MAX_AXIS_LABELS) {
+    return 0;
+  }
+
+  const step = Math.ceil(total / HISTORY_TREND_MAX_AXIS_LABELS);
+  return (index) => index % step === 0;
+};
+
+const resolveHistoryTrendChartElement = () => {
+  const refValue = historyTrendChartRef.value;
+  const candidates = Array.isArray(refValue) ? refValue : [refValue];
+
+  for (const candidate of candidates) {
+    const element = candidate?.$el || candidate;
+    if (element && element.nodeType === 1 && typeof element.getBoundingClientRect === 'function') {
+      return element;
+    }
+  }
+
+  return document.querySelector('.history-trend-chart');
 };
 
 const renderHistoryTrendChart = () => {
   nextTick(() => {
-    const chartElement = historyTrendChartRef.value;
-    if (!chartElement) return;
+    try {
+      const chartElement = resolveHistoryTrendChartElement();
+      if (!chartElement) return;
 
-    if (historyTrendChart && historyTrendChart.getDom() !== chartElement) {
-      historyTrendChart.dispose();
-      historyTrendChart = null;
-    }
+      if (historyTrendChart && historyTrendChart.getDom() !== chartElement) {
+        historyTrendChart.dispose();
+        historyTrendChart = null;
+      }
 
-    if (!historyTrendChart) {
-      historyTrendChart = echarts.init(chartElement);
-    }
+      if (!historyTrendChart) {
+        historyTrendChart = echarts.init(chartElement);
+      }
 
-    const seriesData = historyTrendPoints.value.map(point => [point.time, point.value]);
-    const chartTitle = historyTrendNode.value?.name || '历史趋势';
-
-    historyTrendChart.setOption({
-      title: {
-        text: chartTitle,
-        left: 'center',
-        top: 8,
-        textStyle: {
-          fontSize: 14,
-          fontWeight: 600
-        }
-      },
-      tooltip: {
-        trigger: 'axis',
-        formatter: (params) => {
-          const firstPoint = Array.isArray(params) ? params[0] : params;
-          if (!firstPoint) return '';
-          const dataPoint = Array.isArray(firstPoint.value) ? firstPoint.value : [];
-          const timeText = formatDateTimeForPicker(dataPoint[0]);
-          return `${timeText}<br/>Value: ${dataPoint[1] ?? '-'}`;
-        }
-      },
-      grid: {
-        left: 48,
-        right: 24,
-        top: 56,
-        bottom: 56
-      },
-      xAxis: {
-        type: 'time',
-        axisLabel: {
-          formatter: (value) => moment(value).format('MM-DD HH:mm')
-        }
-      },
-      yAxis: {
-        type: 'value',
-        scale: true
-      },
-      dataZoom: [
-        {
-          type: 'inside'
+      const seriesData = historyTrendPoints.value.map(point => point.value);
+      const tempTime = historyTrendPoints.value.map(point => moment(point.time).format('MM-DD HH:mm:ss'));
+      historyTrendChart.clear();
+      historyTrendChart.setOption({
+        tooltip: {
+          trigger: 'axis'
         },
-        {
-          type: 'slider',
-          height: 18,
-          bottom: 16
-        }
-      ],
-      series: [
-        {
-          type: 'line',
-          smooth: true,
-          showSymbol: false,
-          sampling: 'lttb',
-          lineStyle: {
-            width: 2,
-            color: '#409eff'
-          },
-          areaStyle: {
-            color: 'rgba(64, 158, 255, 0.16)'
-          },
-          data: seriesData
-        }
-      ]
-    });
+        xAxis: {
+          type: 'category',
+          data: tempTime,
+          axisLabel: {
+            interval: getHistoryTrendAxisLabelInterval(tempTime.length),
+            rotate: 45,
+            hideOverlap: true
+          }
+        },
+        yAxis: {
+          type: 'value'
+        },
+        series: [
+          {
+            type: 'line',
+            data: seriesData
+          }
+        ]
+      }, true);
 
-    historyTrendChart.resize();
+      historyTrendChart.resize();
+    } catch (error) {
+      console.error('初始化历史趋势图失败:', error);
+      historyTrendEmptyText.value = '历史趋势图初始化失败';
+    }
   });
 };
 
 const loadHistoryTrendData = async () => {
   if (!historyTrendNode.value?.nodeId) {
     historyTrendEmptyText.value = '未选择可查询历史趋势的变量';
+    clearHistoryTrendChart();
     return;
   }
 
   if (!historyTrendStartTime.value || !historyTrendEndTime.value) {
     ElMessage.warning('请选择完整的开始和结束时间');
-    return;
-  }
-
-  if (new Date(historyTrendStartTime.value) > new Date(historyTrendEndTime.value)) {
-    ElMessage.warning('开始时间不能晚于结束时间');
     return;
   }
 
@@ -11098,87 +11307,122 @@ const loadHistoryTrendData = async () => {
     return;
   }
 
+  const startTime = parseHistoryTrendDateTime(historyTrendStartTime.value);
+  const endTime = parseHistoryTrendDateTime(historyTrendEndTime.value);
+  const processingInterval = Number(historyTrendProcessingInterval.value);
+  const useProcessingInterval = historyTrendUseStep.value;
+
+  if (!startTime || !endTime) {
+    ElMessage.warning('时间格式错误');
+    return;
+  }
+
+  if (startTime > endTime) {
+    ElMessage.warning('开始时间不能晚于结束时间');
+    return;
+  }
+
+  if (useProcessingInterval && (!Number.isFinite(processingInterval) || processingInterval <= 0)) {
+    ElMessage.warning('请选择有效的步长');
+    return;
+  }
+
+  const requestId = ++historyTrendRequestId;
+  const requestInfo = {
+    mode: useProcessingInterval ? 'historyReadProcessed' : 'historyReadRawData',
+    nodeId: nodeId.toString(),
+    startTime: moment(startTime).format('YYYY-MM-DD HH:mm:ss'),
+    endTime: moment(endTime).format('YYYY-MM-DD HH:mm:ss'),
+    processingInterval: useProcessingInterval ? processingInterval : null,
+    processingIntervalLabel: useProcessingInterval
+      ? historyTrendStepOptions.find(option => option.value === processingInterval)?.label || `${processingInterval} ms`
+      : null
+  };
+
   historyTrendLoading.value = true;
   historyTrendEmptyText.value = '';
-  historyTrendPoints.value = [];
-
-  const startTime = new Date(historyTrendStartTime.value);
-  const endTime = new Date(historyTrendEndTime.value);
+  resetHistoryTrendDisplay('');
 
   try {
     const apiConfig = new Configuration({
       basePath: url
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
     const testOpcServer = new UaWebClient(clientConfig);
 
-    let historyResult = await testOpcServer.historyReadRawData(
-      nodeId,
-      startTime,
-      endTime,
-      500,
-      null,
-      false,
-      false
-    );
+    const readHistoryTrendPage = (continuationPoint = null) => {
+      if (useProcessingInterval) {
+        return testOpcServer.historyReadProcessed(
+          nodeId,
+          startTime,
+          endTime,
+          processingInterval,
+          null,
+          continuationPoint,
+          TimestampsToReturn.Both,
+          false
+        );
+      }
 
-    let historyValues = historyResult?.historyData || [];
-    let continuationPoint = historyResult?.continuationPoint || null;
-    let pageCount = 0;
-
-    while (continuationPoint && pageCount < 9) {
-      pageCount += 1;
-      const nextPageResult = await testOpcServer.historyReadRawData(
+      return testOpcServer.historyReadRawData(
         nodeId,
         startTime,
         endTime,
         500,
         continuationPoint,
         false,
-        false
+        false,
+        TimestampsToReturn.Both
       );
-      historyValues = historyValues.concat(nextPageResult?.historyData || []);
+    };
+
+    let historyResult = await readHistoryTrendPage();
+    if (requestId !== historyTrendRequestId) return;
+
+    let historyValues = getHistoryTrendDataValues(historyResult);
+    if (historyValues.length > HISTORY_TREND_MAX_DATA_COUNT) {
+      resetHistoryTrendDisplay(HISTORY_TREND_TOO_LONG_TEXT);
+      ElMessage.warning(HISTORY_TREND_TOO_LONG_TEXT);
+      return;
+    }
+
+    let continuationPoint = historyResult?.continuationPoint || null;
+    let pageCount = 0;
+
+    while (continuationPoint && pageCount < 9) {
+      pageCount += 1;
+      const nextPageResult = await readHistoryTrendPage(continuationPoint);
+      if (requestId !== historyTrendRequestId) return;
+      historyValues = historyValues.concat(getHistoryTrendDataValues(nextPageResult));
+      if (historyValues.length > HISTORY_TREND_MAX_DATA_COUNT) {
+        resetHistoryTrendDisplay(HISTORY_TREND_TOO_LONG_TEXT);
+        ElMessage.warning(HISTORY_TREND_TOO_LONG_TEXT);
+        return;
+      }
       continuationPoint = nextPageResult?.continuationPoint || null;
     }
 
-    const points = historyValues
-      .map(item => {
-        const timestamp = item?.sourceTimestamp || item?.serverTimestamp;
-        const value = normalizeHistoryTrendValue(item?.value);
+    const points = buildHistoryTrendPoints(historyValues);
+    if (requestId !== historyTrendRequestId) return;
 
-        if (!timestamp || value === null) {
-          return null;
-        }
-
-        return {
-          time: timestamp instanceof Date ? timestamp.getTime() : new Date(timestamp).getTime(),
-          value
-        };
-      })
-      .filter(item => item && !Number.isNaN(item.time))
-      .sort((left, right) => left.time - right.time);
-
+    logHistoryTrendDebug(requestInfo, historyValues, points);
     historyTrendPoints.value = points;
 
     if (points.length === 0) {
       historyTrendEmptyText.value = '当前时间范围内没有可展示的历史数据';
-      if (historyTrendChart) {
-        historyTrendChart.clear();
-      }
+      clearHistoryTrendChart();
       return;
     }
 
     historyTrendEmptyText.value = '';
   } catch (error) {
+    if (requestId !== historyTrendRequestId) return;
     console.error('加载历史趋势失败:', error);
-    historyTrendPoints.value = generateMockHistoryTrendPoints(
-      startTime,
-      endTime,
-      historyTrendNode.value?.name
-    );
-    historyTrendEmptyText.value = '';
-    ElMessage.warning(`历史接口不可读，已使用 mock 数据进行展示`);
+    historyTrendEmptyText.value = '历史数据读取失败';
+    clearHistoryTrendChart();
+    ElMessage.error(`历史数据读取失败：${error?.message || error}`);
   } finally {
+    if (requestId !== historyTrendRequestId) return;
     historyTrendLoading.value = false;
     if (historyTrendPoints.value.length > 0 && !historyTrendEmptyText.value) {
       nextTick(() => {
@@ -11189,6 +11433,8 @@ const loadHistoryTrendData = async () => {
 };
 
 const openHistoryTrendTab = async (item) => {
+  historyTrendRequestId += 1;
+  historyTrendLoading.value = false;
   historyTrendNode.value = {
     name: getDisplayName(item) || item?.name || item?.browseName || item?.nodeId,
     nodeId: item?.nodeId,
@@ -11196,12 +11442,13 @@ const openHistoryTrendTab = async (item) => {
   };
   historyTrendStartTime.value = historyStartTime.value || getDefaultStartTime();
   historyTrendEndTime.value = historyEndTime.value || getDefaultEndTime();
+  resetHistoryTrendDisplay('点击搜索查看历史趋势');
 
   ensureHistoryTrendTab(item);
   activeFolder.value = HISTORY_TREND_TAB_KEY;
 
   await nextTick();
-  await loadHistoryTrendData();
+  clearHistoryTrendChart();
 };
 
 // 滚动到新加载的数据行
@@ -11352,7 +11599,7 @@ const loadReferences = async () => {
     const apiConfig = new Configuration({
       basePath: url
     });
-    const clientConfig = new UaClientConfiguration(apiConfig);
+    const clientConfig = createOpcUaClientConfiguration(apiConfig);
 
     // 创建客户端
     const testOpcServer = new UaWebClient(clientConfig);
@@ -12475,7 +12722,7 @@ const getReadValues = async() => {
   let apiConfig = new Configuration({
       basePath: url
   });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
  
   try {
@@ -12595,7 +12842,7 @@ const handleModal = async() => {
     let apiConfig = new Configuration({
     basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     let tempId = selectedNodeId?.value?.nodeId?._nodeId
 
@@ -12666,7 +12913,7 @@ const handleModal = async() => {
         let apiConfig = new Configuration({
             basePath: url
         });
-        let clientConfig = new UaClientConfiguration(apiConfig);
+        let clientConfig = createOpcUaClientConfiguration(apiConfig);
         let testOpcServer = new UaWebClient(clientConfig);
         try{
           let currentID =  await  testOpcServer.readDataTypes([item.nodeId])
@@ -12997,7 +13244,7 @@ const processVariablesData = async (allArr, cacheUrl, continuationPoint) => {
   let apiConfig = new Configuration({
     basePath: cacheUrl
   });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
   
   let readNodeIds = [];
@@ -13463,7 +13710,7 @@ const handleNodeDblClick =async (node, data,url) => {
     let apiConfig = new Configuration({
         basePath: cacheUrl
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     // let tempId = selectedNodeId?.value?.nodeId?._nodeId?.value
     let tempId = selectedNodeId?.value?._nodeId
@@ -13545,7 +13792,7 @@ const handleVariableClick = async (node, data, url) => {
   let apiConfig = new Configuration({
     basePath: cacheUrl
   });
- let clientConfig = new UaClientConfiguration(apiConfig);
+ let clientConfig = createOpcUaClientConfiguration(apiConfig);
  let testOpcServer = new UaWebClient(clientConfig);
  let tempId = selectedNodeId?.value?._nodeId
  try{
@@ -14027,7 +14274,7 @@ if (!urlForm.value.url) {
  let apiConfig = new Configuration({
      basePath: url
  });
- let clientConfig = new UaClientConfiguration(apiConfig);
+ let clientConfig = createOpcUaClientConfiguration(apiConfig);
  let testOpcServer = new UaWebClient(clientConfig);
  // let tempId = selectedNodeId?.value?.nodeId?._nodeId?.value
  let tempId = selectedNodeId?.value?._nodeId
@@ -14647,7 +14894,7 @@ const handleMethodCall = async (methodNode, treeNode = null) => {
     let apiConfig = new Configuration({
       basePath: url
     });
-  let clientConfig = new UaClientConfiguration(apiConfig);
+  let clientConfig = createOpcUaClientConfiguration(apiConfig);
   let testOpcServer = new UaWebClient(clientConfig);
     var methodArguments = await testOpcServer.readMethodArguments(methodNode.nodeIdNum);
     
@@ -15385,7 +15632,7 @@ const writeValueToOpcUa = async (uaVariant, dataType, successMessage = '数据�
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     const editingItem = currentEditingItem.value;
     const nodeId = resolveItemNodeId(editingItem);
@@ -15568,7 +15815,7 @@ const handleMethodCallExecute = async (event,arg) => {
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     
     // 获取对象ID（方法的父节点）
@@ -16042,7 +16289,7 @@ const handleHistoryDrop = async (event) => {
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     
     // 将 TypeDefinition 转换为 UaNodeId 对象（用于调用 getGeneratedEventType）
@@ -16137,7 +16384,7 @@ const loadHistoryEventTypesTree = async (draggedNode) => {
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     
     // 3. 使用全局的 childNodeIds（已在 handleHistoryDrop 中获取并验证）
@@ -16965,7 +17212,7 @@ const handleHistorySearch = async () => {
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
     
     // 保存 OPC 服务器实例，用于后续分页加载
@@ -17814,7 +18061,7 @@ const loadBaseEventTypeDetailsForHistory = async () => {
     let apiConfig = new Configuration({
       basePath: url
     });
-    let clientConfig = new UaClientConfiguration(apiConfig);
+    let clientConfig = createOpcUaClientConfiguration(apiConfig);
     let testOpcServer = new UaWebClient(clientConfig);
 
     // 创建 nodeId i=2041

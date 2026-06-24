@@ -1,13 +1,20 @@
-import { NodeClass } from "opcua-webapi";
-import { ReferenceTypeIds, UaLocalizedText, UaNodeId } from "opcua-webapi-ts";
+import { NodeClass, StatusCodes } from "opcua-webapi";
+import { ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaStatusCode } from "opcua-webapi-ts";
 import { UaReactiveObjectType } from "../../addressspace/reactiveobject/UaReactiveObjectType";
 import { NodeManager } from "../../addressspace/nodemanager/NodeManager";
 import { UaModellingRule } from "../../addressspace/nodes/UaModellingRule";
 import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
 import {
+    AddDigitalTwinRequest,
+    AddObjectRequest,
+    AddObjectResponse,
     BrowseObjectRequest,
     BrowseObjectResponse,
+    DeleteDigitalTwinRequest,
+    DeleteDigitalTwinResponse,
+    DeleteObjectRequest,
+    DeleteObjectResponse,
     GetDescriptorRequest,
     GetDescriptorResponse,
     GetSubmodelsRequest,
@@ -20,6 +27,7 @@ import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceConte
 import { SubmodelDescriptor } from "../../types/digitaltwin/SubmodelDescriptor";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
 import { SubmodelTypeBase } from "../submodel";
+import { AddDigitalTwinResponse } from "../../service/message/digitialtwin/AddDigitalTwinResponse";
 
 export abstract class DigitalTwinType extends UaReactiveObjectType {
     constructor(
@@ -39,13 +47,26 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
     abstract onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>;
 
     /**
+     * Optional override point to add a digital twin.
+     */
+    async onAddDigitalTwin(request: AddDigitalTwinRequest): Promise<AddDigitalTwinResponse>
+    {
+        throw new UaError(UaStatusCode.from(StatusCodes.BadNotImplemented));
+    }
+
+    /**
+     * Optional override point to delete a digital twin.
+     */
+    async onDeleteDigitalTwin(request: DeleteDigitalTwinRequest): Promise<DeleteDigitalTwinResponse>
+    {
+        throw new UaError(UaStatusCode.from(StatusCodes.BadNotImplemented));
+    }
+
+    /**
      * Optional override point to provide a custom submodel list.
      */
     async onGetSubmodels(request: GetSubmodelsRequest): Promise<GetSubmodelsResponse> {
         const response = new GetSubmodelsResponse();
-
-        let submodels: Array<UaObject> = [];
-
         for (const item of this.getMembers()) {
             if (item.nodeClass === NodeClass.Object) {
                 response.add(new SubmodelDescriptor(request.id, item as UaObject));
@@ -53,7 +74,7 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
         }
 
         return response;
-    }    
+    }
 
     addSubmodel(
         type: SubmodelTypeBase,
@@ -97,6 +118,23 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetSubmodels(new GetSubmodelsRequest(context));
         return this.processBrowseObjectChildrenResponse(response);
+    }
+
+    override async onAddObject(request: AddObjectRequest): Promise<AddObjectResponse> {
+        const context = new ObjectServiceContext(request.parentId);
+        const addDigitalTwinRequest = new AddDigitalTwinRequest(
+            context,
+            request.displayName);
+        
+        let response = await this.onAddDigitalTwin(addDigitalTwinRequest);
+        return new AddObjectResponse(response.newId);
+    }
+
+    override async onDeleteObject(request: DeleteObjectRequest): Promise<DeleteObjectResponse> {
+        const context = new ObjectServiceContext(request.objectId);
+        const deleteDigitalTwinRequest = new DeleteDigitalTwinRequest(context);
+        let response = await this.onDeleteDigitalTwin(deleteDigitalTwinRequest)
+        return new DeleteObjectResponse(response.statusCode);
     }
 
     private processBrowseObjectChildrenResponse(response: GetSubmodelsResponse): BrowseObjectResponse {

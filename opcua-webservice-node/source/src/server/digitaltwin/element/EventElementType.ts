@@ -51,20 +51,6 @@ export abstract class EventElementType extends ElementType {
     abstract onReadEvents(request: ReadEventsRequest): Promise<ReadEventsResponse>;
 
     /**
-     * Optional override point to provide a custom descriptor for this instance.
-     */
-    async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
-    {
-        const instance = request.context.objectId.instance;
-
-        if (instance === null) {
-            return new GetDescriptorResponse("NotImplemented");
-        }
-
-        return new GetDescriptorResponse(instance.displayName, instance.description);
-    }    
-
-    /**
      * Internal framework callback used by the base type to read object attributes.
      * Do not call or override this method directly.
      */

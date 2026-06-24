@@ -86,20 +86,6 @@ export abstract class ElementCollectionType extends ElementType {
     }
 
     /**
-     * Optional override point to provide a custom descriptor for this instance.
-     */
-    async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
-    {
-        const instance = request.context.objectId.instance;
-
-        if (instance === null) {
-            return new GetDescriptorResponse("NotImplemented");
-        }
-
-        return new GetDescriptorResponse(instance.displayName, instance.description);
-    }
-
-    /**
      * Optional override point to provide a custom child-element list.
      */
     async onGetElements(request: GetElementsRequest): Promise<GetElementsResponse>

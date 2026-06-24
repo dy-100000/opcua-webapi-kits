@@ -19,21 +19,7 @@ export abstract class ReferenceElementType extends ElementType {
     /**
      * Override in subclasses to return linked objects.
      */
-    abstract onGetLinks(request: GetLinkRequest): Promise<GetLinkResponse>;
-    
-    /**
-     * Optional override point to provide a custom descriptor for this instance.
-     */
-    async onGetDescriptor(request: GetDescriptorRequest): Promise<GetDescriptorResponse>
-    {
-        const instance = request.context.objectId.instance;
-
-        if (instance === null) {
-            return new GetDescriptorResponse("NotImplemented");
-        }
-
-        return new GetDescriptorResponse(instance.displayName, instance.description);
-    }
+    abstract onGetLinks(request: GetLinkRequest): Promise<GetLinkResponse>;   
 
     /**
      * Internal framework callback used by the base type to advertise link support.

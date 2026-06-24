@@ -3020,13 +3020,11 @@ select {
   --variables-col-index: 72px;
   --variables-col-name: 180px;
   --variables-col-type: 180px;
-  --variables-col-historizing: 140px;
   --variables-col-value: 420px;
   --variables-table-min-width: calc(
     var(--variables-col-index) +
     var(--variables-col-name) +
     var(--variables-col-type) +
-    var(--variables-col-historizing) +
     var(--variables-col-value)
   );
   background: white;
@@ -3084,10 +3082,6 @@ select {
   flex: 0 0 var(--variables-col-type);
   text-align: center;
 }
-.header-his{
-  flex: 0 0 var(--variables-col-historizing);
-  text-align: center;
-}
 .header-value {
   flex: 0 0 var(--variables-col-value);
   text-align: center;
@@ -3140,15 +3134,6 @@ select {
   /* background-color: #e6f7ff; */
 }
 
-.property-his.property-name-col {
-  flex: 0 0 var(--variables-col-historizing);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  position: relative;
-  min-width: 0;
-}
- 
 .property-name-main {
   width: 100%;
   text-align: center;
@@ -3366,7 +3351,7 @@ select {
   align-items: flex-end;
   justify-content: space-between;
   gap: 16px;
-  padding: 12px 16px;
+  padding: 12px 4px;
   border-bottom: 1px solid #e4e7ed;
   flex-wrap: wrap;
 }
@@ -3379,21 +3364,52 @@ select {
 
 .history-trend-controls {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
-.history-trend-control-item {
+.history-trend-time-row {
   display: flex;
-  flex-direction: column;
+  align-items: flex-end;
   gap: 6px;
+  flex-wrap: nowrap;
+}
+.history-trend-step-row{
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 6px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+.history-trend-step-box{
+  display: flex;
+  align-items: flex-end;
+}
+.history-trend-control-item {
+  /* display: flex;
+  flex-direction: column;
+  gap: 6px; */
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .history-trend-control-label {
-  font-size: 12px;
+  /* font-size: 12px;
   color: #606266;
-  line-height: 1;
+  line-height: 1; */
+
+      min-width: 45px;
+    font-size: 14px;
+    color: #606266;
+    font-weight: 500;
+    white-space: nowrap;
+    text-align: right;
+    flex-shrink: 0;
 }
 
 .history-trend-node-name {
@@ -3410,6 +3426,18 @@ select {
 
 .history-trend-time-picker {
   width: 240px;
+}
+
+.history-trend-step-checkbox {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.history-trend-step-select {
+  width: 160px;
+  margin-left: 10px;
 }
 
 .history-trend-chart-wrapper {
