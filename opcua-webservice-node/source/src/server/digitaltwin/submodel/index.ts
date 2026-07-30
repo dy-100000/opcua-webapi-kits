@@ -1,3 +1,3 @@
-export * from "./DynamicSubmodelType"
+export * from "./SubmodelTypeDynamic"
 export * from "./SubmodelType"
 export * from "./SubmodelTypeBase"

@@ -1,6 +1,6 @@
 {
   "name": "opcua-webservice-node",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -11,8 +11,8 @@
   ],
   "scripts": {
     "generate": "openapi-generator-cli generate -i opc.ua.openapi.allservices.json -g nodejs-express-server -o src",
-    "dev": "tsx watch --clear-screen=false examples/testserver/Application.ts",
     "typecheck": "tsc --noEmit",
+    "test": "tsx test/Application.ts",
     "build": "tsc",
     "postbuild": "node -e \"const fs=require('fs'); const path=require('path'); const src=path.join(process.cwd(),'src','api','openapi.yaml'); const destDir=path.join(process.cwd(),'dist','api'); const dest=path.join(destDir,'openapi.yaml'); fs.mkdirSync(destDir,{recursive:true}); fs.copyFileSync(src,dest);\"",
     "prepublishOnly": "npm run build"
@@ -25,7 +25,7 @@
     "express": "^5.2.1",
     "express-openapi-validator": "^5.6.2",
     "opcua-webapi": "^1.504.2",
-    "opcua-webapi-ts": "^1.1.17",
+    "opcua-webapi-ts": "^1.1.19",
     "winston": "^3.19.0"
   },
   "devDependencies": {

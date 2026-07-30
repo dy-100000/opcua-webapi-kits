@@ -1,5 +1,5 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DigitalTwinSpace } from "opcua-webservice-node";
+import { DigitalTwinSpace } from "../../src";
 import { DigitalTwinDirectoryTestType } from "./DigitalTwinDirectoryTestType";
 import { DigitalTwinTestType } from "./DigitalTwinTestType";
 import { DynamicSubmodelTestType } from "./DynamicSubmodelTestType";
@@ -34,16 +34,15 @@ export class DigitalTwinSpaceTest extends DigitalTwinSpace {
 
         DigitalTwinSpaceTest.enumTestDataType = new EnumTestDataType(this);
         DigitalTwinSpaceTest.eventTestType = new EventTestType(this);
-
-        DigitalTwinSpaceTest.elementListTestType = new ElementListTestType(this);
+        
         DigitalTwinSpaceTest.referenceElementTestType = new ReferenceElementTestType(this);
-
         DigitalTwinSpaceTest.eventElementTestType = new EventElementTestType(DigitalTwinSpaceTest.eventTestType, this);
         DigitalTwinSpaceTest.elementCollectionTestAType = new ElementCollectionTestAType(DigitalTwinSpaceTest.enumTestDataType, this);
+        DigitalTwinSpaceTest.elementListTestType = new ElementListTestType(DigitalTwinSpaceTest.elementCollectionTestAType,this);
         DigitalTwinSpaceTest.elementCollectionTestBType = new ElementCollectionTestBType(
             DigitalTwinSpaceTest.referenceElementTestType,
             DigitalTwinSpaceTest.elementListTestType,
-            this,
+            this
         );
         DigitalTwinSpaceTest.submodelTestType = new SubmodelTestType(
             DigitalTwinSpaceTest.elementCollectionTestAType,
@@ -57,9 +56,11 @@ export class DigitalTwinSpaceTest extends DigitalTwinSpace {
         DigitalTwinSpaceTest.digitalTwinTestType = new DigitalTwinTestType(
             DigitalTwinSpaceTest.submodelTestType,
             DigitalTwinSpaceTest.dynamicSubmodelTestType,
-            this,
+            this
         );
-        DigitalTwinSpaceTest.digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(this);
+        DigitalTwinSpaceTest.digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(
+            DigitalTwinSpaceTest.digitalTwinTestType,
+            this);
 
         this.addRepository(
             DigitalTwinSpaceTest.digitalTwinDirectoryTestType,

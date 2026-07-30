@@ -28,9 +28,55 @@ paths:
                 $ref: "#/components/schemas/ReadResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/read:
+    post:
+      operationId: ReadWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReadRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.2/#5.11.2.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /write:
     post:
       operationId: Write
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WriteRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.4/#5.11.4.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WriteResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.4/#5.11.4.2)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/write:
+    post:
+      operationId: WriteWithPath,
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -62,9 +108,55 @@ paths:
                 $ref: "#/components/schemas/CallResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/call:
+    post:
+      operationId: CallWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CallRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CallResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.12.2/#5.12.2.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /historyread:
     post:
       operationId: HistoryRead
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HistoryReadRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.3/#5.11.3.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HistoryReadResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.11.3/#5.11.3.2)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/historyread:
+    post:
+      operationId: HistoryReadWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -113,9 +205,55 @@ paths:
                 $ref: "#/components/schemas/AddNodesResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/addnodes:
+    post:
+      operationId: AddNodesWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddNodesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddNodesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/5.8.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /addreferences:
     post:
       operationId: AddReferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddReferencesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddReferencesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.3)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/addreferences:
+    post:
+      operationId: AddReferencesWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -147,9 +285,55 @@ paths:
                 $ref: "#/components/schemas/DeleteNodesResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/deletenodes:
+    post:
+      operationId: DeleteNodesWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteNodesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteNodesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.4)."
+      x-eov-operation-handler: controllers/DefaultController
   /deletereferences:
     post:
       operationId: DeleteReferences
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteReferencesRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeleteReferencesResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/specs/OPC-10000-4/5.8.5)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/deletereferences:
+    post:
+      operationId: DeleteReferencesWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -181,6 +365,29 @@ paths:
                 $ref: "#/components/schemas/BrowseResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/browse:
+    post:
+      operationId: BrowseWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrowseRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrowseResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.2/#5.9.2.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /browsenext:
     post:
       operationId: BrowseNext
@@ -198,9 +405,55 @@ paths:
                 $ref: "#/components/schemas/BrowseNextResponse"
           description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
       x-eov-operation-handler: controllers/DefaultController
+  /{path}/browsenext:
+    post:
+      operationId: BrowseNextWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BrowseNextRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BrowseNextResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.3/#5.9.3.2)."
+      x-eov-operation-handler: controllers/DefaultController
   /translate:
     post:
       operationId: TranslateBrowsePathsToNodeIds
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TranslateBrowsePathsToNodeIdsRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.4/#5.9.4.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TranslateBrowsePathsToNodeIdsResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.9.4/#5.9.4.2)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/translate:
+    post:
+      operationId: TranslateBrowsePathsToNodeIdsWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:
@@ -235,6 +488,29 @@ paths:
   /getendpoints:
     post:
       operationId: GetEndpoints
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GetEndpointsRequest"
+        description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetEndpointsResponse"
+          description: "[Link to specification](https://reference.opcfoundation.org/v105/Core/docs/Part4/5.5.4/#5.5.4.2)."
+      x-eov-operation-handler: controllers/DefaultController
+  /{path}/getendpoints:
+    post:
+      operationId: GetEndpointsWithPath
+      parameters:
+        - name: path
+          in: path
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           application/json:

@@ -4,12 +4,7 @@ export type OpcUaNodeAttributes = {
     nodeClass : number;
     browseName: string;
     displayName: UaLocalizedText;
-    writeMask: number;
     description: UaLocalizedText | null;
-}
-
-export type OpcUaObjectAttributes = {
-    eventNotifier : number;
 }
 
 export type OpcUaVariableAttributes = {

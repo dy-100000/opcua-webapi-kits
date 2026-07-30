@@ -1,7 +1,5 @@
 import { UaLocalizedText, UaVariant } from "opcua-webapi-ts";
-import { UaDataTypes } from "opcua-webservice-node";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { EventData, EventType } from "opcua-webservice-node";
+import { UaDataTypes,DigitalTwinSpace,EventData, EventType } from "../../src";
 
 export class EventTestType extends EventType {
     static readonly Customized = "Customized";

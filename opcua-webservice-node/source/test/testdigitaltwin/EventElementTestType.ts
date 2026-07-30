@@ -1,7 +1,5 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { EventElementType } from "opcua-webservice-node";
-import { ReadEventsRequest, ReadEventsResponse } from "opcua-webservice-node";
+import { DigitalTwinSpace,EventElementType,ReadEventsRequest, ReadEventsResponse } from "../../src";
 import { EventTestType } from "./EventTestType";
 
 export class EventElementTestType extends EventElementType {

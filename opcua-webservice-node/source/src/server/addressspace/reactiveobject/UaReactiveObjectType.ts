@@ -1,6 +1,7 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
 import {
     UaAccessLevel,
+    UaModellingRule,
     UaArgument,
     UaError,
     UaLocalizedText,
@@ -34,13 +35,14 @@ import {
     AddReferenceRequest,
     AddReferenceResponse,
     DeleteReferenceRequest,
-    DeleteReferenceResponse
+    DeleteReferenceResponse,
+    WriteObjectAttributeResponse,
+    WriteObjectAttributeRequest
 } from "../../service/message";
 import { NodeManager } from "../nodemanager";
 import { UaDataType } from "../nodes/UaDataType";
 import { UaInstanceNode } from "../nodes/UaInstanceNode";
 import { UaMethod } from "../nodes/UaMethod";
-import { UaModellingRule } from "../nodes/UaModellingRule";
 import { UaObject } from "../nodes/UaObject";
 import { UaObjectType } from "../nodes/UaObjectType";
 import { UaVariable } from "../nodes/UaVariable";
@@ -208,47 +210,51 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
         return newMethod;
     }
 
-    async onBrowseObjectChildren(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+    async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         return new BrowseObjectResponse([], false);
     }
 
-    async onBrowseMemberChildren(_request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
+    async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onBrowseObjectParent(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+    async onBrowseObjectParent(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onBrowseObjectLinks(_request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+    async onBrowseObjectLinks(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         return new BrowseObjectResponse([], false);
     }
 
-    async onReadObjectAttributes(_request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
+    async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onReadMemberAttributes(_request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
+    async onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onReadVariablesValue(_request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
+    async onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onWriteVariablesValue(_request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
+    async onWriteVariablesValue(request: WriteVariableValueRequest): Promise<WriteVariableValueResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onMethodCall(_request: MethodCallRequest): Promise<MethodCallResponse> {
+    async onWriteObjectAttributes(request: WriteObjectAttributeRequest): Promise<WriteObjectAttributeResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onReadHistoryData(_request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
+    async onMethodCall(request: MethodCallRequest): Promise<MethodCallResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
-    async onReadHistoryEvent(_request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
+    async onReadHistoryData(request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse> {
+        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
+    }
+
+    async onReadHistoryEvent(request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 

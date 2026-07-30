@@ -1,14 +1,17 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { DigitalTwinRepositoryType } from "opcua-webservice-node";
-import { GetDigitalTwinListRequest, GetDigitalTwinListResponse } from "opcua-webservice-node";
-import { DigitalTwinDescriptor } from "opcua-webservice-node";
-import { DigitalTwinSpaceTest } from "./DigitalTwinSpaceTest";
+import { 
+    DigitalTwinSpace,
+    DigitalTwinRepositoryType,
+    DigitalTwinDescriptor,
+    GetDigitalTwinListRequest, 
+    GetDigitalTwinListResponse } from "../../src";
+import { DigitalTwinSpaceTest,DigitalTwinTestType } from ".";
 
 export class DigitalTwinDirectoryTestType extends DigitalTwinRepositoryType {
-    constructor(space: DigitalTwinSpace) {
+    constructor(digitalTwinTestType: DigitalTwinTestType, space: DigitalTwinSpace) {
         super("TestDigitalTwinDirectory", new UaLocalizedText("TestDigitalTwinDirectory"), space);
         this.description = new UaLocalizedText("TestDigitalTwinDirectory");
+        this.mayAdd(digitalTwinTestType);
     }
 
     override async onGetDigitalTwinList(request: GetDigitalTwinListRequest): Promise<GetDigitalTwinListResponse> {

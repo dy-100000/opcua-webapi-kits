@@ -25,6 +25,8 @@ import {
     AddReferenceResponse,
     DeleteReferenceRequest,
     DeleteReferenceResponse,
+    WriteObjectAttributeRequest,
+    WriteObjectAttributeResponse,
 } from "../../service/message";
 
 export interface UaReactiveObjectCallback {
@@ -36,6 +38,7 @@ export interface UaReactiveObjectCallback {
     onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse>;
     onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse>;
     onWriteVariablesValue(request: WriteVariableValueRequest): Promise<WriteVariableValueResponse>;
+    onWriteObjectAttributes(request: WriteObjectAttributeRequest): Promise<WriteObjectAttributeResponse>;
     onMethodCall(request: MethodCallRequest): Promise<MethodCallResponse>;
     onReadHistoryData(request: ReadHistoryDataRequest): Promise<ReadHistoryDataResponse>;
     onReadHistoryEvent(request: ReadHistoryEventRequest): Promise<ReadHistoryEventResponse>;

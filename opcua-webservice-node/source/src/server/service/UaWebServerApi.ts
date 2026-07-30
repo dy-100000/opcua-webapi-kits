@@ -98,7 +98,7 @@ export class UaWebServerApi {
             if (null == this._service) throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
             let serverConfigure = this._service.getServerConfigure();
 
-            let browseRequest = BrowseRequestFromJSON(request);  
+            let browseRequest = BrowseRequestFromJSON(request);             
 
             if (!browseRequest.NodesToBrowse || browseRequest.NodesToBrowse.length == 0) {
                 throw new UaError(makeUaStatusCode(StatusCodes.BadNothingToDo));
@@ -129,7 +129,6 @@ export class UaWebServerApi {
                 let browseResult = item.toStruct();
                 results.push(browseResult);
             }
-
         } catch (err) {            
             if (err instanceof UaError) 
             {
@@ -355,8 +354,7 @@ export class UaWebServerApi {
                 let callMethodResult = item.toStruct();
                 results.push(callMethodResult);
             }
-        } catch (err) {
-            console.error(err);           
+        } catch (err) {       
             if (err instanceof UaError) 
             {
                 statusCode = (err as UaError).statusCode.value;
@@ -484,6 +482,8 @@ export class UaWebServerApi {
             } else {
                 statusCode = StatusCodes.BadUnexpectedError;
             }
+
+            console.log(err);
         }
 
         let responseHeader = this._getResponseHeader(statusCode);

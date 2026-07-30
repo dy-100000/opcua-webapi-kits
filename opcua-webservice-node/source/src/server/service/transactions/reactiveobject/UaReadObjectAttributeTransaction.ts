@@ -28,9 +28,16 @@ export class UaReadObjectAttributeTransaction extends UaReadTransaction {
                 throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
             }
 
+            let attributesToRead = new Set<number>();
+            let requests = this.getRequestedItems();
+            for (const request of requests) {
+                attributesToRead.add(request.attributeId);
+            }
+
             const instanceDeclaration = this.nodeManager.findInstanceDeclaration(this.objectId);
             const request = new ReadObjectAttributeRequest(
                 new UaObjectId(this.objectId.id, instanceDeclaration),
+                attributesToRead
             );
 
             const response = await objectType.onReadObjectAttributes(request);
@@ -65,7 +72,7 @@ export class UaReadObjectAttributeTransaction extends UaReadTransaction {
             } else if (item.attributeId === Attributes.NodeClass) {
                 value = UaVariant.integer(NodeClass.Object, UaVariantType.Int32);
             } else if (item.attributeId === Attributes.WriteMask || item.attributeId === Attributes.UserWriteMask) {
-                value = UaVariant.integer(0, UaVariantType.UInt32);
+                value = UaVariant.integer(response.writeMask, UaVariantType.UInt32);
             } else {
                 statusCode = makeUaStatusCode(StatusCodes.BadAttributeIdInvalid);
             }

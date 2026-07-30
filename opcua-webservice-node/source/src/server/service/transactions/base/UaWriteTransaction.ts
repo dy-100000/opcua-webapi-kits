@@ -1,5 +1,5 @@
 import { StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaStatusCode, UaWriteValue } from "opcua-webapi-ts";
+import { makeUaStatusCode, UaError, UaStatusCode, UaWriteValue } from "opcua-webapi-ts";
 import { WriteContext } from "../../..";
 import { UaTransaction2 } from ".";
 
@@ -22,6 +22,17 @@ export class UaWriteTransaction extends UaTransaction2<UaWriteValue, UaStatusCod
     async execute(): Promise<void> {
         for (const _handleId of this.handleIds) {
             this._results.push(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
+        }
+    }
+
+    protected buildErrorResults(error: unknown): void {
+        let statusCode = makeUaStatusCode(StatusCodes.BadUnexpectedError);
+        if (error instanceof UaError) {
+            statusCode = error.statusCode;
+        } 
+           
+        for (const _item of this.getRequestedItems()) {
+            this._results.push(statusCode);
         }
     }
 }

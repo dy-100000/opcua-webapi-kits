@@ -1,8 +1,8 @@
-import { Configuration, NodeClass, StatusCodes } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue } from "../src";
+import { Configuration, NodeClass } from "opcua-webapi";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue, UaLocalizedText, UaObject } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaChildBrowser, UaDataTypeDictionary, UaLinkBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
+import { UaDataTypeDictionary, UaLinkBrowser, UaModelling, UaObjectBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
 
 class Test {
     private client : UaWebClient;
@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -22,8 +22,8 @@ class Test {
     async run()
     {
         try
-        {
-            await this.testHistoryReadEvent();
+        { 
+            await this.testSetDescription();           
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -31,7 +31,6 @@ class Test {
             await this.testReadNodeAttribute();
             await this.testReadVariableAttribute();
             await this.testReadMethodArgument();
-            await this.testReadObjectAttribute();
             await this.testWriteValues();
             await this.testMethodCall(); 
             await this.testHistoryReadRawData();
@@ -39,13 +38,12 @@ class Test {
             await this.testGetGeneratedEvent();
             await this.testDataTypeDictionary();    
             await this.testReferenceTypeDictionary();
-            await this.testObjectTypeDictionary();  
+            await this.testObjectTypeDictionary();
             await this.testReaderNode();
-            await this.testChildBrowser();   
-            await this.testLinkBrowser();   
-            await this.testFindServer();      
-            */
-            
+            await this.testChildBrowser();
+            await this.testLinkBrowser();
+            await this.testFindServer();
+            */            
         } catch (e) {            
             console.log(e);
         }
@@ -94,35 +92,6 @@ class Test {
         let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtRWxlbWVudExpc3QifSwiY2kiOnsicCI6IjAifX0=");
         let attribute = await this.client.readVariableAttributes([nodeId]);
         console.log(attribute);
-    }
-    
-    async testReadObjectAttribute()
-    {
-        console.log("testReadObjectAttribute");
-
-        let nodeId = parseUaNodeId("i=85");
-        let attribute = await this.client.readObjectAttributes(nodeId);
-        console.log(attribute);
-    }
-
-    async testReadMethodArgument()
-    {
-        console.log("testReadMethodArgument");
-
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJ0IjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUiLCJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9LCJjaSI6eyJwIjoiTWV0aG9kIiwibW4iOnRydWV9fQ==");
-        let methodArgs = await this.client.readMethodArguments(nodeId);
-        
-        for (let item of methodArgs.inputArguments)
-        {
-            console.log("InputArgument:");
-            console.log(item);
-        }
-        
-        for (let item of methodArgs.outputArguments)
-        {
-            console.log("OutputArgument:");
-            console.log(item);
-        }
     }
 
     async testReadValues()
@@ -380,8 +349,8 @@ class Test {
     {
         console.log("testDataTypeDictionary");
 
-        let dataTypeDictionary = new UaDataTypeDictionary();
-        await dataTypeDictionary.read(this.client);
+        let dataTypeDictionary = new UaDataTypeDictionary(this.client);
+        await dataTypeDictionary.read();
         
         let dataTypes = dataTypeDictionary.getDataTypes();       
         
@@ -396,8 +365,8 @@ class Test {
     {
         console.log("testReferenceTypeDictionary");
 
-        let referenceTypeDictionary = new UaReferenceTypeDictionary();
-        await referenceTypeDictionary.read(this.client);
+        let referenceTypeDictionary = new UaReferenceTypeDictionary(this.client);
+        await referenceTypeDictionary.read();
         
         let referenceTypes = referenceTypeDictionary.getReferenceTypes();       
         
@@ -412,8 +381,8 @@ class Test {
     {
         console.log("testObjectTypeDictionary");
 
-        let objectTypeDictionary = new UaObjectTypeDictionary();
-        await objectTypeDictionary.read(this.client);
+        let objectTypeDictionary = new UaObjectTypeDictionary(this.client);
+        await objectTypeDictionary.read();
         
         let objectTypes = objectTypeDictionary.getObjectTypes();       
         
@@ -427,12 +396,12 @@ class Test {
     async testObjectReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiUGFyYW1ldGVyX0VxdWlwbWVudEAwMDAwMDAwMC0wMDAwLTAwMDAtMDAwMC0wMDAwMDAzRTI3M0IiLCJ0IjoibnM9MjtzPVBhcmFtZXRlclNldCJ9fQ=="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiU3BlY19IZWF0RXhjaGFuZ2VyQDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDNFMjczQiIsInQiOiJucz0yO3M9UGFyYW1ldGVyU2V0In19")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ=="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifX0=")
         ];
 
-        let reader = new UaObjectReader(false,true);
-        let nodes = await reader.read(nodeIds, this.client);
+        let reader = new UaObjectReader(this.client,false,true);
+        let nodes = await reader.read(nodeIds);
 
         for (let item of nodes)
         {
@@ -446,8 +415,8 @@ class Test {
             parseUaNodeId("ns=2;s=EnumTest")
         ];
 
-        let reader = new UaTypeReader();
-        let nodes = await reader.read(nodeIds, this.client);
+        let reader = new UaTypeReader(this.client);
+        let nodes = await reader.read(nodeIds);
 
         for (let item of nodes)
         {
@@ -455,15 +424,15 @@ class Test {
         }
     }
 
-    async testChildBrowser()
+    async testObjectBrowser()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0U1NzJGIiwidCI6Im5zPTI7cz1Qcm9jZXNzU2VnbWVudFR5cGUifX0="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9UHJvY2Vzc1NlZ21lbnRUeXBlLURldmljZXMifX0="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbFRlc3RUeXBlIn19"),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkIifX0="),
         ];
 
-        let reader = new UaChildBrowser(nodeIds, true);
-        await reader.browse(this.client);
+        let reader = new UaObjectBrowser(this.client,nodeIds, true);
+        await reader.browse();
 
         let references = reader.results();
         for (let item of references)
@@ -484,8 +453,8 @@ class Test {
             parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLUVxdWlwbWVudHMifX0=")
         ];
 
-        let reader = new UaLinkBrowser(nodeIds,true);
-        await reader.browse(this.client);
+        let reader = new UaLinkBrowser(this.client,nodeIds,true);
+        await reader.browse();
 
         let references = reader.results();
         for (let item of references)
@@ -497,6 +466,77 @@ class Test {
                 console.dir(item2.toJson(), { depth: null });
             }
         }
+    }
+
+    async testGetObjectTypeCanAdd()
+    {
+        console.log("testGetObjectTypeCanAdd");
+
+        let objectTypeDictionary = new UaObjectTypeDictionary(this.client);
+        await objectTypeDictionary.read();
+
+        let modelling = new UaModelling(this.client);
+        let objectTypeId = parseUaNodeId("ns=2;s=TestDigitalTwinDirectory");
+
+        let objectTypeCanAdd = await modelling.getObjectTypeToAdd(objectTypeId,objectTypeDictionary);
+        console.log("Object types that can be added:");
+        for (let item of objectTypeCanAdd) {
+            console.dir(item.toJson(), { depth: null });
+        }
+    }
+
+    async testAddObject()
+    {
+        console.log("testAddObject");
+        let parentNodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1FbGVtZW50TGlzdFN1Ym1vZGVsIn19");
+        let objectTypeId = parseUaNodeId("ns=2;s=ElementCollectionTestAType");
+        let name = UaLocalizedText.from("TestElement");
+
+        let modelling = new UaModelling(this.client);
+        let newNodeId = await modelling.addObject(parentNodeId, objectTypeId, name);
+        console.log("New object added with NodeId: " + newNodeId.toString());
+    }
+
+    async testDeleteObject()
+    {
+        console.log("testDeleteObject");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
+
+        let modelling = new UaModelling(this.client);
+        await modelling.deleteNode(objectId);
+        console.log("Object deleted");
+    }
+
+    async testGetWriteMask()
+    {
+        console.log("testGetWriteMask");
+        
+        let nodeIdToDelete = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
+        let objectToDelete = new UaObject(nodeIdToDelete, "Test", UaLocalizedText.from("Test"), 0, parseUaNodeId("ns=2;s=TestDigitalTwin"));
+        
+        let modelling = new UaModelling(this.client);
+        await modelling.getWriteMask([objectToDelete]);
+        console.log("Write masks:" + objectToDelete.writeMask);
+    }
+
+    async testRenameObject()
+    {
+        console.log("testRenameObject");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
+        let name = UaLocalizedText.from("TestElement");
+        let modelling = new UaModelling(this.client);
+        await modelling.rename(objectId, name);
+        console.log("Object renamed");
+    }
+
+    async testSetDescription()
+    {
+        console.log("testSetDescription");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
+        let description = UaLocalizedText.from("Test element description");
+        let modelling = new UaModelling(this.client);
+        await modelling.setDescription(objectId, description);
+        console.log("Description set");
     }
 }
 

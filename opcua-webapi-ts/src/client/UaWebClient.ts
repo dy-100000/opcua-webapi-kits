@@ -25,9 +25,6 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, OpcUaNodeAt
     UaReadEventDetails,
     UaEventFilter,
     UaSimpleAttributeOperand,
-    UaObjectAttributes,
-    UaMethodArguments,
-    UaApplicationDescriptor,
     UaBrowseDescription,
     ReferenceTypeIds,
     UaReadValueId,
@@ -39,13 +36,23 @@ import { UaPayloadMapper, makeUaStatusCode, UaBrowseResult, UaError, OpcUaNodeAt
     ObjectIds,
     UaAddNodesItem,
     UaAddNodesResult,
-    OpcUaObjectAttributes,
     UaDeleteNodesItem,
     UaAddReferencesItem,
-    UaDeleteReferencesItem,
-    UaExpandedNodeId} from "../common"
+    UaDeleteReferencesItem} from "../common"
 import { UaClientConfiguration, UaClientParameters, UaWebClientApi, UaWebClientNative } from "..";
 import { UaReadRawModifiedDetails, UaReadAtTimeDetails, UaHistoryEvent, UaHistoryEventResult, UaCallMethodRequest, UaCallMethodResult} from "../common";
+
+export type UaApplicationDescriptor = {
+    urls : Array<string>;
+    applicationUri : string;
+    applicationName : UaLocalizedText;
+    productUri : string;
+}
+
+export type UaMethodArguments = {
+    inputArguments : Array<UaArgument>;
+    outputArguments : Array<UaArgument>;
+}
 
 export class UaWebClient
 {
@@ -56,7 +63,7 @@ export class UaWebClient
     constructor(clientConfig: UaClientConfiguration)
     {
         this.clientConfig = clientConfig;
-        this.api = this.createApi();       
+        this.api = this.createApi();
         this.requestHandle = 1;
     }
 
@@ -161,13 +168,35 @@ export class UaWebClient
         if (results[0].isNotGood()) throw new UaError(results[0]);
     }
 
+    async methodCall(
+        objectId: UaNodeId, 
+        methodId: UaNodeId, 
+        inputArguments: Array<UaVariant>) : Promise<Array<UaVariant>>
+    {
+        let inputs : Array<Variant> = [];
+
+        for (let item of inputArguments)
+        {
+            inputs.push(UaPayloadMapper.variantToWebApi(item));
+        }
+
+        let methodsToCall: Array<UaCallMethodRequest> = [
+            new UaCallMethodRequest(objectId, methodId, inputArguments)
+        ];
+
+        let results = await this.call(methodsToCall);
+        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
+
+        let outputs = results[0].outputArguments;
+        return outputs;
+    }
+
     async readNodeAttributes(nodeId : UaNodeId, returnDescription? : boolean) : Promise<OpcUaNodeAttributes>
     {        
         let nodesToRead: Array<UaReadValueId> = [
             new UaReadValueId(nodeId, Attributes.NodeClass),
             new UaReadValueId(nodeId, Attributes.BrowseName),
             new UaReadValueId(nodeId, Attributes.DisplayName),
-            new UaReadValueId(nodeId, Attributes.WriteMask)
         ];
 
         if (returnDescription)
@@ -188,26 +217,89 @@ export class UaWebClient
         if (UaVariantType.Int32 != nodeClassValue.type ||
             UaVariantType.QualifiedName != browseNameValue.type ||
             UaVariantType.LocalizedText != displayNameValue.type) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-                 
-        let writeMaskValue = (results[3].statusCode.isGood() &&
-                results[3].value.type == UaVariantType.UInt32) ? results[3].value : undefined;
 
         let descriptionValue = 
                 (returnDescription && 
-                results[4].statusCode.isGood() &&
-                results[4].value.type == UaVariantType.LocalizedText) ? results[4].value : undefined;
+                results[3].statusCode.isGood() &&
+                results[3].value.type == UaVariantType.LocalizedText) ? results[3].value : undefined;
 
         let ret : OpcUaNodeAttributes = {
                 nodeClass : nodeClassValue.value,
                 browseName: browseNameValue.value,
                 displayName: displayNameValue.value,
-                writeMask: (writeMaskValue) ? writeMaskValue.value : 0,
                 description: (descriptionValue) ? descriptionValue.value : undefined
             };
 
         return ret;
     }
     
+    async readMethodArguments(nodeId: UaNodeId) : Promise<UaMethodArguments>
+    {
+        let ret : UaMethodArguments = { inputArguments:[], outputArguments: [] };
+        let browseResult = await this.browseChild(nodeId, NodeClass.Variable);
+
+        let inputArgumentsId : UaNodeId | null= null;
+        let outputArgumentsId : UaNodeId | null= null;
+
+        for (let item of browseResult.results)
+        {
+            if ("InputArguments" == item.browseName) inputArgumentsId = item.nodeId.getNodeId();
+            if ("OutputArguments" == item.browseName) outputArgumentsId = item.nodeId.getNodeId();
+        }      
+
+        let nodesToRead : Array<UaNodeId> = [];
+        if (inputArgumentsId) nodesToRead.push(inputArgumentsId);
+        if (outputArgumentsId) nodesToRead.push(outputArgumentsId);
+
+        if (0 == nodesToRead.length) return ret;
+
+        let readResults = await this.readValues(nodesToRead);
+
+        let argsArr : Array<Array<UaArgument>> = [];
+
+        for (let item of readResults)
+        {
+            if (item.statusCode.isNotGood() ||
+                UaVariantType.ExtensionObject != item.value.type ||
+                UaArrayType.Array != item.value.arrayType) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
+
+            let extensionObjects = item.value.value as Array<UaExtensionObject>;
+            let args : Array<UaArgument> = [];
+            for (let itemL2 of extensionObjects)
+            {
+                let arg = UaArgument.fromExtensionObject(itemL2);
+                if (!arg) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
+                args.push(arg);            
+            }
+
+            argsArr.push(args);
+        }
+
+        if (inputArgumentsId && outputArgumentsId)
+        {
+            ret.inputArguments = argsArr[0];
+            ret.outputArguments = argsArr[1];
+        } else if (inputArgumentsId) {
+            ret.inputArguments = argsArr[0];
+        } else if (outputArgumentsId) {
+            ret.outputArguments = argsArr[0];
+        }
+        
+        return ret;
+    }
+
+    async readObjectEventNotifier(nodeId : UaNodeId) : Promise<number>
+    {
+        let nodesToRead: Array<UaReadValueId> = [];
+
+        nodesToRead.push(new UaReadValueId(nodeId, Attributes.EventNotifier));
+
+        let results = await this.read(nodesToRead);
+        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
+        if (UaVariantType.Byte == results[0].value.type) return results[0].value.value;
+        return 0;
+    }
+
     async readVariableAttributes(nodeIds : Array<UaNodeId>) : Promise<Array<OpcUaVariableAttributes>>
     {
         if (nodeIds.length == 0) return [];
@@ -274,101 +366,29 @@ export class UaWebClient
         return ret;
     }
 
-    async readMethodArguments(nodeId: UaNodeId) : Promise<UaMethodArguments>
+    async readWriteMasks(nodeIds : Array<UaNodeId>) : Promise<Array<number>>
     {
-        let ret : UaMethodArguments = { inputArguments:[], outputArguments: [] };
-        let browseResult = await this.browseChild(nodeId, NodeClass.Variable);
+        if (nodeIds.length == 0) return [];
 
-        let inputArgumentsId : UaNodeId | null= null;
-        let outputArgumentsId : UaNodeId | null= null;
+        let nodesToRead: Array<UaReadValueId> = [];
 
-        for (let item of browseResult.results)
-        {
-            if ("InputArguments" == item.browseName) inputArgumentsId = item.nodeId.getNodeId();
-            if ("OutputArguments" == item.browseName) outputArgumentsId = item.nodeId.getNodeId();
-        }      
+        for (let item of nodeIds) {
+            let nodeIdToRead = new UaReadValueId(item, Attributes.UserWriteMask);
+            nodesToRead.push(nodeIdToRead);
+        }
 
-        let nodesToRead : Array<UaNodeId> = [];
-        if (inputArgumentsId) nodesToRead.push(inputArgumentsId);
-        if (outputArgumentsId) nodesToRead.push(outputArgumentsId);
+        let results = await this.read(nodesToRead);
+        let writeMasks : Array<number> = [];
 
-        if (0 == nodesToRead.length) return ret;
-
-        let readResults = await this.readValues(nodesToRead);
-
-        let argsArr : Array<Array<UaArgument>> = [];
-
-        for (let item of readResults)
-        {
-            if (item.statusCode.isNotGood() ||
-                UaVariantType.ExtensionObject != item.value.type ||
-                UaArrayType.Array != item.value.arrayType) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
-
-            let extensionObjects = item.value.value as Array<UaExtensionObject>;
-            let args : Array<UaArgument> = [];
-            for (let itemL2 of extensionObjects)
-            {
-                let arg = UaArgument.fromExtensionObject(itemL2);
-                if (!arg) throw new UaError(makeUaStatusCode(StatusCodes.BadInvalidArgument));
-                args.push(arg);            
+        for (let result of results) {
+            if (result.statusCode.isGood() && result.value.type == UaVariantType.UInt32) {
+                writeMasks.push(result.value.value as number);
+            } else {
+                writeMasks.push(0);
             }
-
-            argsArr.push(args);
         }
 
-        if (inputArgumentsId && outputArgumentsId)
-        {
-            ret.inputArguments = argsArr[0];
-            ret.outputArguments = argsArr[1];
-        } else if (inputArgumentsId) {
-            ret.inputArguments = argsArr[0];
-        } else if (outputArgumentsId) {
-            ret.outputArguments = argsArr[0];
-        }
-        
-        return ret;
-    }
-
-    async readObjectAttributes(nodeId: UaNodeId) : Promise<OpcUaObjectAttributes>
-    {
-        let nodesToRead: Array<UaReadValueId> = [
-            new UaReadValueId(nodeId, Attributes.EventNotifier)
-        ];
-
-        let results = await this.read(nodesToRead);   
-
-        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);  
-        
-        let eventNotifierValue = results[0].value;
-        if (UaVariantType.Byte != eventNotifierValue.type) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-                
-        let ret : OpcUaObjectAttributes = {
-                eventNotifier : eventNotifierValue.value };
-
-        return ret;
-    }
-
-    async methodCall(
-        objectId: UaNodeId, 
-        methodId: UaNodeId, 
-        inputArguments: Array<UaVariant>) : Promise<Array<UaVariant>>
-    {
-        let inputs : Array<Variant> = [];
-
-        for (let item of inputArguments)
-        {
-            inputs.push(UaPayloadMapper.variantToWebApi(item));
-        }
-
-        let methodsToCall: Array<UaCallMethodRequest> = [
-            new UaCallMethodRequest(objectId, methodId, inputArguments)
-        ];
-
-        let results = await this.call(methodsToCall);
-        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
-
-        let outputs = results[0].outputArguments;
-        return outputs;
+        return writeMasks;
     }
 
     async getGeneratedEventType(typeId: UaNodeId): Promise<Array<UaNodeId>>
@@ -562,38 +582,6 @@ export class UaWebClient
 
         let ret = new UaHistoryEventResult(historyData.events, results[0].continuationPoint);        
         return ret;
-    }
- 
-    async addObject(
-        parentNodeId: UaNodeId,
-        typeDefinitionNodeId: UaNodeId,
-        displayName: UaLocalizedText,
-        browseName?: string,
-        referenceTypeId?: UaNodeId) : Promise<UaNodeId>
-    {
-        let objectAttributes = new UaObjectAttributes(displayName);
-        let extensionObject = objectAttributes.toExtensionObject();
-
-        let nodeToAdd = new UaAddNodesItem(
-            new UaExpandedNodeId(parentNodeId),
-            NodeClass.Object,
-            extensionObject,
-            new UaExpandedNodeId(typeDefinitionNodeId),
-            null,
-            browseName,
-            referenceTypeId);
-        
-        let results = await this.addNodes([nodeToAdd]);
-        if (results[0].statusCode.isNotGood()) throw new UaError(results[0].statusCode);
-        let newNodeId = results[0].addedNodeId;
-        return newNodeId;
-    }
-
-    async deleteNode(nodeId: UaNodeId) : Promise<void>
-    {
-        let nodeToDelete = new UaDeleteNodesItem(nodeId);
-        let results = await this.deleteNodes([nodeToDelete]);
-        if (results[0].isNotGood()) throw new UaError(results[0]);        
     }
 
     // Native APIs
@@ -1052,6 +1040,7 @@ export class UaWebClient
             try {
                 response = await this.api.addNodes(request, { signal: controller.signal });
             } catch (error) {
+                console.error(error);
                 throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
             } finally {
                 clearTimeout(timeoutId);

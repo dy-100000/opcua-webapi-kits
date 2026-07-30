@@ -1,4 +1,3 @@
-export * from "./UaTypes"
 export * from "./UaDataValue"
 export * from "./UaError";
 export * from "./UaExpandedNodeId";
@@ -18,6 +17,7 @@ export * from "./UaBrowseMask";
 export * from "./UaValueRank";
 export * from "./UaWriteMask";
 export * from "./UaReference";
+export * from "./UaModellingRule";
 export * from "./UaEventNotifier";
 
 

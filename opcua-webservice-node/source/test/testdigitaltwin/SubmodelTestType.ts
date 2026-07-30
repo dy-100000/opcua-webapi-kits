@@ -11,16 +11,20 @@ import {
     UaValueRank,
     UaVariant,
     UaVariantType,
+    UaError,
+    UaStatusCode
 } from "opcua-webapi-ts";
 import {
     UaDataTypes,
     UaMethod,
-    UaModellingRule,
     UaObject,
     UaVariable,
     UaVariableTypes,
-} from "opcua-webservice-node";
-import { DigitalTwinSpace,SubmodelType } from "opcua-webservice-node";
+    DigitalTwinSpace,
+    SubmodelType,
+    ModifyAttributeRequest,
+    ModifyAttributeResponse
+} from "../../src";
 import {
     GetDescriptorRequest,
     GetDescriptorResponse,
@@ -34,7 +38,13 @@ import {
     ReadPropertyValuesResponse,
     WritePropertyValuesRequest,
     WritePropertyValuesResponse,
-} from "opcua-webservice-node";
+    AddRequest, 
+    AddResponse, 
+    DeleteResponse, 
+    DeleteRequest, 
+    GetPermissionRequest, 
+    GetPermissionResponse
+} from "../../src";
 import { ElementCollectionTestAType } from "./ElementCollectionTestAType";
 import { ElementCollectionTestBType } from "./ElementCollectionTestBType";
 import { ElementListTestType } from "./ElementListTestType";
@@ -258,5 +268,34 @@ export class SubmodelTestType extends SubmodelType {
         }
 
         return response;
+    }
+
+    override async onAddSubmodel(request: AddRequest): Promise<AddResponse>
+    {
+        console.log("Add Submodel, parent: " + request.parentId + " DisplayName: " + request.displayName?.text);
+        let response = new AddResponse(request.parentId);
+        return response;
+    }
+
+    override async onDeleteSubmodel(request: DeleteRequest): Promise<DeleteResponse>
+    {
+        console.log("Delete Submodel, id: " + request.id);
+        let response = new DeleteResponse();
+        return response;
+    }
+
+    override async onGetPermission(request: GetPermissionRequest): Promise<GetPermissionResponse> {
+        console.log("GetPermission Submodel id: " + request.id);
+        return new GetPermissionResponse(true, true, true);
+    }
+
+    override async onRename(request: ModifyAttributeRequest): Promise<ModifyAttributeResponse> {
+        console.log("Rename Submodel, id: " + request.id + " DisplayName: " + request.text.text);
+        return new ModifyAttributeResponse(UaStatusCode.from(StatusCodes.Good));
+    }
+
+    override async onSetDescriptor(request: ModifyAttributeRequest): Promise<ModifyAttributeResponse> {
+        console.log("SetDescriptor Submodel, id: " + request.id + " Description: " + request.text.text);
+        return new ModifyAttributeResponse(UaStatusCode.from(StatusCodes.Good));
     }
 }

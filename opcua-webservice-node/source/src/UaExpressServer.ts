@@ -2,18 +2,24 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import * as OpenApiValidator from 'express-openapi-validator';
 import path from 'path';
-import { browse, browseNext, call, findServers, getEndpoints, historyRead, read, write } from './controllers/DefaultController';
+import fs from 'fs';
+import { addNodes, addReferences, browse, browseNext, call, deleteNodes, deleteReferences, findServers, getEndpoints, historyRead, read, write } from './controllers/DefaultController';
 
 export class UaExpressServer {
     private _app : Express;
     private _port: number;
     private _apiSpecPath: string;
 
-    constructor(port: number)
+    constructor(port: number, apiSpecDir?: string)
     {
         this._app = express();
         this._port = port;
-        this._apiSpecPath = path.join(__dirname, 'api', 'openapi.yaml');
+        let specDir = (apiSpecDir) ? apiSpecDir : path.join(__dirname, 'api');
+        this._apiSpecPath = path.join(specDir, 'openapi.yaml');
+        
+        if (!fs.existsSync(this._apiSpecPath)) {
+            console.warn("API spec not found at", this._apiSpecPath);
+        }
     }
 
     get app() : Express
@@ -58,11 +64,16 @@ export class UaExpressServer {
         this._app.post(["/write","/:path/write"], write);
         this._app.post(["/call","/:path/call"], call);
         this._app.post(["/historyread","/:path/historyread"], historyRead);
+        this._app.post(["/addnodes","/:path/addnodes"], addNodes);
+        this._app.post(["/addreferences","/:path/addreferences"], addReferences);
+        this._app.post(["/deletenodes","/:path/deletenodes"], deleteNodes);
+        this._app.post(["/deletereferences","/:path/deletereferences"], deleteReferences);
     }
 
     private initializeErrorHandlers()
     {        
         this._app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+            console.error('Request error:', err && err.stack ? err.stack : err);
             res.status(err.status || 500).json({
                 message: err.message,
                 errors: err.errors || []

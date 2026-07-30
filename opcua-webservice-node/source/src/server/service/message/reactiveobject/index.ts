@@ -20,6 +20,8 @@ export * from "./ReadVariableValueRequest";
 export * from "./ReadVariableValueResponse";
 export * from "./WriteVariableValueRequest";
 export * from "./WriteVariableValueResponse";
+export * from "./WriteObjectAttributeRequest";
+export * from "./WriteObjectAttributeResponse";
 export * from "./AddObjectRequest";
 export * from "./AddObjectResponse";
 export * from "./DeleteObjectRequest";

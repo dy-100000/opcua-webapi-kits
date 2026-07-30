@@ -1,9 +1,9 @@
 import { StatusCodes } from "opcua-webapi";
 import { makeUaStatusCode, UaDataValue, UaLocalizedText, UaVariant, UaVariantType } from "opcua-webapi-ts";
-import { ReadPropertyHistoryValuesRequest,ReadPropertyHistoryValuesResponse, UaDataTypes, UaVariableTypes } from "opcua-webservice-node";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { ElementListType } from "opcua-webservice-node";
-import {
+import { ReadPropertyHistoryValuesRequest,ReadPropertyHistoryValuesResponse, UaDataTypes, UaVariableTypes } from "../../src";
+import { 
+    DigitalTwinSpace,
+    ElementListType,
     GetObjectElementListRequest,
     GetObjectElementListResponse,
     GetPropertyDescriptorRequest,
@@ -15,16 +15,18 @@ import {
     ReadPropertyListValueRequest,
     ReadPropertyListValueResponse,
     WritePropertyListValuesRequest,
-    WritePropertyListValuesResponse,
-} from "opcua-webservice-node";
-import { ObjectElementDescriptor } from "opcua-webservice-node";
-import { PropertyElementDescriptor } from "opcua-webservice-node";
-import { DigitalTwinSpaceTest } from "./DigitalTwinSpaceTest";
+    WritePropertyListValuesResponse, 
+    ObjectElementDescriptor,
+    PropertyElementDescriptor
+} from "../../src";
+
+import { DigitalTwinSpaceTest,ElementCollectionTestAType } from "./";
 
 export class ElementListTestType extends ElementListType {
-    constructor(space: DigitalTwinSpace) {
+    constructor(elementCollectionTestAType : ElementCollectionTestAType, space: DigitalTwinSpace) {
         super("ElementListTestType", new UaLocalizedText("ElementListTestType"), space);
         this.description = new UaLocalizedText("ElementListTestType");
+        this.mayAdd(elementCollectionTestAType);
     }
 
     override async onGetObjectElementList(request: GetObjectElementListRequest): Promise<GetObjectElementListResponse> {

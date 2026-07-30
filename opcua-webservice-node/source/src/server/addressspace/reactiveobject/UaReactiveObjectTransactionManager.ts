@@ -259,12 +259,12 @@ export class UaReactiveObjectTransactionManager {
 
             if (nodeToWrite.attributeId === Attributes.Value) {
                 if (identifier.childId !== null) {
-                    handleIdsForWriteVariableValues.set(handleId, identifier);
+                    handleIdsForWriteVariableValues.set(handleId, identifier); 
                 } else {
                     handleIdsForNodes.push(handleId);
                 }
 
-                continue;
+                continue;               
             }
 
             if (identifier.childId === null && identifier.objectId.instanceDeclId === null) {

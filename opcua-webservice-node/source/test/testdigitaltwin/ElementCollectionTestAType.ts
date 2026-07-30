@@ -11,19 +11,18 @@ import {
     UaValueRank,
     UaVariant,
     UaVariantType,
+    UaError,
+    UaStatusCode
 } from "opcua-webapi-ts";
 import {
     ReadPropertyHistoryValuesRequest,
     ReadPropertyHistoryValuesResponse,
     UaDataTypes,
     UaMethod,
-    UaModellingRule,
     UaVariable,
     UaVariableTypes,
-} from "opcua-webservice-node";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { ElementCollectionType } from "opcua-webservice-node";
-import {
+    DigitalTwinSpace,
+    ElementCollectionType,
     GetElementsRequest,
     GetElementsResponse,
     InvokeOperationRequest,
@@ -32,7 +31,15 @@ import {
     ReadPropertyValuesResponse,
     WritePropertyValuesRequest,
     WritePropertyValuesResponse,
-} from "opcua-webservice-node";
+    AddRequest,
+    AddResponse,
+    DeleteRequest,
+    DeleteResponse,
+    GetPermissionRequest,
+    GetPermissionResponse,
+    ModifyAttributeRequest,
+    ModifyAttributeResponse
+} from "../../src";
 import { EnumTestDataType } from "./EnumTestDataType";
 
 export class ElementCollectionTestAType extends ElementCollectionType {
@@ -44,8 +51,7 @@ export class ElementCollectionTestAType extends ElementCollectionType {
 
     constructor(
         enumTestDataType: EnumTestDataType,
-        space: DigitalTwinSpace,
-    ) {
+        space: DigitalTwinSpace) {
         super("ElementCollectionTestAType", new UaLocalizedText("ElementCollectionTestAType"), space);
         this.description = new UaLocalizedText("ElementCollectionTestAType");
 
@@ -225,5 +231,34 @@ export class ElementCollectionTestAType extends ElementCollectionType {
         }
 
         return response;
+    }
+
+    override async onAddElement(request: AddRequest): Promise<AddResponse>
+    {
+        console.log("Add Element, parent: " + request.parentId + " DisplayName: " + request.displayName?.text);
+        let response = new AddResponse(request.parentId);
+        return response;
+    }
+
+    override async onDeleteElement(request: DeleteRequest): Promise<DeleteResponse>
+    {
+        console.log("Delete Element, id: " + request.id);
+        let response = new DeleteResponse();
+        return response;
+    }
+
+    async onGetPermission(request: GetPermissionRequest): Promise<GetPermissionResponse> {
+        console.log("GetPermission Element id: " + request.id);
+        return new GetPermissionResponse(true, true, false);
+    }
+
+    override async onRename(request: ModifyAttributeRequest): Promise<ModifyAttributeResponse> {
+        console.log("Rename Element, id: " + request.id + " DisplayName: " + request.text.text);
+        return new ModifyAttributeResponse(UaStatusCode.from(StatusCodes.Good));
+    }
+
+    override async onSetDescriptor(request: ModifyAttributeRequest): Promise<ModifyAttributeResponse> {
+        console.log("SetDescriptor Element, id: " + request.id + " Description: " + request.text.text);
+        return new ModifyAttributeResponse(UaStatusCode.from(StatusCodes.Good));
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "opcua-webapi-ts",
-  "version": "1.1.17",
+  "version": "1.1.19",
   "description": "Provides OPC UA WebAPI wrapper and client based on opcua-webapi-typescript",
   "author": "DingYan",
   "license": "MIT",
@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsc && tsc -p tsconfig.cjs.json",
     "prepare": "npm run build",
-    "dev": "tsx watch --clear-screen=false test/test.ts"
+    "test": "tsx test/test.ts"
   },
   "devDependencies": {
     "tsx": "^4.22.3",

@@ -1,8 +1,5 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { UaObject } from "opcua-webservice-node";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { ElementCollectionType } from "opcua-webservice-node";
-import { ReadPropertyValuesRequest, ReadPropertyValuesResponse } from "opcua-webservice-node";
+import { UaObject,DigitalTwinSpace,ElementCollectionType,ReadPropertyValuesRequest, ReadPropertyValuesResponse } from "../../src";
 import { ElementListTestType } from "./ElementListTestType";
 import { ReferenceElementTestType } from "./ReferenceElementTestType";
 

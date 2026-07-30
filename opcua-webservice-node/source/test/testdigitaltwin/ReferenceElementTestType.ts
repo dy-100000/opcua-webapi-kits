@@ -1,8 +1,6 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { ReferenceElementType } from "opcua-webservice-node";
-import { GetDescriptorRequest, GetDescriptorResponse, GetLinkRequest, GetLinkResponse } from "opcua-webservice-node";
-import { ReferenceTargetDescriptor } from "opcua-webservice-node";
+import { DigitalTwinSpace, ReferenceElementType,ReferenceTargetDescriptor } from "../../src";
+import { GetDescriptorRequest, GetDescriptorResponse, GetLinkRequest, GetLinkResponse } from "../../src";
 import { DigitalTwinSpaceTest } from "./DigitalTwinSpaceTest";
 
 export class ReferenceElementTestType extends ReferenceElementType {

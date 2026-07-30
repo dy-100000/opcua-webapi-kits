@@ -1,5 +1,5 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaVariant } from "opcua-webapi-ts";
+import { makeUaStatusCode, UaModellingRule, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaVariant } from "opcua-webapi-ts";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
 import {
     BrowseMemberRequest,
@@ -34,8 +34,8 @@ import {
 } from "../../service/message";
 import { UaBrowseAdditionalInfo, UaChildId, UaReferenceDescriptor } from "../../types";
 import { ObjectServiceContext } from "../../types/digitaltwin";
-import { ElementType } from "./ElementType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
+import { ElementType } from "./ElementType";
 
 export abstract class ElementListType extends ElementType {
     constructor(
@@ -43,6 +43,14 @@ export abstract class ElementListType extends ElementType {
         displayName: UaLocalizedText,
         twinSpace: DigitalTwinSpace) {
         super(typeId, displayName, UaObjectTypes.ElementListType, twinSpace);
+    }
+
+    /**
+     * Set the element type can be added to this element list.
+     */
+    mayAdd(type: ElementType): void {
+        const newObject = this.addObjectNode(type.name, type.displayName, type);       
+        newObject.setModellingRule(UaModellingRule.PlaceHolder);
     }
 
     /**
@@ -109,22 +117,7 @@ export abstract class ElementListType extends ElementType {
     async onGetPropertySubElements(request: GetPropertySubElementsRequest): Promise<GetPropertySubElementsResponse>
     {
         return new GetPropertySubElementsResponse();
-    }   
-    
-    /**
-     * Internal framework callback used by the base type to read object attributes.
-     * Do not call or override this method directly.
-     */
-    override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
-        const context = new ObjectServiceContext(request.objectId);
-        const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
-
-        return new ReadObjectAttributeResponse(
-            request.objectId.id,
-            response.displayName,
-            response.description,
-        );
-    }
+    }     
 
     /**
      * Internal framework callback used by the base type to browse child nodes.

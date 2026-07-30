@@ -12,4 +12,3 @@ export * from './UaObject';
 export * from './UaMethod';
 export * from './UaVariable';
 export * from './UaVariableType';
-export * from './UaModellingRule';

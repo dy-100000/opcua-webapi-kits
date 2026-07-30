@@ -4,6 +4,8 @@ import { UaDefintionNode, UaObject, UaMethod, UaVariable, UaInstanceNode } from 
 
 export class UaObjectType extends UaDefintionNode
 {        
+    private _isObjectMemberRead : boolean;
+
     constructor(
         nodeId: UaNodeId,
         browseName: string,
@@ -11,6 +13,7 @@ export class UaObjectType extends UaDefintionNode
         isAbstract: boolean)
     {
         super(nodeId, browseName, displayName, isAbstract);
+        this._isObjectMemberRead = false;
     }
     
     get nodeClass() : NodeClass 
@@ -60,6 +63,16 @@ export class UaObjectType extends UaDefintionNode
         }
         
         return ret;
+    }
+
+    get isObjectMemberRead() : boolean
+    {
+        return this._isObjectMemberRead;
+    }
+
+    set isObjectMemberRead(value : boolean)
+    {
+        this._isObjectMemberRead = value;
     }
 
     toJson() : any

@@ -1,9 +1,8 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
-import { ReferenceTypeIds, UaAccessLevel, UaArgument, UaDataValue, UaError, UaLocalizedText, UaNodeId, UaVariant, makeUaStatusCode } from "opcua-webapi-ts";
+import { ReferenceTypeIds, UaAccessLevel, UaModellingRule, UaArgument, UaDataValue, UaError, UaLocalizedText, UaNodeId, UaVariant, makeUaStatusCode } from "opcua-webapi-ts";
 import { UaDataType } from "../../addressspace/nodes/UaDataType";
 import { UaInstanceNode } from "../../addressspace/nodes/UaInstanceNode";
 import { UaMethod } from "../../addressspace/nodes/UaMethod";
-import { UaModellingRule } from "../../addressspace/nodes/UaModellingRule";
 import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaVariable } from "../../addressspace/nodes/UaVariable";
 import type { UaVariableType } from "../../addressspace/nodes/UaVariableType";
@@ -153,16 +152,6 @@ export abstract class ElementCollectionType extends ElementType {
 
     addElementList(type: ElementListType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
-    }
-
-    /**
-     * Internal framework callback used by the base type to read object attributes.
-     * Do not call or override this method directly.
-     */
-    override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
-        const context = new ObjectServiceContext(request.objectId);
-        const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
-        return new ReadObjectAttributeResponse(request.objectId.id, response.displayName, response.description);
     }
 
     /**

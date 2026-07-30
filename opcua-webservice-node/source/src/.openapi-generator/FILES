@@ -1,10 +1,13 @@
 .eslintrc.json
+.openapi-generator-ignore
 README.md
 api/openapi.yaml
 config.js
 controllers/Controller.js
 controllers/DefaultController.js
 controllers/index.js
+expressServer.js
+index.js
 logger.js
 package.json
 services/DefaultService.js

@@ -1,17 +1,18 @@
 import { NodeClass } from "opcua-webapi";
 import { UaReferenceType, UaLocalizedText, UaNodeId, ReferenceTypeIds, UaBrowseDescription, UaReference } from "../../common"
 import { UaWebClient } from "../UaWebClient"
-import { UaChildBrowser, UaNodeReader } from "./UaNodeReader";
+import { UaNodeReader } from "./UaNodeReader";
+import { UaTypeBrowser } from "./UaNodeBrowser";
 
 export class UaReferenceTypeDictionary
 {
+    private _client : UaWebClient;
     private _referenceTypes : Map<string, UaReferenceType>;
-    private _returnAllAttributes: boolean;
 
-    constructor(simpleMode?: boolean)     
+    constructor(client : UaWebClient)
     {
-        this._referenceTypes = new Map;        
-        this._returnAllAttributes = (null == simpleMode) ? false : !simpleMode;
+        this._client = client;
+        this._referenceTypes = new Map;
     
         let referencesId = UaNodeId.from(ReferenceTypeIds.References);
         this._referenceTypes.set(
@@ -26,10 +27,10 @@ export class UaReferenceTypeDictionary
                 ));
     }
     
-    public async read(client : UaWebClient)
+    public async read()
     {
-        let browser = new UaChildBrowser([UaNodeId.from(ReferenceTypeIds.References)]);
-        await this._read(browser, client);
+        let browser = new UaTypeBrowser(this._client,[UaNodeId.from(ReferenceTypeIds.References)]);
+        await this._read(browser);
     }
 
     public getReferenceType(nodeId: UaNodeId) : UaReferenceType | null
@@ -43,12 +44,10 @@ export class UaReferenceTypeDictionary
         return [...this._referenceTypes.values()];
     }
 
-    private async _read(
-        browser: UaChildBrowser,
-        client: UaWebClient)
+    private async _read(browser: UaTypeBrowser)
     {
         // Browse child type
-        await browser.browse(client)
+        await browser.browse();
         let results = browser.results();
         
         let referencesToRead: Array<UaReference> = [];
@@ -62,8 +61,8 @@ export class UaReferenceTypeDictionary
 
         // Read child type
         let nodeIdsToBrowse: Array<UaNodeId> = [];
-        let nodeReader = new UaNodeReader(this._returnAllAttributes,false, false,this._returnAllAttributes);
-        let nodes = await nodeReader.readByReferences(referencesToRead,client);
+        let nodeReader = new UaNodeReader(this._client, false,false, false,false,false);
+        let nodes = await nodeReader.readByReferences(referencesToRead);
 
         for (let node of nodes)
         {
@@ -88,8 +87,8 @@ export class UaReferenceTypeDictionary
         await this.__delay(20);
 
         // Continue to browse and read child type
-        let childBrowser = new UaChildBrowser(nodeIdsToBrowse);
-        await this._read(childBrowser, client);
+        let childBrowser = new UaTypeBrowser(this._client, nodeIdsToBrowse);
+        await this._read(childBrowser);
     }
 
     private async __delay(ms: number): Promise<void> {

@@ -1,7 +1,7 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaNodeIdType } from "opcua-webapi-ts";
+import { makeUaStatusCode, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaNodeIdType, UaModellingRule } from "opcua-webapi-ts";
 import { UaReactiveObjectType } from "../../addressspace/reactiveobject/UaReactiveObjectType";
-import { UaObjectTypes } from "../../addressspace/nodes/builtin";
+import { UaObjectTypes } from "../../addressspace/nodes";
 import {
     BrowseObjectRequest,
     BrowseObjectResponse,
@@ -13,6 +13,7 @@ import {
 import { UaBrowseAdditionalInfo, UaInstanceIdentifier, UaObjectIdentifier, UaReferenceDescriptor } from "../../types";
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
+import { DigitalTwinType } from "../..";
 
 export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
     constructor(
@@ -24,6 +25,14 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
 
     digitalTwinSpace(): DigitalTwinSpace {
         return this.nodeManager as DigitalTwinSpace;
+    }
+
+    /**
+     * Set the digital twin type can be added to this repository.
+     */
+    mayAdd(type: DigitalTwinType): void {
+        const newObject = this.addObjectNode(type.name, type.displayName, type);
+        newObject.setModellingRule(UaModellingRule.PlaceHolder);
     }
 
     /**

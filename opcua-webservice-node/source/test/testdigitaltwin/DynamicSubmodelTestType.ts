@@ -1,11 +1,8 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DigitalTwinSpace } from "opcua-webservice-node";
-import { DynamicSubmodelType } from "opcua-webservice-node";
-import { GetObjectElementListRequest, GetObjectElementListResponse } from "opcua-webservice-node";
-import { ObjectElementDescriptor } from "opcua-webservice-node";
+import { DigitalTwinSpace,SubmodelTypeDynamic,GetObjectElementListRequest, GetObjectElementListResponse,ObjectElementDescriptor } from "../../src";
 import { DigitalTwinSpaceTest } from "./DigitalTwinSpaceTest";
 
-export class DynamicSubmodelTestType extends DynamicSubmodelType {
+export class DynamicSubmodelTestType extends SubmodelTypeDynamic {
     constructor(space: DigitalTwinSpace) {
         super("DynamicSubmodelTestType", new UaLocalizedText("DynamicSubmodelTestType"), space);
         this.description = new UaLocalizedText("DynamicSubmodelTestType");

@@ -1,6 +1,5 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { UaEnumDataType } from "opcua-webservice-node";
-import { DigitalTwinSpace } from "opcua-webservice-node";
+import { UaEnumDataType,DigitalTwinSpace } from "../../src";
 
 export class EnumTestDataType extends UaEnumDataType {
     constructor(space: DigitalTwinSpace) {

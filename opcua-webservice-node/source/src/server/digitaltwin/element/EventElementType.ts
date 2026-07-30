@@ -51,20 +51,6 @@ export abstract class EventElementType extends ElementType {
     abstract onReadEvents(request: ReadEventsRequest): Promise<ReadEventsResponse>;
 
     /**
-     * Internal framework callback used by the base type to read object attributes.
-     * Do not call or override this method directly.
-     */
-    override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
-        const context = new ObjectServiceContext(request.objectId);
-        const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
-        return new ReadObjectAttributeResponse(
-            request.objectId.id, 
-            response.displayName, 
-            response.description, 
-            UaEventNotifier.SubscribeToEvents);
-    }
-
-    /**
      * Internal framework callback used by the base type to read history events.
      * Do not call or override this method directly.
      */

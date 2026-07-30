@@ -12,10 +12,9 @@ export class UaDataType extends UaDefintionNode
         nodeId: UaNodeId,
         browseName: string,
         displayName: UaLocalizedText,
-        isAbstract: boolean,
-        writeMask?: number | null)
+        isAbstract: boolean)
     {
-        super(nodeId, browseName, displayName, isAbstract,writeMask);
+        super(nodeId, browseName, displayName, isAbstract);
 
         this._valueType = 0;
         this._enumValues = null;

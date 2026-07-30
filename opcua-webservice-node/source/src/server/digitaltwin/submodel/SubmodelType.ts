@@ -1,22 +1,31 @@
-import { NodeClass, StatusCodes } from "opcua-webapi";
-import { ReferenceTypeIds, UaAccessLevel, UaArgument, UaDataValue, UaError, UaExtensionObject, UaLocalizedText, UaNodeId, UaVariant, makeUaStatusCode } from "opcua-webapi-ts";
+import { Attributes, NodeClass, StatusCodes } from "opcua-webapi";
+import { UaModellingRule, ReferenceTypeIds, UaAccessLevel, UaArgument, UaDataValue, UaError, UaLocalizedText, UaNodeId, UaStatusCode, UaVariant, makeUaStatusCode, UaWriteMask } from "opcua-webapi-ts";
 import { UaDataType } from "../../addressspace/nodes/UaDataType";
 import { UaInstanceNode } from "../../addressspace/nodes/UaInstanceNode";
 import { UaMethod } from "../../addressspace/nodes/UaMethod";
-import { UaModellingRule } from "../../addressspace/nodes/UaModellingRule";
 import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaVariable } from "../../addressspace/nodes/UaVariable";
 import type { UaVariableType } from "../../addressspace/nodes/UaVariableType";
 import { UaVariableTypes } from "../../addressspace/nodes/builtin";
 import {
+    AddObjectRequest,
+    AddObjectResponse,
+    AddRequest,
+    AddResponse,
     BrowseMemberRequest,
     BrowseMemberResponse,
     BrowseObjectRequest,
     BrowseObjectResponse,
+    DeleteObjectRequest,
+    DeleteObjectResponse,
+    DeleteRequest,
+    DeleteResponse,
     GetDescriptorRequest,
     GetDescriptorResponse,
     GetElementsRequest,
     GetElementsResponse,
+    GetPermissionRequest,
+    GetPermissionResponse,
     InvokeOperationRequest,
     InvokeOperationResponse,
     MethodCallRequest,
@@ -25,8 +34,6 @@ import {
     ReadHistoryDataResponse,
     ReadMemberAttributeRequest,
     ReadMemberAttributeResponse,
-    ReadObjectAttributeRequest,
-    ReadObjectAttributeResponse,
     ReadPropertyHistoryValuesRequest,
     ReadPropertyHistoryValuesResponse,
     ReadPropertyValuesRequest,
@@ -59,28 +66,28 @@ export class SubmodelType extends SubmodelTypeBase {
     /**
      * Override in subclasses to read property values for this submodel.
      */
-    async onReadPropertyValues(_request: ReadPropertyValuesRequest): Promise<ReadPropertyValuesResponse> {
+    async onReadPropertyValues(request: ReadPropertyValuesRequest): Promise<ReadPropertyValuesResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
     /**
      * Override in subclasses to write property values for this submodel.
      */
-    async onWritePropertyValues(_request: WritePropertyValuesRequest): Promise<WritePropertyValuesResponse> {
+    async onWritePropertyValues(request: WritePropertyValuesRequest): Promise<WritePropertyValuesResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
     /**
      * Override in subclasses to handle method calls for this submodel.
      */
-    async onInvokeOperation(_request: InvokeOperationRequest): Promise<InvokeOperationResponse> {
+    async onInvokeOperation(request: InvokeOperationRequest): Promise<InvokeOperationResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
 
     /**
      * Override in subclasses to read historical property values.
      */
-    async onReadPropertyHistoryValues(_request: ReadPropertyHistoryValuesRequest): Promise<ReadPropertyHistoryValuesResponse>
+    async onReadPropertyHistoryValues(request: ReadPropertyHistoryValuesRequest): Promise<ReadPropertyHistoryValuesResponse>
     {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
     }
@@ -88,7 +95,7 @@ export class SubmodelType extends SubmodelTypeBase {
     /**
      * Optional override point to provide a custom child-element list.
      */
-    async onGetElements(_request: GetElementsRequest): Promise<GetElementsResponse>
+    async onGetElements(request: GetElementsRequest): Promise<GetElementsResponse>
     {
         const response = new GetElementsResponse();
         for (const item of this.getMembers()) {
@@ -154,16 +161,6 @@ export class SubmodelType extends SubmodelTypeBase {
 
     addElementList(type: ElementListType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
-    }
-
-    /**
-     * Internal framework callback used by the base type to read object attributes.
-     * Do not call or override this method directly.
-     */
-    override async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {
-        const context = new ObjectServiceContext(request.objectId);
-        const response = await this.onGetDescriptor(new GetDescriptorRequest(context));
-        return new ReadObjectAttributeResponse(request.objectId.id, response.displayName, response.description);
     }
 
     /**
@@ -338,8 +335,6 @@ export class SubmodelType extends SubmodelTypeBase {
      * Do not call or override this method directly.
      */
     override async onMethodCall(request: MethodCallRequest): Promise<MethodCallResponse> {
-        console.log(`onMethodCall`);
-
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onInvokeOperation(
             new InvokeOperationRequest(context, request.methodName, request.inputArguments),

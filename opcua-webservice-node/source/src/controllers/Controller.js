@@ -61,9 +61,17 @@ class Controller {
     if (codeGenDefinedBodyName !== undefined) {
       return codeGenDefinedBodyName;
     }
-    const refObjectPath = request.openapi.schema.requestBody.content['application/json'].schema.$ref;
-    if (refObjectPath !== undefined && refObjectPath.length > 0) {
-      return (refObjectPath.substr(refObjectPath.lastIndexOf('/') + 1));
+
+    let applicationJson = request.openapi.schema.requestBody.content['application/json'];
+    if (applicationJson.schema && 
+        applicationJson.schema.$ref) {
+      const refObjectPath = applicationJson.schema.$ref;
+      if (refObjectPath.length > 0) {
+        return (refObjectPath.substr(refObjectPath.lastIndexOf('/') + 1));
+      }
+    }
+    if (request.openapi.schema.operationId) {
+      return request.openapi.schema.operationId + 'Request';
     }
     return 'body';
   }

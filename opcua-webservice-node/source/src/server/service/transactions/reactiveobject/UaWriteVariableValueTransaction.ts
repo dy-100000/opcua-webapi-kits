@@ -46,21 +46,11 @@ export class UaWriteVariableValueTransaction extends UaWriteTransaction {
             const response = await objectType.onWriteVariablesValue(request);
             this.setResults(response);
         } catch (error) {
-            this._results.length = 0;
-
-            const statusCode = error instanceof UaError
-                ? error.statusCode
-                : makeUaStatusCode(StatusCodes.BadUnexpectedError);
-
-            for (const _handleId of this.handleIds) {
-                this._results.push(statusCode);
-            }
+            this.buildErrorResults(error);
         }
     }
 
     private setResults(response: WriteVariableValueResponse): void {
-        this._results.length = 0;
-
         for (const item of this.variableValues) {
             const result = response.results.get(item.variableId.toString());
             this._results.push(result ?? makeUaStatusCode(StatusCodes.BadNotWritable));

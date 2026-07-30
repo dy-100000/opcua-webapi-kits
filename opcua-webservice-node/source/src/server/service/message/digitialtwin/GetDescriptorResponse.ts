@@ -3,7 +3,7 @@ import { UaLocalizedText } from "opcua-webapi-ts";
 export class GetDescriptorResponse {
     private readonly _displayName: UaLocalizedText;
     private readonly _description: UaLocalizedText;
-
+    
     constructor(displayName: string);
     constructor(displayName: UaLocalizedText, description: UaLocalizedText);
     constructor(displayName: string | UaLocalizedText, description: UaLocalizedText = UaLocalizedText.nullText) {

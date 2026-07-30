@@ -1,6 +1,5 @@
 import { StatusCodes } from "opcua-webapi";
-import { UaError, UaLocalizedText, UaNodeId, makeUaStatusCode } from "opcua-webapi-ts";
-import { UaModellingRule } from "./UaModellingRule";
+import { UaError, UaModellingRule,UaLocalizedText, UaNodeId, makeUaStatusCode } from "opcua-webapi-ts";
 import { UaNode } from "./UaNode";
 import { UaReference } from "./UaReference";
 import { UaReferenceTypes } from "./builtin/UaReferenceTypes";
@@ -31,9 +30,14 @@ export abstract class UaInstanceNode extends UaNode {
 
         this._modellingRule = modellingRule;
 
+        // require UaObjects at runtime to avoid circular import during module initialization
+        const { UaObjects } = require("./builtin");
         if (modellingRule === UaModellingRule.Mandatory) {
-            const { UaObjects } = require("./builtin/UaObjects");
             this.addReference(new UaReference(UaObjects.ModellingRule_Mandatory, UaReferenceTypes.HasModellingRule, true));
+        } else if (modellingRule === UaModellingRule.Optional) {
+            this.addReference(new UaReference(UaObjects.ModellingRule_Optional, UaReferenceTypes.HasModellingRule, true));
+        } else if (modellingRule === UaModellingRule.PlaceHolder) {
+            this.addReference(new UaReference(UaObjects.ModellingRule_OptionalPlaceHolder, UaReferenceTypes.HasModellingRule, true));
         }
     }
 }

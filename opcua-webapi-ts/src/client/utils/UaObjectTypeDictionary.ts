@@ -1,17 +1,18 @@
 import { NodeClass } from "opcua-webapi";
 import { UaLocalizedText, UaNodeId, ObjectTypeIds, UaObjectType, UaReference } from "../../common"
 import { UaWebClient } from "../UaWebClient"
-import { UaChildBrowser, UaNodeReader } from "./UaNodeReader";
+import { UaNodeReader } from "./UaNodeReader";
+import { UaTypeBrowser } from "./UaNodeBrowser";
 
 export class UaObjectTypeDictionary
 {
+    private _client : UaWebClient;
     private _objectTypes : Map<string, UaObjectType>;
-    private _returnAllAttributes: boolean;
     
-    constructor(simpleMode?: boolean)
+    constructor(client : UaWebClient)
     {
+        this._client = client;
         this._objectTypes = new Map;
-        this._returnAllAttributes = (null == simpleMode) ? false : !simpleMode;
     
         let baseObjectTypeId = UaNodeId.from(ObjectTypeIds.BaseObjectType);
         this._objectTypes.set(
@@ -23,10 +24,10 @@ export class UaObjectTypeDictionary
                     false)); 
     }
     
-    public async read(client : UaWebClient)
+    public async read()
     {
-        let browser = new UaChildBrowser([UaNodeId.from(ObjectTypeIds.BaseObjectType)]);
-        await this._read(browser, client);
+        let browser = new UaTypeBrowser(this._client, [UaNodeId.from(ObjectTypeIds.BaseObjectType)]);
+        await this._read(browser);
     }
 
     public getObjectType(nodeId: UaNodeId) : UaObjectType | null
@@ -41,11 +42,10 @@ export class UaObjectTypeDictionary
     }
 
     private async _read(
-        browser: UaChildBrowser,
-        client: UaWebClient)
+        browser: UaTypeBrowser)
     {
         // Browse child type
-        await browser.browse(client)
+        await browser.browse();
         let results = browser.results();
         
         let referencesToRead: Array<UaReference> = [];
@@ -59,8 +59,8 @@ export class UaObjectTypeDictionary
 
         // Read child type
         let nodeIdsToBrowse: Array<UaNodeId> = [];
-        let nodeReader = new UaNodeReader(this._returnAllAttributes,false, false,this._returnAllAttributes);
-        let nodes = await nodeReader.readByReferences(referencesToRead,client);
+        let nodeReader = new UaNodeReader(this._client, false, false, false, false, false);
+        let nodes = await nodeReader.readByReferences(referencesToRead);
 
         for (let node of nodes)
         {
@@ -85,8 +85,8 @@ export class UaObjectTypeDictionary
         await this.__delay(20);
 
         // Continue to browse and read child type
-        let childBrowser = new UaChildBrowser(nodeIdsToBrowse);
-        await this._read(childBrowser, client);
+        let childBrowser = new UaTypeBrowser(this._client, nodeIdsToBrowse);
+        await this._read(childBrowser);
     }
 
     private async __delay(ms: number): Promise<void> {

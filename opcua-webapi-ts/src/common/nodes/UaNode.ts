@@ -1,5 +1,6 @@
 import { NodeClass } from "opcua-webapi";
-import { UaLocalizedText, UaNodeId } from "../types";
+import { UaLocalizedText, UaModellingRule, UaNodeId } from "../types";
+import { ObjectIds } from ".";
 
 export abstract class UaNode
 {
@@ -7,7 +8,7 @@ export abstract class UaNode
     protected _browseName: string;
     protected _displayName: UaLocalizedText;
     protected _description: UaLocalizedText | null;
-    protected _writeMask: number;
+    protected _writeMask: number | null;
     protected _parent : UaNode | null;
     protected _children : Array<UaNode>;   
     protected _refToParent : UaNodeId | null; 
@@ -15,14 +16,13 @@ export abstract class UaNode
     constructor(
         nodeId: UaNodeId,
         browseName: string,
-        displayName: UaLocalizedText,
-        writeMask?: number | null)
+        displayName: UaLocalizedText)
     {
         this._nodeId = nodeId;
         this._browseName = browseName;
         this._displayName = displayName;
         this._description = null;
-        this._writeMask = (writeMask) ? writeMask : 0;
+        this._writeMask = null;
         this._parent = null;
         this._children = [];
         this._refToParent = null;
@@ -45,9 +45,14 @@ export abstract class UaNode
         return this._displayName;
     }
 
-    get writeMask() : number
+    get writeMask() : number | null
     {
         return this._writeMask;
+    }
+
+    set writeMask(writeMask: number)
+    {
+        this._writeMask = writeMask;
     }
 
     get description() : UaLocalizedText | null
@@ -81,10 +86,9 @@ export abstract class UaDefintionNode extends UaNode
         nodeId: UaNodeId,
         browseName: string,
         displayName: UaLocalizedText,
-        isAbstract: boolean,
-        writeMask?: number | null)
+        isAbstract: boolean)
     {
-        super(nodeId, browseName, displayName, writeMask);
+        super(nodeId, browseName, displayName);
         this._isAbstract = isAbstract;
     }
 
@@ -139,13 +143,15 @@ export abstract class UaDefintionNode extends UaNode
 
 export abstract class UaInstanceNode extends UaNode
 {
+    private _modellingRule : UaModellingRule;
+
     constructor(
         nodeId: UaNodeId,
         browseName: string,
-        displayName: UaLocalizedText,
-        writeMask?: number | null)
+        displayName: UaLocalizedText)
     {
-        super(nodeId, browseName, displayName, writeMask);
+        super(nodeId, browseName, displayName);
+        this._modellingRule = UaModellingRule.None;
     }
 
     getMembers(nodeClass? : NodeClass) : Array<UaInstanceNode>
@@ -159,5 +165,19 @@ export abstract class UaInstanceNode extends UaNode
         }
         
         return ret;
+    }
+
+    get modellingRule() : UaModellingRule
+    {
+        return this._modellingRule;
+    }
+
+    setModellingRule(modellingRuleId : UaNodeId)
+    {
+        if (modellingRuleId.equal(UaNodeId.from(ObjectIds.ModellingRule_Mandatory))) this._modellingRule = UaModellingRule.Mandatory;
+        else if (modellingRuleId.equal(UaNodeId.from(ObjectIds.ModellingRule_Optional))) this._modellingRule = UaModellingRule.Optional;
+        else if (modellingRuleId.equal(UaNodeId.from(ObjectIds.ModellingRule_OptionalPlaceholder))) this._modellingRule = UaModellingRule.PlaceHolder;
+        else if (modellingRuleId.equal(UaNodeId.from(ObjectIds.ModellingRule_MandatoryPlaceholder))) this._modellingRule = UaModellingRule.PlaceHolder;
+        else this._modellingRule = UaModellingRule.None;
     }
 }

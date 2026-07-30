@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const { uaServerApi } = require('../server');
 const Service = require('./Service');
 
@@ -322,7 +321,7 @@ const getEndpoints = ({ path,getEndpointsRequest, getEndpointsWithPathRequest })
         e.status || 405,
       ));
     }
-  }
+  },
 );
 /**
 *
@@ -436,7 +435,7 @@ const read = ({ path, readRequest, readWithPathRequest }) => new Promise(
         e.status || 405,
       ));
     }
-  }
+  },
 );
 /**
 *

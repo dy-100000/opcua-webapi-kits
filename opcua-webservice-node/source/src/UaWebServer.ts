@@ -33,10 +33,10 @@ import {
     UaWriteTransaction,
     UaHistoryReadTransaction,
     UaMethodCallTransaction,
-    UaAddNodesTransaction,
-    UaAddReferencesTransaction,
-    UaDeleteNodesTransaction,
-    UaDeleteReferencesTransaction,
+    UaAddNodeTransaction,
+    UaAddReferenceTransaction,
+    UaDeleteNodeTransaction,
+    UaDeleteReferenceTransaction,
     UaTransactionManager,
     UaTransactionManager2,  
     ReadContext,    
@@ -78,6 +78,7 @@ export abstract class UaWebServer extends UaWebServerBase {
             this.expressServer.start();
         } catch (err) {
             console.error("OPC UA WebServer failure", err);
+            throw err;
         }
     }
 
@@ -320,8 +321,8 @@ export abstract class UaWebServer extends UaWebServerBase {
             }
 
             const transaction = (nodeManager !== null) ?
-                     nodeManager.getAddNodesTransaction(context, currentIndex)
-                    : new UaAddNodesTransaction(context, currentIndex);
+                     nodeManager.getAddNodeTransaction(context, currentIndex)
+                    : new UaAddNodeTransaction(context, currentIndex);
 
             transactionManager.addTransaction(transaction);
             currentIndex += 1;
@@ -341,8 +342,8 @@ export abstract class UaWebServer extends UaWebServerBase {
             let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
             
             const transaction = (nodeManager !== null) ?
-                     nodeManager.getDeleteNodesTransaction(context, currentIndex)
-                    : new UaDeleteNodesTransaction(context, currentIndex);
+                     nodeManager.getDeleteNodeTransaction(context, currentIndex)
+                    : new UaDeleteNodeTransaction(context, currentIndex);
 
             transactionManager.addTransaction(transaction);
             currentIndex += 1;
@@ -362,8 +363,8 @@ export abstract class UaWebServer extends UaWebServerBase {
             let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
             
             const transaction = (nodeManager !== null) ?
-                     nodeManager.getAddReferencesTransaction(context, currentIndex)
-                    : new UaAddReferencesTransaction(context, currentIndex);
+                     nodeManager.getAddReferenceTransaction(context, currentIndex)
+                    : new UaAddReferenceTransaction(context, currentIndex);
 
             transactionManager.addTransaction(transaction);
             currentIndex += 1;
@@ -383,8 +384,8 @@ export abstract class UaWebServer extends UaWebServerBase {
             let nodeManager = NodeManagerList.nodeManagerList.getNodeManager(nodeId.nsIndex);
             
             const transaction = (nodeManager !== null) ?
-                     nodeManager.getDeleteReferencesTransaction(context, currentIndex)
-                    : new UaDeleteReferencesTransaction(context, currentIndex);
+                     nodeManager.getDeleteReferenceTransaction(context, currentIndex)
+                    : new UaDeleteReferenceTransaction(context, currentIndex);
 
             transactionManager.addTransaction(transaction);
             currentIndex += 1;
