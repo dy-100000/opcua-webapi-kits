@@ -1,5 +1,5 @@
 import { StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaDataValue, UaError, UaVariant } from "opcua-webapi-ts";
+import { UaError, UaStatusCode, UaVariant } from "opcua-webapi-ts";
 import { WriteContext } from "../../..";
 import { NodeManagerReactiveObject } from "../../../addressspace/nodemanager/NodeManagerReactiveObject";
 import { UaObjectId, UaObjectIdentifier, WriteVariableValue } from "../../../types";
@@ -27,7 +27,7 @@ export class UaWriteVariableValueTransaction extends UaWriteTransaction {
         try {
             const objectType = this.nodeManager.findObjectType(this.objectId);
             if (objectType === null) {
-                throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
+                throw new UaError(UaStatusCode.from(StatusCodes.BadNodeIdUnknown));
             }
 
             const instanceDeclaration = this.nodeManager.findInstanceDeclaration(this.objectId);
@@ -53,7 +53,7 @@ export class UaWriteVariableValueTransaction extends UaWriteTransaction {
     private setResults(response: WriteVariableValueResponse): void {
         for (const item of this.variableValues) {
             const result = response.results.get(item.variableId.toString());
-            this._results.push(result ?? makeUaStatusCode(StatusCodes.BadNotWritable));
+            this._results.push(result ?? UaStatusCode.from(StatusCodes.Good));
         }
     }
 }

@@ -11,9 +11,9 @@
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "opcua-webapi": "^1.504.2",
-    "opcua-webapi-ts": "^1.1.12",
-    "opcua-webservice-node": "^1.0.3"
+    "opcua-webapi": "^1.504.6",
+    "opcua-webapi-ts": "^1.1.20",
+    "opcua-webservice-node": "^1.0.8"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",

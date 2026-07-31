@@ -3,7 +3,7 @@ import { ObjectServiceContext } from "../../../types/digitaltwin";
 
 export class AddRequest {
     private readonly _parentId: string;
-    private readonly _displayName: UaLocalizedText | null;
+    private readonly _displayName: UaLocalizedText;
     private readonly _context: ObjectServiceContext;
 
     constructor(
@@ -11,14 +11,14 @@ export class AddRequest {
         displayName: UaLocalizedText | null) {        
         this._context = context;
         this._parentId = context.objectId.id;
-        this._displayName = displayName;
+        this._displayName = displayName ?? UaLocalizedText.nullText;
     }
 
     get parentId(): string {
         return this._parentId;
     }
 
-    get displayName() : UaLocalizedText | null  {
+    get displayName() : UaLocalizedText {
         return this._displayName;
     }
 

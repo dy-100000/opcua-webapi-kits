@@ -4,7 +4,7 @@ import {
     UaLocalizedText
 } from "opcua-webapi-ts";
 import {
-    DynamicSubmodelType,
+    SubmodelTypeDynamic,
     GetObjectElementListRequest,
     GetObjectElementListResponse,
     ObjectElementDescriptor,
@@ -13,7 +13,7 @@ import {
 import { prisma } from "../../../connectors/prismaClient";
 import { EmployeeTwinSpace } from "../../EmployeeTwinSpace";
 
-export class DepartmentSubmodelType extends DynamicSubmodelType {
+export class DepartmentSubmodelType extends SubmodelTypeDynamic {
     constructor(twinSpace: EmployeeTwinSpace) {
         super("DepartmentSubmodelType", new UaLocalizedText("DepartmentSubmodel"), twinSpace);
     }

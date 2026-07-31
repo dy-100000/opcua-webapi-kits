@@ -36,4 +36,17 @@ export class SkillCategoryEnumType extends UaEnumDataType {
                 return SkillCategoryEnumType.UNKNOWN;
         }
     }
+
+    static fromNumber(value: number): string {
+        switch (value) {
+            case SkillCategoryEnumType.BACKEND_DEVELOPER:
+                return "BE_DEV";
+            case SkillCategoryEnumType.UI_DEVELOPER:
+                return "UI_DEV";
+            case SkillCategoryEnumType.TESTER:
+                return "TST";
+            default:
+                return "";
+        }
+    }
 }

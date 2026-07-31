@@ -1,12 +1,14 @@
 import { UaLocalizedText } from "opcua-webapi-ts";
-import { DynamicSubmodelType, GetObjectElementListRequest, GetObjectElementListResponse, ObjectElementDescriptor } from "opcua-webservice-node";
+import { SubmodelTypeDynamic, GetObjectElementListRequest, GetObjectElementListResponse, ObjectElementDescriptor } from "opcua-webservice-node";
 
 import { prisma } from "../../../connectors/prismaClient";
 import { EmployeeTwinSpace } from "../../EmployeeTwinSpace";
+import type { SkillClassType } from "./SkillClassType";
 
-export class SkillClassificationSubmodelType extends DynamicSubmodelType {
-    constructor(twinSpace: EmployeeTwinSpace) {
+export class SkillClassificationSubmodelType extends SubmodelTypeDynamic {
+    constructor(skillClassType: SkillClassType, twinSpace: EmployeeTwinSpace) {
         super("SkillClassificationSubmodelType", new UaLocalizedText("SkillClassificationModel"), twinSpace);
+        this.mayAdd(skillClassType);
     }
         
     override async onGetObjectElementList(request: GetObjectElementListRequest): Promise<GetObjectElementListResponse> {

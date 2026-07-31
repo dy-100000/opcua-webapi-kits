@@ -51,7 +51,7 @@ export class EmployeeTwinSpace extends DigitalTwinSpace {
         EmployeeTwinSpace.SkillCategoryEnumType = new SkillCategoryEnumType(this);
         EmployeeTwinSpace.SkillLevelEnumType = new SkillLevelEnumType(this);
         EmployeeTwinSpace.SkillClassType = new SkillClassType(EmployeeTwinSpace.SkillCategoryEnumType, EmployeeTwinSpace.SkillLevelEnumType, this);
-        EmployeeTwinSpace.SkillClassificationSubmodelType = new SkillClassificationSubmodelType(this);
+        EmployeeTwinSpace.SkillClassificationSubmodelType = new SkillClassificationSubmodelType(EmployeeTwinSpace.SkillClassType,this);
 
         EmployeeTwinSpace.CompanyDigitalTwinType = new CompanyDigitalTwinType(
             EmployeeTwinSpace.DepartmentSubmodelType, EmployeeTwinSpace.SkillClassificationSubmodelType, this);

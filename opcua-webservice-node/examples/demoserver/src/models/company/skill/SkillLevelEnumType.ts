@@ -36,4 +36,17 @@ export class SkillLevelEnumType extends UaEnumDataType {
                 return SkillLevelEnumType.UNKNOWN;
         }
     }
+
+    static fromNumber(value: number): number {
+        switch (value) {
+            case SkillLevelEnumType.JUNIOR:
+                return SkillLevelEnumType.JUNIOR;
+            case SkillLevelEnumType.MIDDLE:
+                return SkillLevelEnumType.MIDDLE;
+            case SkillLevelEnumType.SENIOR:
+                return SkillLevelEnumType.SENIOR;
+            default:
+                return SkillLevelEnumType.UNKNOWN;
+        }
+    }
 }

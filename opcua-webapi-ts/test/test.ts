@@ -10,7 +10,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4842"
+            basePath: "http://localhost:4840"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -488,9 +488,9 @@ class Test {
     async testAddObject()
     {
         console.log("testAddObject");
-        let parentNodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1FbGVtZW50TGlzdFN1Ym1vZGVsIn19");
-        let objectTypeId = parseUaNodeId("ns=2;s=ElementCollectionTestAType");
-        let name = UaLocalizedText.from("TestElement");
+        let parentNodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUNvbXBhbnlEaWdpdGFsVHdpblR5cGUtU2tpbGxDbGFzc2lmaWNhdGlvbnMifX0=");
+        let objectTypeId = parseUaNodeId("ns=2;s=SkillClassType");
+        let name = UaLocalizedText.from("ABCDE");
 
         let modelling = new UaModelling(this.client);
         let newNodeId = await modelling.addObject(parentNodeId, objectTypeId, name);
@@ -500,7 +500,7 @@ class Test {
     async testDeleteObject()
     {
         console.log("testDeleteObject");
-        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMTEiLCJ0IjoibnM9MjtzPVNraWxsQ2xhc3NUeXBlIn19");
 
         let modelling = new UaModelling(this.client);
         await modelling.deleteNode(objectId);
@@ -522,8 +522,8 @@ class Test {
     async testRenameObject()
     {
         console.log("testRenameObject");
-        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
-        let name = UaLocalizedText.from("TestElement");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMTEiLCJ0IjoibnM9MjtzPVNraWxsQ2xhc3NUeXBlIn19");
+        let name = UaLocalizedText.from("EFGHI");
         let modelling = new UaModelling(this.client);
         await modelling.rename(objectId, name);
         console.log("Object renamed");
@@ -532,8 +532,8 @@ class Test {
     async testSetDescription()
     {
         console.log("testSetDescription");
-        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsInQiOiJucz0yO3M9RWxlbWVudENvbGxlY3Rpb25UZXN0QVR5cGUifX0=");
-        let description = UaLocalizedText.from("Test element description");
+        let objectId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMTEiLCJ0IjoibnM9MjtzPVNraWxsQ2xhc3NUeXBlIn19");
+        let description = UaLocalizedText.from("Skill class description");
         let modelling = new UaModelling(this.client);
         await modelling.setDescription(objectId, description);
         console.log("Description set");
