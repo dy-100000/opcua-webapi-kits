@@ -1,5 +1,5 @@
 import { StatusCodes} from "opcua-webapi";
-import { UaLocalizedText, UaVariant, UaEventNotifier, UaReadEventDetails, UaError, makeUaStatusCode, UaHistoryEventFieldList } from "opcua-webapi-ts";
+import { UaLocalizedText, UaVariant, UaReadEventDetails, UaError, makeUaStatusCode, UaHistoryEventFieldList } from "opcua-webapi-ts";
 import { ElementType } from "./ElementType";
 import { EventType } from "../event/EventType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
@@ -9,11 +9,7 @@ import { UaReference } from "../../addressspace/nodes/UaReference";
 import { UaReferenceTypes } from "../../addressspace/nodes/builtin/UaReferenceTypes";
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
 import { EventData } from "../event/EventData";
-import { ReadObjectAttributeRequest, 
-    ReadObjectAttributeResponse, 
-    GetDescriptorRequest, 
-    GetDescriptorResponse,
-    ReadHistoryEventRequest,
+import { ReadHistoryEventRequest,
     ReadHistoryEventResponse,
     ReadEventsRequest, 
     ReadEventsResponse } from "../../service/message";

@@ -117,9 +117,9 @@ export class UaVariable extends UaInstanceNode
             displayName: this._displayName.text,            
             typeDefinitionId: this._typeDefinitionId.toString(),
             dataType: this._dataType.toString(),
-            valueRank: this._valueRank,
+            valueRank: (this._valueRank != 0) ? this._valueRank : undefined,
             accessLevel: this._accessLevel,
-            historizing: this._historizing,
+            historizing: (this._historizing) ? true : undefined,
             value: this._dataValue ? this._dataValue.value.value : undefined,
             children: (children.length != 0) ? children : undefined
         }

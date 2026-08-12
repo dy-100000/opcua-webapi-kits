@@ -56,14 +56,14 @@ export type UaMethodArguments = {
 
 export class UaWebClient
 {
-    private api : UaWebClientApi;
+    protected api : UaWebClientApi;
     private clientConfig : UaClientConfiguration;
     private requestHandle : number;
 
     constructor(clientConfig: UaClientConfiguration)
     {
         this.clientConfig = clientConfig;
-        this.api = this.createApi();
+        this.api = new UaWebClientNative(this.clientConfig.apiConfig);
         this.requestHandle = 1;
     }
 
@@ -931,90 +931,6 @@ export class UaWebClient
         return results;
     }
 
-    async findServer(         
-        endpointUrl : string,
-        serverUris: Array<string>,
-        localeIds?: Array<string>,
-        additionalParameters?: UaClientParameters) : Promise<Array<ApplicationDescription>>
-    {
-        let request = FindServersRequestFromJSON({
-            RequestHeader: this.requestHeader(additionalParameters),
-            ServerUris: serverUris,
-            EndpointUrl: endpointUrl,
-            LocaleIds: localeIds }); 
-
-        let timeout = this.requestTimeout(additionalParameters);
-
-        let response;
-        if (timeout > 0 && typeof AbortController !== "undefined") {
-            let controller = new AbortController();
-            let timeoutId = setTimeout(() => controller.abort(), timeout);
-            try {
-                response = await this.api.findServers(request, { signal: controller.signal });
-            } catch (error) {
-                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
-            }
-            finally {
-                clearTimeout(timeoutId);
-            }
-        } else {
-            try {
-                response = await this.api.findServers(request);
-            } catch (error) {
-                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
-            }
-        }
-        
-        if (response?.ResponseHeader?.ServiceResult?.Code) 
-            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
-
-        if (!response.Servers) 
-            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
-        
-        return response.Servers;
-    }
-
-    async getEndpoints(
-        endpointUrl?: string,
-        localeIds?: Array<string>,
-        profileUris?: Array<string>,
-        additionalParameters?: UaClientParameters) : Promise<Array<EndpointDescription>>
-    {
-        let request = GetEndpointsRequestFromJSON({
-            RequestHeader: this.requestHeader(additionalParameters),
-            EndpointUrl: endpointUrl,
-            LocaleIds: localeIds,
-            ProfileUris: profileUris }); 
-
-        let timeout = this.requestTimeout(additionalParameters);
-
-        let response;
-        if (timeout > 0 && typeof AbortController !== "undefined") {
-            let controller = new AbortController();
-            let timeoutId = setTimeout(() => controller.abort(), timeout);
-            try {
-                response = await this.api.getEndpoints(request, { signal: controller.signal });
-            } catch (error) {
-                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
-            } finally {
-                clearTimeout(timeoutId);
-            }
-        } else {
-            try {
-                response = await this.api.getEndpoints(request);
-            } catch (error) {
-                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
-            }
-        }
-        
-        if (response?.ResponseHeader?.ServiceResult?.Code) 
-            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
-        if (!response.Endpoints) 
-            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
-
-        return response.Endpoints;
-    }
-
     async addNodes(
         nodesToAdd: Array<UaAddNodesItem>,
         additionalParameters?: UaClientParameters) : Promise<Array<UaAddNodesResult>>
@@ -1220,7 +1136,91 @@ export class UaWebClient
         }
         
         return results;
-    }                   
+    }
+
+    async findServer(         
+        endpointUrl : string,
+        serverUris: Array<string>,
+        localeIds?: Array<string>,
+        additionalParameters?: UaClientParameters) : Promise<Array<ApplicationDescription>>
+    {
+        let request = FindServersRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            ServerUris: serverUris,
+            EndpointUrl: endpointUrl,
+            LocaleIds: localeIds }); 
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.findServers(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+            finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.findServers(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+        
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+
+        if (!response.Servers) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+        
+        return response.Servers;
+    }
+
+    async getEndpoints(
+        endpointUrl?: string,
+        localeIds?: Array<string>,
+        profileUris?: Array<string>,
+        additionalParameters?: UaClientParameters) : Promise<Array<EndpointDescription>>
+    {
+        let request = GetEndpointsRequestFromJSON({
+            RequestHeader: this.requestHeader(additionalParameters),
+            EndpointUrl: endpointUrl,
+            LocaleIds: localeIds,
+            ProfileUris: profileUris }); 
+
+        let timeout = this.requestTimeout(additionalParameters);
+
+        let response;
+        if (timeout > 0 && typeof AbortController !== "undefined") {
+            let controller = new AbortController();
+            let timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                response = await this.api.getEndpoints(request, { signal: controller.signal });
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        } else {
+            try {
+                response = await this.api.getEndpoints(request);
+            } catch (error) {
+                throw new UaError(makeUaStatusCode(StatusCodes.BadCommunicationError));
+            }
+        }
+        
+        if (response?.ResponseHeader?.ServiceResult?.Code) 
+            throw new UaError(makeUaStatusCode(response.ResponseHeader.ServiceResult.Code));
+        if (!response.Endpoints) 
+            throw new UaError(makeUaStatusCode(StatusCodes.BadDataLost));
+
+        return response.Endpoints;
+    }           
 
     protected requestHeader(additionalParameters?: UaClientParameters) : RequestHeader
     {
@@ -1244,11 +1244,6 @@ export class UaWebClient
         let timeout = this.clientConfig.defaultTimeout;
         if (additionalParameters && additionalParameters.timeout > 1000) timeout = additionalParameters.timeout;
         return timeout;
-    }
-
-    protected createApi() : UaWebClientApi
-    {
-        return new UaWebClientNative(this.clientConfig.apiConfig); 
     }
 }
 

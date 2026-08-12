@@ -1,5 +1,5 @@
 import { Attributes, BrowseDirection, NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaDataType, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaReferenceType, UaVariable, VariableTypeIds, parseUaNodeId, UaMethod, UaBrowseDescription, UaReadValueId, ReferenceTypeIds, UaReference, UaDataValue, OpcUaVariableAttributes } from "../../common";
+import { makeUaStatusCode, UaDataType, UaError, UaInstanceNode, UaLocalizedText, UaNode, UaNodeId, UaObject, UaObjectType, UaVariableType, UaReferenceType, UaVariable, VariableTypeIds, parseUaNodeId, UaMethod, UaBrowseDescription, UaReadValueId, ReferenceTypeIds, UaReference, UaDataValue, OpcUaVariableAttributes, UaDefintionNode } from "../../common";
 import { UaWebClient } from "../UaWebClient"
 import { UaNodeBrowser,BrowseReferenceResult } from "./UaNodeBrowser";
 
@@ -9,6 +9,7 @@ export class UaNodeReader {
     private _returnDescription: boolean;
     private _returnAttributes: boolean;
     private _returnValue: boolean;
+    private _referenceTypeToReturn: UaNodeId;
     private static s_variableTypeWithoutMember: Set<string> = null;
     private static s_variablesNameToRead: Set<string> = null;
 
@@ -18,13 +19,14 @@ export class UaNodeReader {
         returnVariable?: boolean | null,
         returnMethod?: boolean | null,
         returnAttributes?: boolean | null,
-        returnValue?: boolean | null)
+        returnValue?: boolean | null,
+        referenceTypeToReturn?: UaNodeId)
     {        
         this._client = client;
         this._returnDescription = (returnDescription) ? returnDescription : false;
         this._returnAttributes = (returnAttributes) ? returnAttributes : false;
         this._returnValue = (returnValue) ? returnValue : false;
-
+        this._referenceTypeToReturn = (referenceTypeToReturn) ? referenceTypeToReturn : UaNodeId.from(ReferenceTypeIds.HierarchicalReferences);
         this._nodeClassToReturn = 0;
         if (returnVariable) this._nodeClassToReturn += NodeClass.Variable;
         if (returnMethod) this._nodeClassToReturn += NodeClass.Method;
@@ -79,7 +81,7 @@ export class UaNodeReader {
         let nodeReferenceBrowser = new UaNodeBrowser(
             this._client,
             nodeIdsToBrowse,
-            UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
+            this._referenceTypeToReturn,
             this._nodeClassToReturn,
             false);
 
@@ -606,16 +608,31 @@ export class UaObjectReader extends UaNodeReader {
         super(client,returnDescription ?? false, true, true, true, returnValue ?? false);
     }
 
-    async read(nodeIds: Array<UaNodeId>) : Promise<Array<UaNode>> {
-        let nodes = await super.read(nodeIds);
-        
-        let objectNodes: Array<UaNode> = [];
-        for (let item of nodes) {
+    async read(nodeIds: Array<UaNodeId>) : Promise<Array<UaObject>> {
+        let nodes = await super.read(nodeIds);        
+        return this._processResult(nodes);
+    }
+
+    async readByReferences(references: Array<UaReference>) : Promise<Array<UaObject>> {
+        let objectReferences: Array<UaReference> = [];
+        for (let item of references) {
             if (item.nodeClass == NodeClass.Object) {
-                objectNodes.push(item);
+                objectReferences.push(item);
             }
         }
 
+        if (0 == objectReferences.length) return [];
+        let nodes = await super.readByReferences(objectReferences);
+        return this._processResult(nodes);
+    }
+
+    private _processResult(nodes: Array<UaNode>) : Array<UaObject> {
+        let objectNodes: Array<UaObject> = [];
+        for (let item of nodes) {
+            if (item.nodeClass == NodeClass.Object) {
+                objectNodes.push(item as UaObject);
+            }
+        }
         return objectNodes;
     }
 }
@@ -625,19 +642,73 @@ export class UaTypeReader extends UaNodeReader {
         super(client, true, true, true, true, false);
     }
 
-    async read(nodeIds: Array<UaNodeId>, ) : Promise<Array<UaNode>> {
+    async read(nodeIds: Array<UaNodeId>) : Promise<Array<UaDefintionNode>> {
         let nodes = await super.read(nodeIds);
-        let typeNodes: Array<UaNode> = [];
+        return this._processResult(nodes);
+    }
 
+    async readByReferences(references: Array<UaReference>) : Promise<Array<UaDefintionNode>> {
+        let typeReferences: Array<UaReference> = [];
+        for (let item of references) {
+            if (item.nodeClass == NodeClass.ObjectType ||
+                item.nodeClass == NodeClass.VariableType ||
+                item.nodeClass == NodeClass.DataType ||
+                item.nodeClass == NodeClass.ReferenceType) {
+                typeReferences.push(item);
+            }
+        }
+
+        if (0 == typeReferences.length) return [];
+        let nodes = await super.readByReferences(typeReferences);
+        return this._processResult(nodes);
+    }
+
+    private _processResult(nodes: Array<UaNode>) : Array<UaDefintionNode> {
+        let typeNodes: Array<UaDefintionNode> = [];
         for (let item of nodes) {
             if (item.nodeClass == NodeClass.ObjectType ||
                 item.nodeClass == NodeClass.VariableType ||
                 item.nodeClass == NodeClass.DataType ||
                 item.nodeClass == NodeClass.ReferenceType) {
-                typeNodes.push(item);
+                typeNodes.push(item as UaDefintionNode);
             }
         }
-
         return typeNodes;
+    }
+}
+
+export class UaObjectDataReader extends UaNodeReader {
+    constructor(client: UaWebClient) {
+        super(client, false, true, false, false, true);
+    }
+
+    async readValues(nodeIds: Array<UaNodeId>) : Promise<Map<string, any>> {
+        let nodes = await super.read(nodeIds);
+        return this._processResult(nodes);
+    }
+
+    async readValuesByReferences(references: Array<UaReference>) : Promise<Map<string, any>> {
+        let nodes = await super.readByReferences(references);
+        return this._processResult(nodes);
+    }
+
+    private _processResult(nodes: Array<UaNode>) : Map<string, any> {
+        let ret: Map<string, any> = new Map();
+
+        for (let item of nodes) {
+            if (item.nodeClass != NodeClass.Object) continue;
+            let id = item.nodeId.toString();
+            let objectNode = item as UaObject;
+            let members = objectNode.getMembers(NodeClass.Variable);
+            let serializedObject: any = {};
+            serializedObject["_id"] = id;
+            serializedObject["_name"] = objectNode.displayName.text;
+            for (let member of members) {
+                let value = (member as UaVariable).value;
+                serializedObject[member.browseName] = (null == value) ? null : value.value;
+            }
+            ret.set(id, serializedObject);
+        }
+        return ret;
     }
 }

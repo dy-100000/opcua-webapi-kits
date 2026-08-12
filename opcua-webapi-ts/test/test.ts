@@ -2,7 +2,7 @@ import { Configuration, NodeClass } from "opcua-webapi";
 import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue, UaLocalizedText, UaObject } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaDataTypeDictionary, UaLinkBrowser, UaModelling, UaObjectBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
+import { UaDataTypeDictionary, UaLinkBrowser, UaModelling, UaObjectBrowser, UaObjectDataReader, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
 
 class Test {
     private client : UaWebClient;
@@ -23,7 +23,7 @@ class Test {
     {
         try
         { 
-            await this.testSetDescription();           
+            await this.testObjectReader();           
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -396,8 +396,8 @@ class Test {
     async testObjectReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVRlc3REaWdpdGFsVHdpbi1TdWJtb2RlbCJ9fQ=="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkEifX0=")
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ=="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLUVtcGxveWVlRGF0YSJ9fQ==")
         ];
 
         let reader = new UaObjectReader(this.client,false,true);
@@ -465,6 +465,22 @@ class Test {
             {
                 console.dir(item2.toJson(), { depth: null });
             }
+        }
+    }
+
+    async testObjectDataReader()
+    {
+        let nodeIds : Array<UaNodeId> = [
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ=="),
+            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLUVtcGxveWVlRGF0YSJ9fQ==")
+        ];
+
+        let reader = new UaObjectDataReader(this.client);
+        let data = await reader.readValues(nodeIds);
+
+        for (let item of data)
+        {
+            console.dir(item[1], { depth: null });
         }
     }
 

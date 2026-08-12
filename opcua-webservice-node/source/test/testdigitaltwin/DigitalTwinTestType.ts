@@ -1,18 +1,21 @@
-import { NodeClass, StatusCodes } from "opcua-webapi";
+import { StatusCodes } from "opcua-webapi";
 import { UaLocalizedText, UaStatusCode } from "opcua-webapi-ts";
 import { UaObject,DigitalTwinSpace, DigitalTwinType,SubmodelDescriptor,GetDescriptorRequest, GetDescriptorResponse, GetSubmodelsRequest, GetSubmodelsResponse, AddRequest, AddResponse, DeleteResponse, DeleteRequest, GetPermissionRequest, GetPermissionResponse, ModifyAttributeRequest, ModifyAttributeResponse } from "../../src";
 import { DigitalTwinSpaceTest } from "./DigitalTwinSpaceTest";
 import { DynamicSubmodelTestType } from "./DynamicSubmodelTestType";
 import { SubmodelTestType } from "./SubmodelTestType";
+import { SubmodelTestInteralClientType } from "./SubmodelTestInternalClient";
 
 export class DigitalTwinTestType extends DigitalTwinType {
 
     private readonly submodel: UaObject;
     private readonly elementListSubmodel: UaObject;
+    private readonly internalClientSubmodel: UaObject;
 
     constructor(
         submodel: SubmodelTestType,
         elementListSubmodel: DynamicSubmodelTestType,
+        internalClientSubmodel: SubmodelTestInteralClientType,
         space: DigitalTwinSpace) {
         super("TestDigitalTwin", new UaLocalizedText("TestDigitalTwin"), space);
         this.description = new UaLocalizedText("TestDigitalTwin");
@@ -29,6 +32,13 @@ export class DigitalTwinTestType extends DigitalTwinType {
             "ElementListSubmodel",
             UaLocalizedText.from("ElementListSubmodel"),
             UaLocalizedText.from("Test ElementListSubmodel"),
+        );
+
+        this.internalClientSubmodel = this.addSubmodel(
+            internalClientSubmodel,
+            "InternalClientSubmodel",
+            UaLocalizedText.from("InternalClientSubmodel"),
+            UaLocalizedText.from("Test InternalClientSubmodel"),
         );
 
         this.mayAdd(submodel);
@@ -57,6 +67,8 @@ export class DigitalTwinTestType extends DigitalTwinType {
         if (id === "3") {
             response.add(new SubmodelDescriptor(id, new UaLocalizedText(`Submodel-${id}`), DigitalTwinSpaceTest.submodelTestType));
         }
+
+        response.add(new SubmodelDescriptor(id, this.internalClientSubmodel));
 
         return response;
     }

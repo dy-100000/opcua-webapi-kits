@@ -105,10 +105,10 @@ export class SubmodelType extends SubmodelTypeBase {
     }
 
     addPropertyElement(
-        name: string,
+        name: string,        
         displayName: UaLocalizedText,
-        description: UaLocalizedText,
-        dataType: UaDataType,
+        description: UaLocalizedText,   
+        dataType: UaDataType,     
         writable: boolean = false,        
         historizing = false,
         valueRank: number = -1,
@@ -137,7 +137,7 @@ export class SubmodelType extends SubmodelTypeBase {
         description: UaLocalizedText,
         inputArguments: Array<UaArgument> | null,
         outputArguments: Array<UaArgument> | null,
-        mandatory: boolean,
+        mandatory: boolean = true
     ): UaMethod {
         const newMethod = this.addMethodNode(name, displayName, inputArguments, outputArguments);
         if (description.text.length > 0) {
@@ -147,19 +147,39 @@ export class SubmodelType extends SubmodelTypeBase {
         return newMethod;
     }
 
-    addElementCollection(type: ElementCollectionType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
+    addElementCollection(
+        type: ElementCollectionType, 
+        name: string, 
+        displayName: UaLocalizedText, 
+        description: UaLocalizedText, 
+        mandatory: boolean = true): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 
-    addReferenceElement(type: ReferenceElementType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
+    addReferenceElement(
+        type: ReferenceElementType, 
+        name: string, 
+        displayName: UaLocalizedText, 
+        description: UaLocalizedText, 
+        mandatory: boolean = true): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 
-    addEventElement(type: EventElementType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
+    addEventElement(
+        type: EventElementType, 
+        name: string, 
+        displayName: UaLocalizedText, 
+        description: UaLocalizedText, 
+        mandatory: boolean = true): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 
-    addElementList(type: ElementListType, name: string, displayName: UaLocalizedText, description: UaLocalizedText, mandatory: boolean): UaObject {
+    addElementList(
+        type: ElementListType, 
+        name: string, 
+        displayName: UaLocalizedText, 
+        description: UaLocalizedText, 
+        mandatory: boolean = true): UaObject {
         return this.addChildObject(type, name, displayName, description, mandatory);
     }
 

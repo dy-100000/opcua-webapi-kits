@@ -1,7 +1,9 @@
- import { StatusCodes } from 'opcua-webapi';
+import { StatusCodes } from 'opcua-webapi';
 import { UaStatusCode } from 'opcua-webapi-ts';
 
  export class UaErrorCodes {
+    public static readonly BadInvalidArgument = UaStatusCode.from(StatusCodes.BadInvalidArgument);
+    public static readonly BadNotImplemented = UaStatusCode.from(StatusCodes.BadNotImplemented);
     public static readonly BadDataUnavailable = UaStatusCode.from(StatusCodes.BadDataUnavailable);
     public static readonly BadNodeIdUnknown = UaStatusCode.from(StatusCodes.BadNodeIdUnknown);
     public static readonly BadNotFound = UaStatusCode.from(StatusCodes.BadNotFound);

@@ -11,12 +11,14 @@ import { EventElementTestType } from "./EventElementTestType";
 import { EventTestType } from "./EventTestType";
 import { ReferenceElementTestType } from "./ReferenceElementTestType";
 import { SubmodelTestType } from "./SubmodelTestType";
+import { SubmodelTestInteralClientType } from "./SubmodelTestInternalClient";
 
 export class DigitalTwinSpaceTest extends DigitalTwinSpace {
     static digitalTwinDirectoryTestType: DigitalTwinDirectoryTestType;
     static digitalTwinTestType: DigitalTwinTestType;
     static submodelTestType: SubmodelTestType;
     static dynamicSubmodelTestType: DynamicSubmodelTestType;
+    static submodelTestInternalClientType: SubmodelTestInteralClientType;
     static elementCollectionTestAType: ElementCollectionTestAType;
     static elementCollectionTestBType: ElementCollectionTestBType;
     static referenceElementTestType: ReferenceElementTestType;
@@ -53,9 +55,11 @@ export class DigitalTwinSpaceTest extends DigitalTwinSpace {
             this,
         );
         DigitalTwinSpaceTest.dynamicSubmodelTestType = new DynamicSubmodelTestType(this);
+        DigitalTwinSpaceTest.submodelTestInternalClientType = new SubmodelTestInteralClientType(this);
         DigitalTwinSpaceTest.digitalTwinTestType = new DigitalTwinTestType(
             DigitalTwinSpaceTest.submodelTestType,
             DigitalTwinSpaceTest.dynamicSubmodelTestType,
+            DigitalTwinSpaceTest.submodelTestInternalClientType,
             this
         );
         DigitalTwinSpaceTest.digitalTwinDirectoryTestType = new DigitalTwinDirectoryTestType(

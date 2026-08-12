@@ -12,3 +12,4 @@ export * from "./ReferenceElementTestType";
 export * from "./SubmodelTestType";
 export * from "./ReferenceElementTestType";
 export * from "./SubmodelTestType";
+export * from "./SubmodelTestInternalClient";
