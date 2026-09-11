@@ -152,7 +152,7 @@ export abstract class UaNode {
         let reference = UaReferenceTypes.HasComponent;
 
         if (NodeClass.Variable == member.nodeClass) {
-            if ((member as UaVariable).typeDefinition.nodeId.equal(UaNodeId.from(VariableTypeIds.PropertyType)))
+            if ((member as UaVariable).isProperty)
             {
                 reference = UaReferenceTypes.HasProperty;
             }

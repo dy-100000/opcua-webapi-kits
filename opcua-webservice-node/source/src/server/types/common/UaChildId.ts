@@ -26,4 +26,9 @@ export class UaChildId {
 
         return ret;
     }
+
+    static fromString(value: string): UaChildId {
+        const [id, subElementName] = value.split("#", 2);
+        return new UaChildId(id, subElementName ?? null);
+    }
 }

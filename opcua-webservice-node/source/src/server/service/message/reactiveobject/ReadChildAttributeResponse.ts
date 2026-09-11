@@ -19,9 +19,8 @@ export class ReadChildAttributeResponse {
     dataTypeId: UaNodeId | null,
     valueRank: number | null,
     accessLevel: number | null,
-        historizing: boolean | null,
-    ) {
-        this._nodeClass = nodeClass;
+    historizing: boolean | null) {
+    this._nodeClass = nodeClass;
     this._displayName = displayName;
     this._description = description;
     this._dataTypeId = dataTypeId;

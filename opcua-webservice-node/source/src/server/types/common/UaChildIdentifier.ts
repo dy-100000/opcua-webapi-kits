@@ -1,18 +1,15 @@
 export type SerializedChildIdentifier = {
     p: string;
     p2?: string;
-    mn?: boolean;
 };
 
 export class UaChildIdentifier {
     private _path: string;
     private _pathL2: string | null;
-    private _methodNode: boolean;
 
-    constructor(path: string, pathL2: string | null, methodNode: boolean) {
+    constructor(path: string, pathL2: string | null) {
         this._path = path;
         this._pathL2 = pathL2;
-        this._methodNode = methodNode;
     }
 
     get path(): string {
@@ -23,21 +20,12 @@ export class UaChildIdentifier {
         return this._pathL2;
     }
 
-    get methodNode(): boolean {
-        return this._methodNode;
-    }    
-
     toString(): string {
         let ret = this._path;
         
         if (null !== this._pathL2)
         {
             ret += `@${this._pathL2}`;
-         }
-
-        if (this._methodNode)
-        {
-            ret += "*";
         }
 
         return ret;
@@ -46,8 +34,7 @@ export class UaChildIdentifier {
     toJson(): SerializedChildIdentifier {
         return {
             p: this._path,
-            p2: this._pathL2 ?? undefined,
-            mn: (this._methodNode) ? this._methodNode : undefined,
+            p2: this._pathL2 ?? undefined
         };
     }
 
@@ -65,14 +52,9 @@ export class UaChildIdentifier {
             return null;
         }
 
-        if (serialized.mn !== undefined && typeof serialized.mn !== "boolean") {
-            return null;
-        }
-
         return new UaChildIdentifier(
             serialized.p,
-            serialized.p2 ?? null,
-            serialized.mn ?? false
+            serialized.p2 ?? null
         );
     }
 }

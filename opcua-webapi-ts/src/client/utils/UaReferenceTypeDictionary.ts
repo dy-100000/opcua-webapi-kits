@@ -61,7 +61,17 @@ export class UaReferenceTypeDictionary
 
         // Read child type
         let nodeIdsToBrowse: Array<UaNodeId> = [];
-        let nodeReader = new UaNodeReader(this._client, false,false, false,false,false);
+        let nodeReader = new UaNodeReader(            
+            this._client, 
+            false,
+            false, 
+            false, 
+            UaNodeId.from(ReferenceTypeIds.Aggregates),
+            false,
+            false,
+            false,
+            false,
+            false);
         let nodes = await nodeReader.readByReferences(referencesToRead);
 
         for (let node of nodes)

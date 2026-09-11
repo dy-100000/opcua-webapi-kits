@@ -77,18 +77,11 @@ export class UaObjectType extends UaDefintionNode
 
     toJson() : any
     {
-        let variables = [];
-        let methods = [];
+        let members = [];
 
         for (let item of this._children)
         {
-            if (item.nodeClass == NodeClass.ObjectType) continue;
-            if (NodeClass.Variable == item.nodeClass) {
-                variables.push(item.toJson());
-            }
-            else if (NodeClass.Method == item.nodeClass) {
-                methods.push(item.toJson());
-            }
+            members.push(item.toJson());
         }
 
         let ret = {
@@ -98,10 +91,11 @@ export class UaObjectType extends UaDefintionNode
             displayName: this._displayName.text,
             description: (this._description) ? this._description.text : undefined,
             isAbstract: this._isAbstract,
-            variables: (variables.length != 0) ? variables : undefined,
-            methods: (methods.length != 0) ? methods : undefined
+            members: (members.length != 0) ? members : undefined
         }
 
         return ret;
     }
+
+    
 }

@@ -45,7 +45,7 @@ export class UaReadDataHistoryTransaction extends UaHistoryReadTransaction {
                 throw new UaError(makeUaStatusCode(StatusCodes.BadContinuationPointInvalid));
             }
 
-            if (childIdentifier === null || childIdentifier.pathL2 !== null || childIdentifier.methodNode) {
+            if (childIdentifier === null || childIdentifier.pathL2 !== null) {
                 throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdInvalid));
             }
 

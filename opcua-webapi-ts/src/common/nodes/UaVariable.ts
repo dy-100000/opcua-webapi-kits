@@ -11,6 +11,7 @@ export class UaVariable extends UaInstanceNode
     private _userAccessLevel : number;
     private _historizing : boolean;
     private _dataValue : UaDataValue | null;
+    private _isProperty : boolean;
 
     constructor(
         nodeId: UaNodeId,
@@ -31,6 +32,7 @@ export class UaVariable extends UaInstanceNode
         this._historizing = historizing;
         this._typeDefinitionId = typeDefinitionId;
         this._dataValue = null;
+        this._isProperty = false;
     }
     
     get nodeClass() : NodeClass 
@@ -63,6 +65,11 @@ export class UaVariable extends UaInstanceNode
         return this._historizing;
     }
 
+    get typeDefinitionId() : UaNodeId
+    {
+        return this._typeDefinitionId;
+    }
+
     get value() : UaVariant | null
     {
         return (this._dataValue && this._dataValue.statusCode.isGood()) ? this._dataValue.value : null;
@@ -78,9 +85,14 @@ export class UaVariable extends UaInstanceNode
         this._dataValue = value;
     }
 
-    get typeDefinitionId() : UaNodeId
+    get isProperty() : boolean
     {
-        return this._typeDefinitionId;
+        return this._isProperty;
+    }
+
+    set isProperty(value : boolean)
+    {
+        this._isProperty = value;
     }
 
     addMember(node : UaVariable)
@@ -102,28 +114,28 @@ export class UaVariable extends UaInstanceNode
 
     toJson() : any
     {
-        let children = [];
+        let members = [];
 
         for (let item of this._children)
         {
             if (item.nodeClass != NodeClass.Variable) continue;
-            children.push(item.toJson());
+            members.push(item.toJson());
         }
 
         let ret = {
             nodeId : this._nodeId.toString(),
             nodeClass: NodeClass.Variable,
             name: this._browseName,
-            displayName: this._displayName.text,            
+            displayName: this._displayName.text,
             typeDefinitionId: this._typeDefinitionId.toString(),
             dataType: this._dataType.toString(),
             valueRank: (this._valueRank != 0) ? this._valueRank : undefined,
             accessLevel: this._accessLevel,
             historizing: (this._historizing) ? true : undefined,
             value: this._dataValue ? this._dataValue.value.value : undefined,
-            children: (children.length != 0) ? children : undefined
+            members: (members.length != 0) ? members : undefined
         }
 
         return ret;
-    }
+    }   
 }

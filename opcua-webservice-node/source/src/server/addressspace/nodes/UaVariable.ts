@@ -12,6 +12,7 @@ export class UaVariable extends UaInstanceNode {
     private _accessLevel: number;
     private _historizing: boolean;
     private _value: UaVariant;
+    private _isProperty: boolean;
 
     constructor(
         nodeId: UaNodeId,
@@ -30,6 +31,7 @@ export class UaVariable extends UaInstanceNode {
         this._accessLevel = accessLevel;
         this._historizing = false;
         this._value = UaVariant.null();
+        this._isProperty = true;
 
         this.addReference(new UaReference(typeDefinition, UaReferenceTypes.HasTypeDefinition, true));
     }
@@ -76,6 +78,14 @@ export class UaVariable extends UaInstanceNode {
 
     set value(value: UaVariant) {
         this._value = value;
+    }
+
+    get isProperty(): boolean {
+        return this._isProperty;
+    }
+
+    set isProperty(isProperty: boolean) {
+        this._isProperty = isProperty;
     }
 
     addMember(member: UaVariable)

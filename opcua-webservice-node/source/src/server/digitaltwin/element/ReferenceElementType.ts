@@ -1,8 +1,7 @@
 import { NodeClass } from "opcua-webapi";
 import { ReferenceTypeIds, UaLocalizedText, UaNodeId } from "opcua-webapi-ts";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
-import { UaReferenceTypes } from "../../addressspace/nodes/builtin/UaReferenceTypes";
-import { BrowseObjectRequest, BrowseObjectResponse, GetDescriptorRequest, GetDescriptorResponse, GetLinkRequest, GetLinkResponse, ReadObjectAttributeRequest, ReadObjectAttributeResponse } from "../../service/message";
+import { BrowseObjectRequest, BrowseObjectResponse, GetLinkRequest, GetLinkResponse } from "../../service/message";
 import { UaBrowseAdditionalInfo, UaReferenceDescriptor } from "../../types";
 import { ObjectServiceContext } from "../../types/digitaltwin/ObjectServiceContext";
 import { ElementType } from "./ElementType";
@@ -22,22 +21,20 @@ export abstract class ReferenceElementType extends ElementType {
     abstract onGetLinks(request: GetLinkRequest): Promise<GetLinkResponse>;   
 
     /**
-     * Internal framework callback used by the base type to advertise link support.
+     * Internal framework callback used by the base type to get the reference type id for this repository.
      * Do not call or override this method directly.
      */
-    override isGetLinkSupported(): boolean {
-        return true;
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.Organizes);
     }
 
     /**
      * Internal framework callback used by the base type to browse linked objects.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectLinks(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        const referenceTypeId = request.browseDescription.referenceTypeId;
-        if (!referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.References)) &&
-            !referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.NonHierarchicalReferences))) {
-            return new BrowseObjectResponse([], false);
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK)) {
+            return new BrowseObjectResponse([]);
         }
 
         const context = new ObjectServiceContext(request.objectId);
@@ -49,33 +46,29 @@ export abstract class ReferenceElementType extends ElementType {
             ),
         );
 
-        return this.processBrowseLinkResponse(response);
+        return this.processBrowseObjectResponse(response,request.additionalInfo);
     }
 
-    private processBrowseLinkResponse(response: GetLinkResponse): BrowseObjectResponse {
+    private processBrowseObjectResponse(
+        response: GetLinkResponse,
+        additionalInfo: UaBrowseAdditionalInfo): BrowseObjectResponse {
         const linkDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = this.supportedReferenceType();
 
         for (const item of response.targets) {
-            const descriptor = item.instanceDeclaration === null
-                ? new UaReferenceDescriptor(
+            const descriptor = new UaReferenceDescriptor(
                     item.id,
                     NodeClass.Object,
                     item.id,
                     item.displayName,
                     item.typeId,
-                    UaReferenceTypes.HasLink.nodeId,
-                    true,
-                )
-                : UaReferenceDescriptor.fromInstanceDeclaration(
-                    item.id,
-                    item.instanceDeclaration,
-                    UaReferenceTypes.HasLink.nodeId,
-                    true,
-                );
+                    referenceType,
+                    item.instanceDeclaration === null ? UaNodeId.nullNodeId : item.instanceDeclaration.nodeId);
 
             linkDescriptors.push(descriptor);
         }
 
-        return new BrowseObjectResponse(linkDescriptors, response.containsMoreData, UaBrowseAdditionalInfo.GET_LINK_TASK);
+        let taskMask = (response.containsMoreData) ? UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK : 0;
+        return new BrowseObjectResponse(linkDescriptors, taskMask, additionalInfo.referenceOffset + response.targets.length);
     }
 }

@@ -108,14 +108,15 @@ export class SubmodelType extends SubmodelTypeBase {
         name: string,        
         displayName: UaLocalizedText,
         description: UaLocalizedText,   
-        dataType: UaDataType,     
-        writable: boolean = false,        
+        dataType: UaDataType,           
+        writable: boolean = false,  
         historizing = false,
         valueRank: number = -1,
         mandatory = true,
-        variableType: UaVariableType = UaVariableTypes.PropertyType        
-    ): UaVariable {
-        const newVariable = this.addVariableNode(name, displayName, dataType, writable, historizing, valueRank, variableType);
+        variableType: UaVariableType = UaVariableTypes.PropertyType,
+        isProperty: boolean = true): UaVariable 
+    {
+        const newVariable = this.addVariableNode(name, displayName, dataType, writable, historizing, valueRank, variableType,isProperty);
         if (description.text.length > 0) {
             newVariable.description = description;
         }
@@ -184,15 +185,23 @@ export class SubmodelType extends SubmodelTypeBase {
     }
 
     /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.HasComponent);
+    }
+
+    /**
      * Internal framework callback used by the base type to browse child nodes.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const referenceTypeId = request.browseDescription.referenceTypeId;
         const membersToReturn: Array<UaInstanceNode> = [];
 
         for (const item of this.getMembers()) {
-            if (item.nodeClass === NodeClass.Object && !request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) {
+            if (item.nodeClass === NodeClass.Object && !request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK)) {
                 continue;
             }
 
@@ -205,36 +214,28 @@ export class SubmodelType extends SubmodelTypeBase {
                     continue;
                 }
 
-                const variableTypeId = (item as UaVariable).typeDefinition.nodeId;
-                if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasProperty))) {
-                    if (!variableTypeId.equal(UaVariableTypes.PropertyType.nodeId)) {
-                        continue;
-                    }
-                } else if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasComponent))) {
-                    if (variableTypeId.equal(UaVariableTypes.PropertyType.nodeId)) {
-                        continue;
-                    }
-                }
+                const isProperty = (item as UaVariable).isProperty;
+                if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasProperty)) && !isProperty) continue;
+                if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasComponent)) && isProperty) continue;
             }
 
             membersToReturn.push(item);
         }
 
         if (membersToReturn.length === 0) {
-            return new BrowseObjectResponse([], false);
+            return new BrowseObjectResponse([]);
         }
 
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetElements(new GetElementsRequest(context));
-        return this.processBrowseObjectChildrenResponse(request.objectId, membersToReturn, response);
+        return this.processBrowseObjectResponse(request.objectId, membersToReturn, response);
     }
 
     /**
      * Internal framework callback used by the base type to browse member children.
      * Do not call or override this method directly.
      */
-    override async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
-        const referenceTypeId = request.browseDescription.referenceTypeId;
+    override async onBrowseMember(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         const member = this.getMember(request.childId);
         if (member === null || member.nodeClass === NodeClass.Object) {
             throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdUnknown));
@@ -242,30 +243,12 @@ export class SubmodelType extends SubmodelTypeBase {
 
         const childDescriptors: Array<UaReferenceDescriptor> = [];
         for (const item of member.getMembers()) {
-            if (item.nodeClass !== NodeClass.Variable) {
-                continue;
-            }
-
-            const variableTypeId = (item as UaVariable).typeDefinition.nodeId;
-            if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasProperty))) {
-                if (!variableTypeId.equal(UaVariableTypes.PropertyType.nodeId)) {
-                    continue;
-                }
-            } else if (referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasComponent))) {
-                if (variableTypeId.equal(UaVariableTypes.PropertyType.nodeId)) {
-                    continue;
-                }
-            }
+            if (item.nodeClass !== NodeClass.Variable) continue;
 
             childDescriptors.push(
                 UaReferenceDescriptor.fromInstanceDeclaration(
                     item.browseName,
-                    item,
-                    variableTypeId.equal(UaVariableTypes.PropertyType.nodeId)
-                        ? UaNodeId.from(ReferenceTypeIds.HasProperty)
-                        : UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true,
-                ),
+                    item)
             );
         }
 
@@ -299,7 +282,7 @@ export class SubmodelType extends SubmodelTypeBase {
         const subElementNames = new Set<UaChildId>();
 
         for (const item of request.variableIds) {
-            const childId = this.toChildId(item);
+            const childId = UaChildId.fromString(item);
             if (childId.subElementName === null) {
                 propertyNames.add(childId.id);
             } else {
@@ -308,7 +291,7 @@ export class SubmodelType extends SubmodelTypeBase {
         }
 
         const context = new ObjectServiceContext(request.objectId);
-        const readResponse = propertyNames.size === 0
+        const readResponse = (propertyNames.size === 0)
             ? new ReadPropertyValuesResponse()
             : await this.onReadPropertyValues(new ReadPropertyValuesRequest(context, propertyNames));
 
@@ -323,7 +306,7 @@ export class SubmodelType extends SubmodelTypeBase {
         const elementValues = new Map<string, UaVariant>();
 
         for (const [childIdText, value] of request.variableValues) {
-            const childId = this.toChildId(childIdText);
+            const childId = UaChildId.fromString(childIdText);
             if (childId.subElementName !== null) {
                 continue;
             }
@@ -391,11 +374,10 @@ export class SubmodelType extends SubmodelTypeBase {
         return newObject;
     }
 
-    private processBrowseObjectChildrenResponse(
+    private processBrowseObjectResponse(
         objectId: UaObjectId,
         members: Array<UaInstanceNode>,
-        response: GetElementsResponse,
-    ): BrowseObjectResponse {
+        response: GetElementsResponse): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
 
         for (const item of members) {
@@ -403,22 +385,13 @@ export class SubmodelType extends SubmodelTypeBase {
                 continue;
             }
 
-            const referenceType = item.nodeClass === NodeClass.Variable &&
-                (item as UaVariable).typeDefinition.nodeId.equal(UaVariableTypes.PropertyType.nodeId)
-                ? UaNodeId.from(ReferenceTypeIds.HasProperty)
-                : UaNodeId.from(ReferenceTypeIds.HasComponent);
-
             childDescriptors.push(
                 UaReferenceDescriptor.fromInstanceDeclaration(
                     item.nodeClass === NodeClass.Object ? objectId.id : item.browseName,
-                    item,
-                    referenceType,
-                    true,
-                ),
-            );
+                    item));
         }
 
-        return new BrowseObjectResponse(childDescriptors, false);
+        return new BrowseObjectResponse(childDescriptors);
     }
 
     private processReadVariableValueResponse(
@@ -431,25 +404,19 @@ export class SubmodelType extends SubmodelTypeBase {
             readVariableValueResponse.results.set(key, value);
         }
 
-        for (const item of subElementNames) {   
-            if (item.subElementName === null) {
-                continue;
-            }
+        for (const item of subElementNames) {
+            if (item.subElementName === null) continue;
 
             const node = this.getMember(item.id);
-            if (node === null || node.nodeClass !== NodeClass.Variable) {
-                continue;
-            }
+            if (node === null) continue;
 
             const subElementNode = node.getMember(item.subElementName);
-            if (subElementNode === null || subElementNode.nodeClass !== NodeClass.Variable) {
-                continue;
-            }
+            if (subElementNode === null || subElementNode.nodeClass !== NodeClass.Variable) continue;
 
             let subVariable = subElementNode as UaVariable;
             readVariableValueResponse.results.set(
                 new UaChildId(item.id, item.subElementName).toString(),
-                new UaDataValue(subVariable.value, makeUaStatusCode(StatusCodes.Good)),
+                new UaDataValue(subVariable.value, makeUaStatusCode(StatusCodes.Good))
             );            
         }
 
@@ -458,10 +425,5 @@ export class SubmodelType extends SubmodelTypeBase {
 
     private processReadHistoryValueResponse(response: ReadPropertyHistoryValuesResponse): ReadHistoryDataResponse {
         return new ReadHistoryDataResponse(response.dataValues, response.containsMoreData);
-    }
-
-    private toChildId(value: string): UaChildId {
-        const [id, subElementName] = value.split("#", 2);
-        return new UaChildId(id, subElementName ?? null);
     }
 }

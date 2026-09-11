@@ -3,10 +3,12 @@ import { PropertyElementDescriptor } from "../../../types/digitaltwin/PropertyEl
 export class GetPropertyElementListResponse {
     private readonly _elements: Array<PropertyElementDescriptor>;
     private _containsMoreData: boolean;
+    private _isProperty: boolean;
 
     constructor() {
         this._elements = [];
         this._containsMoreData = false;
+        this._isProperty = true;
     }
 
     add(descriptor: PropertyElementDescriptor): void {
@@ -23,5 +25,13 @@ export class GetPropertyElementListResponse {
 
     set containsMoreData(containsMoreData: boolean) {
         this._containsMoreData = containsMoreData;
+    }
+
+    get isProperty(): boolean {
+        return this._isProperty;
+    }
+
+    set isProperty(isProperty: boolean) {
+        this._isProperty = isProperty;
     }
 }

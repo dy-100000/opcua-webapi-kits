@@ -3,15 +3,12 @@ import { UaChildId, UaObjectId } from "../../../types";
 export class ReadMemberAttributeRequest {
     private readonly _objectId: UaObjectId;
     private readonly _childId: UaChildId;
-    private readonly _isMethod: boolean;
 
     constructor(
         objectId: UaObjectId,
-        childId: UaChildId,
-        isMethod: boolean) {
+        childId: UaChildId) {
         this._objectId = objectId;
         this._childId = childId;
-        this._isMethod = isMethod;
     }
 
     get objectId(): UaObjectId {
@@ -20,9 +17,5 @@ export class ReadMemberAttributeRequest {
 
     get childId(): UaChildId {
         return this._childId;
-    }
-
-    get isMethod(): boolean {
-        return this._isMethod;
     }
 }

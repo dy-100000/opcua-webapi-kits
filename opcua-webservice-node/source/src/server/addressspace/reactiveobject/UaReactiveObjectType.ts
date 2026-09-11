@@ -8,6 +8,7 @@ import {
     UaNodeId,
     UaValueRank,
     makeUaStatusCode,
+    VariableTypeIds,
 } from "opcua-webapi-ts";
 import {
     BrowseMemberRequest,
@@ -77,13 +78,7 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
         this.nodeManager.addNode(this);
     }
 
-    isGetParentSupported(): boolean {
-        return false;
-    }
-
-    isGetLinkSupported(): boolean {
-        return false;
-    }
+    abstract supportedReferenceType(): UaNodeId;
 
     protected addObjectNode(
         memberId: string,
@@ -122,8 +117,9 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
         dataType: UaDataType,
         writable: boolean,
         historizing: boolean,
-        valueRank: number | null,
-        variableType: UaVariableType | null): UaVariable {
+        valueRank: number,
+        variableType: UaVariableType,
+        isProperty: boolean): UaVariable {
         if (memberId.length === 0) {
             throw new UaError(makeUaStatusCode(StatusCodes.BadNodeIdRejected));
         }
@@ -146,12 +142,17 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
             memberId,
             displayName,
             dataType.nodeId,
-            valueRank ?? UaValueRank.Scalar,
+            valueRank,
             accessLevel,
-            variableType ?? UaVariableTypes.PropertyType,
+            variableType,
         );
-
+        
         newVariable.historizing = historizing;
+        newVariable.isProperty = isProperty;
+
+        if (!isProperty && variableType.nodeId.equal(UaNodeId.from(VariableTypeIds.PropertyType))) {
+            newVariable.isProperty = true;
+        }
 
         this.addMember(newVariable);
         this.nodeManager.addNode(newVariable);
@@ -210,20 +211,12 @@ export abstract class UaReactiveObjectType extends UaObjectType implements UaRea
         return newMethod;
     }
 
-    async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        return new BrowseObjectResponse([], false);
+    async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        return new BrowseObjectResponse([]);
     }
 
-    async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
+    async onBrowseMember(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
-    }
-
-    async onBrowseObjectParent(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        throw new UaError(makeUaStatusCode(StatusCodes.BadNotImplemented));
-    }
-
-    async onBrowseObjectLinks(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        return new BrowseObjectResponse([], false);
     }
 
     async onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse> {

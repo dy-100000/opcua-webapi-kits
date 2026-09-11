@@ -1,16 +1,18 @@
 import { NodeClass } from "opcua-webapi";
-import { UaLocalizedText, UaNodeId } from "opcua-webapi-ts";
+import { ReferenceTypeIds, UaLocalizedText, UaNodeId } from "opcua-webapi-ts";
 import { UaInstanceNode } from "../../addressspace/nodes/UaInstanceNode";
 import { UaObject } from "../../addressspace/nodes/UaObject";
 import { UaVariable } from "../../addressspace/nodes/UaVariable";
 
 export class UaReferenceDescriptor {
+    static readonly HasComponent = UaNodeId.from(ReferenceTypeIds.HasComponent);
+    static readonly HasProperty = UaNodeId.from(ReferenceTypeIds.HasProperty);
+
     private readonly _id: string;
     private readonly _nodeClass: NodeClass;
     private readonly _browseName: string;
     private readonly _displayName: UaLocalizedText;
     private readonly _typeDefinitionId: UaNodeId;
-    private readonly _isForward: boolean;
     private readonly _referenceTypeId: UaNodeId;
     private readonly _instanceDeclarationId: UaNodeId;
 
@@ -21,16 +23,13 @@ export class UaReferenceDescriptor {
         displayName: UaLocalizedText,
         typeDefinitionId: UaNodeId,
         referenceTypeId: UaNodeId,
-        isForward: boolean,
-        instanceDeclarationId: UaNodeId = UaNodeId.nullNodeId,
-    ) {
+        instanceDeclarationId: UaNodeId = UaNodeId.nullNodeId) {
         this._id = id;
         this._nodeClass = nodeClass;
         this._browseName = browseName;
         this._displayName = displayName;
         this._typeDefinitionId = typeDefinitionId;
         this._referenceTypeId = referenceTypeId;
-        this._isForward = isForward;
         this._instanceDeclarationId = instanceDeclarationId;
     }
 
@@ -58,19 +57,13 @@ export class UaReferenceDescriptor {
         return this._referenceTypeId;
     }
 
-    get isForward(): boolean {
-        return this._isForward;
-    }
-
     get instanceDeclarationId(): UaNodeId {
         return this._instanceDeclarationId;
     }
 
     static fromInstanceDeclaration(
         id: string,
-        instanceDeclaration: UaInstanceNode,
-        referenceTypeId: UaNodeId,
-        isForward: boolean,
+        instanceDeclaration: UaInstanceNode
     ): UaReferenceDescriptor {
         let typeDefinitionId = UaNodeId.nullNodeId;
 
@@ -80,6 +73,13 @@ export class UaReferenceDescriptor {
             typeDefinitionId = (instanceDeclaration as UaVariable).typeDefinition.nodeId;
         }
 
+        let referenceTypeId = UaReferenceDescriptor.HasComponent;
+        if (instanceDeclaration.nodeClass === NodeClass.Variable) {
+            if ((instanceDeclaration as UaVariable).isProperty) {
+                referenceTypeId = UaReferenceDescriptor.HasProperty;
+            }
+        }
+        
         const descriptor = new UaReferenceDescriptor(
             id,
             instanceDeclaration.nodeClass,
@@ -87,7 +87,6 @@ export class UaReferenceDescriptor {
             instanceDeclaration.displayName,
             typeDefinitionId,
             referenceTypeId,
-            isForward,
             instanceDeclaration.nodeId,
         );
 

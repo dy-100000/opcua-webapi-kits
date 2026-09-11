@@ -11,7 +11,6 @@ export abstract class UaNode
     protected _writeMask: number | null;
     protected _parent : UaNode | null;
     protected _children : Array<UaNode>;   
-    protected _refToParent : UaNodeId | null; 
 
     constructor(
         nodeId: UaNodeId,
@@ -25,7 +24,6 @@ export abstract class UaNode
         this._writeMask = null;
         this._parent = null;
         this._children = [];
-        this._refToParent = null;
     }
 
     abstract get nodeClass() : NodeClass;
@@ -65,16 +63,6 @@ export abstract class UaNode
         this._description = description;
     }
 
-    get refToParent() : UaNodeId | null
-    {
-        return this._refToParent;
-    }
-
-    set refToParent(referenceTypeId: UaNodeId | null)
-    {
-        this._refToParent = referenceTypeId;
-    }
-
     abstract toJson() : any
 }
 
@@ -95,16 +83,6 @@ export abstract class UaDefintionNode extends UaNode
     get isAbstract() : boolean
     {
         return this._isAbstract;
-    }
-
-    get refToParent() : UaNodeId | null
-    {
-        return (this._refToParent) ? this._refToParent : null;
-    }
-
-    set refToParent(referenceTypeId: UaNodeId)
-    {
-        this._refToParent = referenceTypeId;
     }
 
     setParentType(parentType : UaDefintionNode)

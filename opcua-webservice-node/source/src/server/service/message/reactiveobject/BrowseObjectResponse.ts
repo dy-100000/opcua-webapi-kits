@@ -1,29 +1,28 @@
-import { UaBrowseAdditionalInfo, UaReferenceDescriptor } from "../../../types";
+import { UaReferenceDescriptor } from "../../../types";
 
 export class BrowseObjectResponse {
     private readonly _children: Array<UaReferenceDescriptor>;
-    private readonly _containsMoreData: boolean;
-    private readonly _taskMask: number;
+    private readonly _remainingTasks: number;
+    private readonly _offset: number;
 
     constructor(
         children: Array<UaReferenceDescriptor>,
-        containsMoreData: boolean,
-        taskMask: number = UaBrowseAdditionalInfo.ALL_TASK,
-    ) {
+        remainingTasks: number = 0,
+        offset: number = 0) {
         this._children = children;
-        this._containsMoreData = containsMoreData;
-        this._taskMask = taskMask;
+        this._remainingTasks = remainingTasks;
+        this._offset = Math.max(0, offset);
     }
 
     get children(): Array<UaReferenceDescriptor> {
         return this._children;
     }
 
-    get containsMoreData(): boolean {
-        return this._containsMoreData;
+    get remainingTasks(): number {
+        return this._remainingTasks;
     }
 
-    get taskMask(): number {
-        return this._taskMask;
+    get offset(): number {
+        return this._offset;
     }
 }

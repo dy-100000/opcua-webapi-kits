@@ -6,11 +6,14 @@ export class PropertyElementDescriptor {
     private readonly _displayName: UaLocalizedText;
     private readonly _typeId: UaNodeId;
 
-    constructor(propertyId: string, displayName: UaLocalizedText, variableType?: UaVariableType) {
+    constructor(
+        propertyId: string, 
+        displayName: UaLocalizedText, 
+        variableType?: UaVariableType) {
         this._id = propertyId;
         this._displayName = displayName;
         this._typeId = (variableType) ? variableType.nodeId
-            : UaNodeId.from(VariableTypeIds.BaseDataVariableType);
+            : UaNodeId.from(VariableTypeIds.PropertyType);
     }
 
     get id(): string {

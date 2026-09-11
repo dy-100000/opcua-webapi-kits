@@ -129,12 +129,7 @@ export abstract class UaWebServer extends UaWebServerBase {
             const nodeManager = NodeManagerList.nodeManagerList.getNodeManager(item.nodeId.nsIndex);
 
             let transaction: UaBrowseTransaction;
-            let additionalInfo = new UaBrowseAdditionalInfo(
-                context.requestedMaxReferencesPerNode,
-                0,
-                0);
-
-            additionalInfo = additionalInfo.updateTasks(item);
+            let additionalInfo = UaBrowseAdditionalInfo.build(item, context.requestedMaxReferencesPerNode);
 
             if (nodeManager !== null) {
                 transaction = nodeManager.getBrowseTransaction(

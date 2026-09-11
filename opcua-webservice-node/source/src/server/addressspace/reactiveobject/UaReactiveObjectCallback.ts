@@ -30,10 +30,8 @@ import {
 } from "../../service/message";
 
 export interface UaReactiveObjectCallback {
-    onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse>;
-    onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse>;
-    onBrowseObjectParent(request: BrowseObjectRequest): Promise<BrowseObjectResponse>;
-    onBrowseObjectLinks(request: BrowseObjectRequest): Promise<BrowseObjectResponse>;
+    onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse>;
+    onBrowseMember(request: BrowseMemberRequest): Promise<BrowseMemberResponse>;
     onReadObjectAttributes(request: ReadObjectAttributeRequest): Promise<ReadObjectAttributeResponse>;
     onReadMemberAttributes(request: ReadMemberAttributeRequest): Promise<ReadMemberAttributeResponse>;
     onReadVariablesValue(request: ReadVariableValueRequest): Promise<ReadVariableValueResponse>;

@@ -1,5 +1,5 @@
 import { NodeClass } from "opcua-webapi";
-import { DataTypeIds, UaDataType, UaLocalizedText, UaNodeId, UaReference } from "../../common"
+import { DataTypeIds, ReferenceTypeIds, UaDataType, UaLocalizedText, UaNodeId, UaReference } from "../../common"
 import { UaWebClient } from "../UaWebClient"
 import { UaTypeBrowser, UaNodeReader } from "../..";
 
@@ -55,7 +55,18 @@ export class UaDataTypeDictionary
 
         // Read child type
         let nodeIdsToBrowse: Array<UaNodeId> = [];
-        let nodeReader = new UaNodeReader(this._client, false, needToReadEnumValue, false, false,true);
+        let nodeReader = new UaNodeReader(
+            this._client,           
+            false,
+            needToReadEnumValue, 
+            false, 
+            UaNodeId.from(ReferenceTypeIds.HasProperty),
+            false,
+            false,
+            false,
+            false,
+            false
+        );
         let nodes = await nodeReader.readByReferences(referencesToRead);
 
         for (let node of nodes)

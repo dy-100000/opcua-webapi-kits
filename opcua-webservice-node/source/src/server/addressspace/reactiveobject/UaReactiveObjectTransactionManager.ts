@@ -149,10 +149,8 @@ export class UaReactiveObjectTransactionManager {
             if (nodeToRead.attributeId === Attributes.Value) {
                 if (identifier.childId === null) {
                     handleIdsForNodes.push(handleId);
-                } else if (!identifier.childId.methodNode) {
-                    handleIdsForObjectVariableValues.set(handleId, identifier);
                 } else {
-                    handleIdsForObjectMemberAttributes.set(handleId, identifier);
+                    handleIdsForObjectVariableValues.set(handleId, identifier);
                 }
 
                 continue;

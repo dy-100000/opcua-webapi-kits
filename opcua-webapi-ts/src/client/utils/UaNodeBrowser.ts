@@ -1,5 +1,5 @@
-import { Attributes, BrowseDirection, NodeClass } from "opcua-webapi";
-import { UaError, UaLocalizedText, UaNode, UaNodeId, parseUaNodeId, UaBrowseDescription, UaReadValueId, ReferenceTypeIds, UaReference } from "../../common";
+import { BrowseDirection, NodeClass } from "opcua-webapi";
+import { UaError, UaLocalizedText, UaNodeId, parseUaNodeId, UaBrowseDescription, ReferenceTypeIds, UaReference } from "../../common";
 import { UaWebClient } from "../UaWebClient"
 
 type CpToBrowse = {
@@ -18,7 +18,6 @@ export class UaNodeBrowser {
     private _continuationPointToBrowse: Array<CpToBrowse>;
     private _referenceType: UaNodeId;
     private _nodeClassToReturn: number;
-    private _returnDescription: boolean;
     private _maxNodesPerBrowse: number;
     private _maxReferencesPerNode: number;
     private _readResults: Map<string,Array<UaReference>>;
@@ -28,7 +27,6 @@ export class UaNodeBrowser {
         nodeIds: Array<UaNodeId>,
         referenceType: UaNodeId,
         nodeClassToReturn: number,
-        returnDescription?: boolean,
         maxNodesPerBrowse?: number | null,
         maxReferencesPerNode?: number | null) 
     {
@@ -37,7 +35,6 @@ export class UaNodeBrowser {
         this._referenceType = referenceType;
         this._nodeClassToReturn = nodeClassToReturn;
         this._continuationPointToBrowse = [];
-        this._returnDescription = returnDescription ?? false;
         this._maxNodesPerBrowse = (null == maxNodesPerBrowse || maxNodesPerBrowse <= 0) ? 50 : maxNodesPerBrowse;
         this._maxReferencesPerNode = (null == maxReferencesPerNode || maxReferencesPerNode < 0) ? 50 : maxReferencesPerNode;
         this._readResults = new Map<string, Array<UaReference>>();
@@ -82,7 +79,7 @@ export class UaNodeBrowser {
     }
 
     isFinish(): boolean {
-        return (this._nodesToBrowse.length == 0) && (this._continuationPointToBrowse.length == 0);
+        return ((this._nodesToBrowse.length == 0) && (this._continuationPointToBrowse.length == 0)) || 0 == this._nodeClassToReturn;
     }
 
     private async _browseNodes() {
@@ -104,7 +101,7 @@ export class UaNodeBrowser {
 
         let results = await this._client.browse(browseDescriptions, this._maxReferencesPerNode);
 
-        for (let i = 0; i < nodesToBrowse.length; ++i) {
+        for (let i = 0; i < nodesToBrowse.length; ++i) {            
             let currentNodeId = nodesToBrowse[i];
             let currentResult = results[i];
 
@@ -140,9 +137,7 @@ export class UaNodeBrowser {
                     nodeId: currentNodeId,
                     continuationPoint: currentResult.continuationPoint
                 });
-            }
-
-            if (this._returnDescription) await this._readDescriptions(newReferences);
+            }           
         }
     }
 
@@ -193,26 +188,6 @@ export class UaNodeBrowser {
                     continuationPoint: currentResult.continuationPoint
                 });
             }
-
-            if (this._returnDescription) await this._readDescriptions(newReferences);
-        }
-    }
-
-    private async _readDescriptions(references: Array<UaReference>) {
-        if (references.length === 0) return;
-
-        let nodesToRead: Array<UaReadValueId> = [];
-
-        for (let item of references) {
-            nodesToRead.push(new UaReadValueId(item.nodeId, Attributes.Description));
-        }
-
-        let dataValues = await this._client.read(nodesToRead);
-        for (let i = 0; i < references.length; ++i) {
-            if (dataValues[i].statusCode.isGood()) {
-                let description = dataValues[i].value.toLocalizedText();
-                if (description) references[i].description = description;
-            }
         }
     }
 }
@@ -220,29 +195,13 @@ export class UaNodeBrowser {
 export class UaObjectBrowser extends UaNodeBrowser {
     constructor(
         client: UaWebClient,
-        nodeIds: Array<UaNodeId>, 
-        returnDescription?: boolean) {
+        nodeIds: Array<UaNodeId>,
+        referenceType: UaNodeId = UaNodeId.from(ReferenceTypeIds.HierarchicalReferences)) {
         super(
             client,
             nodeIds, 
-            UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
+            referenceType,
             NodeClass.Object, 
-            returnDescription ?? false,
-            20);
-    }
-}
-
-export class UaLinkBrowser extends UaNodeBrowser {
-    constructor(
-        client: UaWebClient,
-        nodeIds: Array<UaNodeId>, 
-        returnDescription?: boolean) {
-        super(
-            client,
-            nodeIds, 
-            UaNodeId.from(ReferenceTypeIds.NonHierarchicalReferences), 
-            NodeClass.Object, 
-            returnDescription ?? false,
             20);
     }
 }
@@ -250,14 +209,12 @@ export class UaLinkBrowser extends UaNodeBrowser {
 export class UaTypeBrowser extends UaNodeBrowser {
     constructor(
         client: UaWebClient,
-        nodeIds: Array<UaNodeId>, 
-        returnDescription?: boolean) {
+        nodeIds: Array<UaNodeId>) {
         super(
             client,
             nodeIds, 
             UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
             NodeClass.ObjectType| NodeClass.VariableType | NodeClass.DataType | NodeClass.ReferenceType, 
-            returnDescription ?? false,
             20);
     }
 }

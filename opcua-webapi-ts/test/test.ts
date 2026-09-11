@@ -1,8 +1,9 @@
 import { Configuration, NodeClass } from "opcua-webapi";
-import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue, UaLocalizedText, UaObject } from "../src";
+import { UaWebClient, UaClientConfiguration, UaNodeId,  UaVariant, UaVariantType, UaExtensionObject, parseUaNodeId, UaQuery, UaQueryFilter, UaQueryFilterType, ObjectIds, ObjectTypeIds, UaReadValueId, UaWriteValue, UaLocalizedText, UaObject, ReferenceTypeIds } from "../src";
 import { UaRange, UaEUInformation,UaArgument } from "../src";
 import { UaEnumValueType } from "../src/common/structure/UaEnumValueType";
-import { UaDataTypeDictionary, UaLinkBrowser, UaModelling, UaObjectBrowser, UaObjectDataReader, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeReader } from "../src/client/utils";
+import { UaDataTypeDictionary, UaModelling, UaObjectBrowser, UaObjectReader, UaObjectTypeDictionary, UaReferenceTypeDictionary, UaTypeBrowser, UaTypeReader } from "../src/client/utils";
+import { TestExport } from "./TestExport";
 
 class Test {
     private client : UaWebClient;
@@ -10,7 +11,7 @@ class Test {
     constructor()
     {
         let apiConfig : Configuration = new Configuration({
-            basePath: "http://localhost:4840"
+            basePath: "http://localhost:4842"
         });
 
         let clientConfig = new UaClientConfiguration(apiConfig);
@@ -23,7 +24,10 @@ class Test {
     {
         try
         { 
-            await this.testObjectReader();           
+            await this.testBrowse(); 
+            //await this.testTypeBrowser();  
+            //await this.testBrowse();       
+            //await this.testObjectReader(); 
             /*
             await this.testFindServer();
             await this.testReadValues();
@@ -53,8 +57,8 @@ class Test {
     {
         console.log("testBrowse");
 
-        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiUHJvY2Vzc1NlZ21lbnRzIiwidCI6Im5zPTI7cz1Qcm9jZXNzU2VnbWVudFJlcG9zaXRvcnlUeXBlIn19");
-        let nodeClassToReturn = Number(NodeClass.Object | NodeClass.Variable | NodeClass.Method | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.ReferenceType | NodeClass.DataType);
+        let nodeId = parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiNCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtUmVmZXJlbmNlIn19");
+        let nodeClassToReturn = Number(NodeClass.Object | NodeClass.ObjectType | NodeClass.VariableType | NodeClass.ReferenceType | NodeClass.DataType);
 
         console.log("browseChild");
         let children = await this.client.browseChild(nodeId, nodeClassToReturn, 3);
@@ -396,11 +400,10 @@ class Test {
     async testObjectReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ=="),
             parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLUVtcGxveWVlRGF0YSJ9fQ==")
         ];
 
-        let reader = new UaObjectReader(this.client,false,true);
+        let reader = new UaObjectReader(this.client,true,true);
         let nodes = await reader.read(nodeIds);
 
         for (let item of nodes)
@@ -412,7 +415,7 @@ class Test {
     async testTypeReader()
     {
         let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;s=EnumTest")
+            parseUaNodeId("ns=2;s=EmployeeDataSubmodelType")
         ];
 
         let reader = new UaTypeReader(this.client);
@@ -424,6 +427,22 @@ class Test {
         }
     }
 
+    async testTypeBrowser()
+    {
+        let reader = new UaTypeBrowser(this.client, [UaNodeId.from(ObjectTypeIds.BaseObjectType)]);
+        await reader.browse();
+
+        let references = reader.results();
+        for (let item of references)
+        {
+            console.log("--- " + item.nodeId.toString() + " ---");
+            for (let item2 of item.references)
+            {
+                console.dir(item2.toJson(), { depth: null });
+            }
+        }
+    }
+
     async testObjectBrowser()
     {
         let nodeIds : Array<UaNodeId> = [
@@ -431,7 +450,7 @@ class Test {
             parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMCIsImlkIjoibnM9MjtzPVN1Ym1vZGVsVGVzdFR5cGUtQ29sbGVjdGlvbkIifX0="),
         ];
 
-        let reader = new UaObjectBrowser(this.client,nodeIds, true);
+        let reader = new UaObjectBrowser(this.client,nodeIds);
         await reader.browse();
 
         let references = reader.results();
@@ -443,44 +462,6 @@ class Test {
             {
                 console.dir(item2.toJson(), { depth: null });
             }
-        }
-    }
-
-    async testLinkBrowser()
-    {
-        let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLVNlbnNvcnMifX0="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMDAwMDAwMDAtMDAwMC0wMDAwLTAwMDAtMDAwMDAwM0UyQTdEIiwiaWQiOiJucz0yO3M9RGV2aWNlU3VibW9kZWxUeXBlLUVxdWlwbWVudHMifX0=")
-        ];
-
-        let reader = new UaLinkBrowser(this.client,nodeIds,true);
-        await reader.browse();
-
-        let references = reader.results();
-        for (let item of references)
-        {
-            console.log("--- " + item.nodeId.toString() + " ---");
-
-            for (let item2 of item.references)
-            {
-                console.dir(item2.toJson(), { depth: null });
-            }
-        }
-    }
-
-    async testObjectDataReader()
-    {
-        let nodeIds : Array<UaNodeId> = [
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLVBlcnNvbmFsRGF0YSJ9fQ=="),
-            parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsImlkIjoibnM9MjtzPUVtcGxveWVlRGlnaXRhbFR3aW5UeXBlLUVtcGxveWVlRGF0YSJ9fQ==")
-        ];
-
-        let reader = new UaObjectDataReader(this.client);
-        let data = await reader.readValues(nodeIds);
-
-        for (let item of data)
-        {
-            console.dir(item[1], { depth: null });
         }
     }
 
@@ -553,6 +534,21 @@ class Test {
         let modelling = new UaModelling(this.client);
         await modelling.setDescription(objectId, description);
         console.log("Description set");
+    }
+
+    async testExportObjects()
+    {
+        console.log("testExportObjects");
+        let dataTypeDictionary = new UaDataTypeDictionary(this.client);
+        let objectTypeDictionary = new UaObjectTypeDictionary(this.client);
+        let referenceTypeDictionary = new UaReferenceTypeDictionary(this.client);
+        await dataTypeDictionary.read();
+        await objectTypeDictionary.read();
+        await referenceTypeDictionary.read();
+
+        let exporter = new TestExport(this.client, dataTypeDictionary, objectTypeDictionary, referenceTypeDictionary);
+        let result = await exporter.exportObjects(parseUaNodeId("ns=2;b=eyJvaSI6eyJpIjoiMSIsInQiOiJucz0yO3M9RW1wbG95ZWVEaWdpdGFsVHdpblR5cGUifX0="));
+        console.dir(result, { depth: null });
     }
 }
 

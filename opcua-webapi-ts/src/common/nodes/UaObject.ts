@@ -80,17 +80,10 @@ export class UaObject extends UaInstanceNode
 
     toJson() : any
     {
-        let variables = [];
-        let methods = [];
-
+        let members = [];
         for (let item of this._children)
         {
-            if (NodeClass.Variable == item.nodeClass) {
-                variables.push(item.toJson());
-            }
-            else if (NodeClass.Method == item.nodeClass) {
-                methods.push(item.toJson());
-            }
+            members.push(item.toJson());
         }
 
         let ret = {
@@ -101,9 +94,9 @@ export class UaObject extends UaInstanceNode
             description: (this._description) ? this._description.text : undefined,
             typeDefinitionId: this._typeDefinitionId.toString(),
             eventNotifier : (this._eventNotifier != 0) ? this._eventNotifier : undefined,
-            variables: (variables.length != 0) ? variables : undefined,
-            methods: (methods.length != 0) ? methods : undefined
+            members: (members.length != 0) ? members : undefined
         };
 
         return ret;
-    }}
+    }
+}

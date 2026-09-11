@@ -105,4 +105,35 @@ export class UaMethod extends UaInstanceNode
 
         return ret;
     }
+
+    toReadableJson() : any
+    {
+        let inputArgs = [];
+        let outputArgs = [];
+
+        if (this._inputArguments)
+        {
+            for (let item of this._inputArguments)
+            {
+                inputArgs.push(item.toJson());
+            }
+        }
+
+        if (this._outputArguments)
+        {
+            for (let item of this._outputArguments)
+            {
+                outputArgs.push(item.toJson());
+            }
+        }
+
+        return {
+            id : this._nodeId.toString(),
+            name: this._browseName,
+            displayName: this._displayName.text,
+            description: (this._description) ? this._description.text : undefined,
+            inputArguments: (inputArgs.length != 0) ? inputArgs : undefined,
+            outputArguments: (outputArgs.length != 0) ? outputArgs : undefined
+        }
+    }
 }

@@ -7,26 +7,36 @@ export class UaNodeReader {
     private _client : UaWebClient;
     private _nodeClassToReturn: number;
     private _returnDescription: boolean;
-    private _returnAttributes: boolean;
-    private _returnValue: boolean;
     private _referenceTypeToReturn: UaNodeId;
+    private _returnObjectAttributes: boolean;
+    private _returnVariableAttributes: boolean;
+    private _returnVariableValue: boolean;
+    private _returnPropertyAttributes: boolean;
+    private _returnPropertyValue: boolean;
     private static s_variableTypeWithoutMember: Set<string> = null;
     private static s_variablesNameToRead: Set<string> = null;
 
     constructor(
         client : UaWebClient,
-        returnDescription?: boolean | null,
-        returnVariable?: boolean | null,
-        returnMethod?: boolean | null,
-        returnAttributes?: boolean | null,
-        returnValue?: boolean | null,
-        referenceTypeToReturn?: UaNodeId)
+        returnDescription: boolean,
+        returnVariable: boolean,
+        returnMethod: boolean,
+        referenceTypeToReturn: UaNodeId,
+        returnObjectAttributes: boolean,
+        returnVariableAttributes: boolean,
+        returnVariableValue: boolean,
+        returnPropertyAttributes: boolean,
+        returnPropertyValue: boolean)
     {        
         this._client = client;
-        this._returnDescription = (returnDescription) ? returnDescription : false;
-        this._returnAttributes = (returnAttributes) ? returnAttributes : false;
-        this._returnValue = (returnValue) ? returnValue : false;
-        this._referenceTypeToReturn = (referenceTypeToReturn) ? referenceTypeToReturn : UaNodeId.from(ReferenceTypeIds.HierarchicalReferences);
+        this._returnDescription = returnDescription;        
+        this._referenceTypeToReturn = referenceTypeToReturn;
+        this._returnObjectAttributes = returnObjectAttributes;
+        this._returnVariableAttributes = returnVariableAttributes;
+        this._returnVariableValue = returnVariableValue;
+        this._returnPropertyAttributes = returnPropertyAttributes;
+        this._returnPropertyValue = returnPropertyValue;
+
         this._nodeClassToReturn = 0;
         if (returnVariable) this._nodeClassToReturn += NodeClass.Variable;
         if (returnMethod) this._nodeClassToReturn += NodeClass.Method;
@@ -67,13 +77,11 @@ export class UaNodeReader {
     {
         if (references.length == 0) return [];
 
-        let referencesToRead: Array<UaReference> = [];
         let nodeIdsToBrowse: Array<UaNodeId> = [];
         let nodeIdsSet: Set<string> = new Set();
 
         for (let item of references) {
             if (nodeIdsSet.has(item.nodeId.toString())) continue;
-            referencesToRead.push(item);
             nodeIdsToBrowse.push(item.nodeId);
             nodeIdsSet.add(item.nodeId.toString());
         }
@@ -82,8 +90,7 @@ export class UaNodeReader {
             this._client,
             nodeIdsToBrowse,
             this._referenceTypeToReturn,
-            this._nodeClassToReturn,
-            false);
+            this._nodeClassToReturn);
 
         await nodeReferenceBrowser.browse();
         let childReferences = nodeReferenceBrowser.results();
@@ -107,9 +114,8 @@ export class UaNodeReader {
             let childReferenceBrowser = new UaNodeBrowser(
                 this._client,
                 childNodesToBrowse,
-                UaNodeId.from(ReferenceTypeIds.HierarchicalReferences),
-                NodeClass.Variable,
-                false);
+                UaNodeId.from(ReferenceTypeIds.Aggregates),
+                NodeClass.Variable);
 
             await childReferenceBrowser.browse();
             variableReferences = childReferenceBrowser.results();
@@ -250,7 +256,6 @@ export class UaNodeReader {
 
     private async _readTypes(references: Array<UaReference>, nodes: Map<string,UaNode>) {
         let typesToRead: Array<UaReference> = [];
-        let needReadAttributes = this._returnAttributes || this._returnDescription;
 
         for (let item of references) {
             if (item.nodeClass != NodeClass.ObjectType &&
@@ -264,32 +269,30 @@ export class UaNodeReader {
         if (0 == typesToRead.length) return;
 
         let dataValues : Array<UaDataValue> = [];
+        let nodesToRead: Array<UaReadValueId> = [];
 
-        if (needReadAttributes) {
-            let nodesToRead: Array<UaReadValueId> = [];
+        for (let item of typesToRead) {
+            nodesToRead.push(new UaReadValueId(
+                item.nodeId,
+                Attributes.IsAbstract));
 
-            for (let item of typesToRead) {
+            nodesToRead.push(new UaReadValueId(
+                item.nodeId,
+                Attributes.Description));
+
+            if (item.nodeClass == NodeClass.VariableType) {
                 nodesToRead.push(new UaReadValueId(
                     item.nodeId,
-                    Attributes.IsAbstract));
+                    Attributes.DataType));
 
                 nodesToRead.push(new UaReadValueId(
                     item.nodeId,
-                    Attributes.Description));
-
-                if (item.nodeClass == NodeClass.VariableType) {
-                    nodesToRead.push(new UaReadValueId(
-                        item.nodeId,
-                        Attributes.DataType));
-
-                    nodesToRead.push(new UaReadValueId(
-                        item.nodeId,
-                        Attributes.ValueRank));
-                }            
-            }
-
-            dataValues = await this._client.read(nodesToRead);
+                    Attributes.ValueRank));
+            }            
         }
+
+        dataValues = await this._client.read(nodesToRead);
+        
 
         for (let i = 0; i < typesToRead.length; ++i) {   
             let isAbstract : boolean = false;
@@ -297,33 +300,31 @@ export class UaNodeReader {
             let dataType = UaNodeId.nullNodeId;
             let valueRank = -1;
 
-            if (needReadAttributes) {
-                let dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i * 4 : i * 2;
-                if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
+            let dataIndex = (typesToRead[i].nodeClass == NodeClass.VariableType) ? i * 4 : i * 2;
+            if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
 
-                isAbstract = dataValues[dataIndex].value.toBoolean();
-                if (null == isAbstract) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-                dataIndex++;
-                
-                if (this._returnDescription && dataValues[dataIndex].statusCode.isGood()) {
-                    description = dataValues[dataIndex].value.toLocalizedText();
-                    if (null == description) description = undefined
-                }
-                dataIndex++;
-
-                if (typesToRead[i].nodeClass == NodeClass.VariableType) {
-                    if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
-                    dataType = dataValues[dataIndex].value.toNodeId();
-                    dataIndex++;
-
-                    if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);                
-                    valueRank = dataValues[dataIndex].value.toNumber();
-                    dataIndex++;
-
-                    if (null == dataType || null == valueRank) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
-                }
+            isAbstract = dataValues[dataIndex].value.toBoolean();
+            if (null == isAbstract) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+            dataIndex++;
+            
+            if (dataValues[dataIndex].statusCode.isGood()) {
+                description = dataValues[dataIndex].value.toLocalizedText();
+                if (null == description) description = undefined;
             }
+            dataIndex++;
 
+            if (typesToRead[i].nodeClass == NodeClass.VariableType) {
+                if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);
+                dataType = dataValues[dataIndex].value.toNodeId();
+                dataIndex++;
+
+                if (dataValues[dataIndex].statusCode.isNotGood()) throw new UaError(dataValues[dataIndex].statusCode);                
+                valueRank = dataValues[dataIndex].value.toNumber();
+                dataIndex++;
+
+                if (null == dataType || null == valueRank) throw new UaError(makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid));
+            }
+            
             let typeNode: UaNode;
 
             if (typesToRead[i].nodeClass == NodeClass.ObjectType) {
@@ -356,11 +357,10 @@ export class UaNodeReader {
                     false);
             }
 
-            if (this._returnDescription && description) {
+            if (description) {
                 typeNode.description = description;
             }
 
-            typeNode.refToParent = typesToRead[i].referenceTypeId;
             nodes.set(typeNode.nodeId.toString(), typeNode);
         }
     }
@@ -378,7 +378,7 @@ export class UaNodeReader {
         let nodesToRead: Array<UaReadValueId> = [];
 
         for (let item of objectsToRead) {
-            if (this._returnAttributes)
+            if (this._returnObjectAttributes)
             {
                 nodesToRead.push(new UaReadValueId(
                     item.nodeId,
@@ -400,12 +400,12 @@ export class UaNodeReader {
         }
         
         for (let i = 0; i < objectsToRead.length; ++i) {
-            let dataIndex = (this._returnAttributes && this._returnDescription) ? i * 2 : i;
+            let dataIndex = (this._returnObjectAttributes && this._returnDescription) ? i * 2 : i;
 
             let eventNotifier: number = 0;
             let description: UaLocalizedText = undefined;
 
-            if (this._returnAttributes && dataValues[dataIndex].statusCode.isGood()) {
+            if (this._returnObjectAttributes && dataValues[dataIndex].statusCode.isGood()) {
                 eventNotifier = dataValues[dataIndex].value.toNumber();
                 if (null == eventNotifier) eventNotifier = 0;
                 dataIndex++;
@@ -424,8 +424,6 @@ export class UaNodeReader {
                 eventNotifier,
                 objectsToRead[i].typeDefinitionId);
 
-            objectNode.refToParent = objectsToRead[i].referenceTypeId;
-
             if (this._returnDescription && description) {
                 objectNode.description = description;                
             }
@@ -436,38 +434,57 @@ export class UaNodeReader {
 
     private async _readVariables(references: Array<UaReference>, nodes: Map<string, UaNode>) {
         let variablesToRead: Array<UaReference> = [];
-        let nodeIds: Array<UaNodeId> = [];
+        let nodeIdsToReadAttributes: Array<UaNodeId> = [];
+        let variablesToReadValue : Array<UaVariable> = [];
 
         for (let item of references) {
             if (item.nodeClass != NodeClass.Variable) continue;
             variablesToRead.push(item);
-            nodeIds.push(item.nodeId);
         }
 
-        if (0 == nodeIds.length) return;
+        if (0 == variablesToRead.length) return;
+
+        let hasPropertyId = UaNodeId.from(ReferenceTypeIds.HasProperty);
+        let attributeIndexMap = new Map<number, number>();
+        for (let i=0; i<variablesToRead.length; ++i) {
+            let item = variablesToRead[i];
+
+            if (item.referenceTypeId.equal(hasPropertyId))
+            {
+                if (this._returnPropertyAttributes) 
+                {
+                    attributeIndexMap.set(i, nodeIdsToReadAttributes.length);
+                    nodeIdsToReadAttributes.push(item.nodeId);                    
+                }                                       
+            } else {
+                if (this._returnVariableAttributes) 
+                {
+                    attributeIndexMap.set(i, nodeIdsToReadAttributes.length);
+                    nodeIdsToReadAttributes.push(item.nodeId);
+                }                    
+            }            
+        }
         
-        let results : Array<OpcUaVariableAttributes> = [];
-        
-        if (this._returnAttributes)
+        let results : Array<OpcUaVariableAttributes> = [];        
+        if (nodeIdsToReadAttributes.length != 0)
         {
-            results = await this._client.readVariableAttributes(nodeIds);
+            results = await this._client.readVariableAttributes(nodeIdsToReadAttributes);
         }
         
-        let variablesToReadValue : Array<UaVariable> = [];
-
-        for (let i = 0; i < variablesToRead.length; ++i) {
+        for (let i=0; i<variablesToRead.length; ++i) {
             let variableNode;
+            let attributeIndex = attributeIndexMap.get(i);
             
-            if (this._returnAttributes) {            
+            if (null != attributeIndex) {            
                 variableNode = new UaVariable(
                     variablesToRead[i].nodeId,
                     variablesToRead[i].browseName,
                     variablesToRead[i].displayName,
-                    results[i].dataType,
-                    results[i].valueRank,
-                    results[i].accessLevel,
-                    results[i].userAccessLevel,
-                    results[i].historizing,
+                    results[attributeIndex].dataType,
+                    results[attributeIndex].valueRank,
+                    results[attributeIndex].accessLevel,
+                    results[attributeIndex].userAccessLevel,
+                    results[attributeIndex].historizing,
                     variablesToRead[i].typeDefinitionId);
             } else {
                 variableNode = new UaVariable(
@@ -484,7 +501,17 @@ export class UaNodeReader {
 
             nodes.set(variableNode.nodeId.toString(), variableNode);            
             
-            if (this._returnValue || (UaNodeReader.s_variablesNameToRead.has(variableNode.browseName))) {
+            if (variablesToRead[i].referenceTypeId.equal(hasPropertyId))
+            {
+                variableNode.isProperty = true;
+            }
+
+            if (this._returnVariableValue && !variableNode.isProperty)
+            {
+                variablesToReadValue.push(variableNode);
+            } else if (this._returnPropertyValue && variableNode.isProperty) {
+                variablesToReadValue.push(variableNode);
+            } else if (UaNodeReader.s_variablesNameToRead.has(variableNode.browseName)) {
                 variablesToReadValue.push(variableNode);                
             }
         }
@@ -603,17 +630,24 @@ export class UaNodeReader {
 export class UaObjectReader extends UaNodeReader {
     constructor(      
         client : UaWebClient,
-        returnDescription?: boolean | null,
-        returnValue?: boolean | null) {
-        super(client,returnDescription ?? false, true, true, true, returnValue ?? false);
+        returnVariable: boolean = true,
+        returnMethod: boolean = true,
+        returnDescription: boolean = false) {
+        super(
+            client,
+            returnDescription,
+            returnVariable,
+            returnMethod,
+            UaNodeId.from(ReferenceTypeIds.Aggregates),
+            false,
+            true,
+            false,
+            false,
+            true
+        );
     }
 
-    async read(nodeIds: Array<UaNodeId>) : Promise<Array<UaObject>> {
-        let nodes = await super.read(nodeIds);        
-        return this._processResult(nodes);
-    }
-
-    async readByReferences(references: Array<UaReference>) : Promise<Array<UaObject>> {
+    async readByReferences(references: Array<UaReference>) : Promise<Array<UaNode>> {
         let objectReferences: Array<UaReference> = [];
         for (let item of references) {
             if (item.nodeClass == NodeClass.Object) {
@@ -622,32 +656,59 @@ export class UaObjectReader extends UaNodeReader {
         }
 
         if (0 == objectReferences.length) return [];
-        let nodes = await super.readByReferences(objectReferences);
-        return this._processResult(nodes);
+        return await super.readByReferences(objectReferences);
+    }
+}
+
+export class UaFullObjectReader extends UaNodeReader {
+    constructor(      
+        client : UaWebClient,
+        returnDescription: boolean = true,
+        returnValue: boolean = false) {
+        super(
+            client,
+            returnDescription,
+            true,
+            true,
+            UaNodeId.from(ReferenceTypeIds.Aggregates),
+            true,
+            true,
+            returnValue,
+            true,
+            returnValue
+        );
     }
 
-    private _processResult(nodes: Array<UaNode>) : Array<UaObject> {
-        let objectNodes: Array<UaObject> = [];
-        for (let item of nodes) {
+    async readByReferences(references: Array<UaReference>) : Promise<Array<UaNode>> {
+        let objectReferences: Array<UaReference> = [];
+        for (let item of references) {
             if (item.nodeClass == NodeClass.Object) {
-                objectNodes.push(item as UaObject);
+                objectReferences.push(item);
             }
         }
-        return objectNodes;
+
+        if (0 == objectReferences.length) return [];
+        return await super.readByReferences(objectReferences);
     }
 }
 
 export class UaTypeReader extends UaNodeReader {
-    constructor(client: UaWebClient) {
-        super(client, true, true, true, true, false);
+    constructor(client: UaWebClient, returnDescription: boolean = false) {
+        super(
+            client,
+            returnDescription,
+            true, 
+            true,
+            UaNodeId.from(ReferenceTypeIds.Aggregates),
+            false, 
+            true,
+            false,
+            true,
+            false
+        );
     }
 
-    async read(nodeIds: Array<UaNodeId>) : Promise<Array<UaDefintionNode>> {
-        let nodes = await super.read(nodeIds);
-        return this._processResult(nodes);
-    }
-
-    async readByReferences(references: Array<UaReference>) : Promise<Array<UaDefintionNode>> {
+    async readByReferences(references: Array<UaReference>) : Promise<Array<UaNode>> {
         let typeReferences: Array<UaReference> = [];
         for (let item of references) {
             if (item.nodeClass == NodeClass.ObjectType ||
@@ -659,56 +720,6 @@ export class UaTypeReader extends UaNodeReader {
         }
 
         if (0 == typeReferences.length) return [];
-        let nodes = await super.readByReferences(typeReferences);
-        return this._processResult(nodes);
-    }
-
-    private _processResult(nodes: Array<UaNode>) : Array<UaDefintionNode> {
-        let typeNodes: Array<UaDefintionNode> = [];
-        for (let item of nodes) {
-            if (item.nodeClass == NodeClass.ObjectType ||
-                item.nodeClass == NodeClass.VariableType ||
-                item.nodeClass == NodeClass.DataType ||
-                item.nodeClass == NodeClass.ReferenceType) {
-                typeNodes.push(item as UaDefintionNode);
-            }
-        }
-        return typeNodes;
-    }
-}
-
-export class UaObjectDataReader extends UaNodeReader {
-    constructor(client: UaWebClient) {
-        super(client, false, true, false, false, true);
-    }
-
-    async readValues(nodeIds: Array<UaNodeId>) : Promise<Map<string, any>> {
-        let nodes = await super.read(nodeIds);
-        return this._processResult(nodes);
-    }
-
-    async readValuesByReferences(references: Array<UaReference>) : Promise<Map<string, any>> {
-        let nodes = await super.readByReferences(references);
-        return this._processResult(nodes);
-    }
-
-    private _processResult(nodes: Array<UaNode>) : Map<string, any> {
-        let ret: Map<string, any> = new Map();
-
-        for (let item of nodes) {
-            if (item.nodeClass != NodeClass.Object) continue;
-            let id = item.nodeId.toString();
-            let objectNode = item as UaObject;
-            let members = objectNode.getMembers(NodeClass.Variable);
-            let serializedObject: any = {};
-            serializedObject["_id"] = id;
-            serializedObject["_name"] = objectNode.displayName.text;
-            for (let member of members) {
-                let value = (member as UaVariable).value;
-                serializedObject[member.browseName] = (null == value) ? null : value.value;
-            }
-            ret.set(id, serializedObject);
-        }
-        return ret;
+        return await super.readByReferences(typeReferences);
     }
 }

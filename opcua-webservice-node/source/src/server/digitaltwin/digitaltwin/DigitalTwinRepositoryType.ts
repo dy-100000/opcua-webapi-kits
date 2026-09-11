@@ -41,18 +41,21 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
     abstract onGetDigitalTwinList(request: GetDigitalTwinListRequest): Promise<GetDigitalTwinListResponse>;
 
     /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.Organizes);
+    }
+
+    /**
      * Internal framework callback used by the base type to browse repository children.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        const referenceTypeId = request.browseDescription.referenceTypeId;
-
-        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) ||            
-            (!referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HierarchicalReferences)) &&
-             !referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.References)) &&
-             !referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.Organizes))))
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK))
         {
-            return new BrowseObjectResponse([], false);
+            return new BrowseObjectResponse([]);
         }
 
         const context = new ObjectServiceContext(request.objectId);
@@ -60,11 +63,11 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
             new GetDigitalTwinListRequest(
                 context,
                 request.additionalInfo.maxReferencesPerNode,
-                request.additionalInfo.referenceOffset,
+                request.additionalInfo.referenceOffset
             ),
         );
 
-        return this.processBrowseObjectChildrenResponse(response);
+        return this.processBrowseObjectResponse(response,request.additionalInfo);
     }
 
     /**
@@ -90,8 +93,11 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
         );
     }
 
-    private processBrowseObjectChildrenResponse(response: GetDigitalTwinListResponse): BrowseObjectResponse {
+    private processBrowseObjectResponse(
+        response: GetDigitalTwinListResponse,
+        additionalInfo: UaBrowseAdditionalInfo): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = this.supportedReferenceType();
 
         for (const item of response.digitalTwins) {
             childDescriptors.push(
@@ -101,12 +107,12 @@ export abstract class DigitalTwinRepositoryType extends UaReactiveObjectType {
                     item.id,
                     item.displayName,
                     item.typeId,
-                    UaNodeId.from(ReferenceTypeIds.Organizes),
-                    false,
+                    referenceType
                 ),
             );
         }
 
-        return new BrowseObjectResponse(childDescriptors, response.containsMoreData);
+        let taskMask = (response.containsMoreData) ? UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK : 0;
+        return new BrowseObjectResponse(childDescriptors, taskMask, additionalInfo.referenceOffset + response.digitalTwins.length);
     }
 }

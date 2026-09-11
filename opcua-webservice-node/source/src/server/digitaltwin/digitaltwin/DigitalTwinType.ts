@@ -130,6 +130,14 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
     }
 
     /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.HasComponent);
+    }
+
+    /**
      * Internal framework callback used by the base type to read object attributes.
      * Do not call or override this method directly.
      */
@@ -210,14 +218,14 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
      * Internal framework callback used by the base type to browse child submodels.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) {
-            return new BrowseObjectResponse([], false);
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK)) {
+            return new BrowseObjectResponse([]);
         }
 
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetSubmodels(new GetSubmodelsRequest(context));
-        return this.processBrowseObjectChildrenResponse(response);
+        return this.processBrowseObjectResponse(response);
     }
 
     override async onAddObject(request: AddObjectRequest): Promise<AddObjectResponse> {
@@ -242,8 +250,9 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
         return new DeleteObjectResponse(response.statusCode);
     }
 
-    private processBrowseObjectChildrenResponse(response: GetSubmodelsResponse): BrowseObjectResponse {
+    private processBrowseObjectResponse(response: GetSubmodelsResponse): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = this.supportedReferenceType();
 
         for (const item of response.submodels) {
             const descriptor = (item.instance === null)
@@ -252,18 +261,15 @@ export abstract class DigitalTwinType extends UaReactiveObjectType {
                     NodeClass.Object,
                     item.id,
                     item.displayName,
-                    item.typeId,                    
-                    UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true)
+                    item.typeId,
+                    referenceType)
                 : UaReferenceDescriptor.fromInstanceDeclaration(
                     item.id,
-                    item.instance,
-                    UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true);
+                    item.instance);
 
             childDescriptors.push(descriptor);
         }
 
-        return new BrowseObjectResponse(childDescriptors, false);
+        return new BrowseObjectResponse(childDescriptors);
     }
 }

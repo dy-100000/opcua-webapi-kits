@@ -24,7 +24,7 @@ export abstract class SubmodelTypeDynamic extends SubmodelTypeBase {
      * Set the element type can be added to this submodel.
      */
     mayAdd(type: ElementType): void {
-        const newObject = this.addObjectNode(type.name, type.displayName, type);       
+        const newObject = this.addObjectNode(type.name, type.displayName, type);
         newObject.setModellingRule(UaModellingRule.PlaceHolder);
     }
 
@@ -34,12 +34,20 @@ export abstract class SubmodelTypeDynamic extends SubmodelTypeBase {
     abstract onGetObjectElementList(request: GetObjectElementListRequest): Promise<GetObjectElementListResponse>;
 
     /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.HasComponent);
+    }
+
+    /**
      * Internal framework callback used by the base type to browse child nodes.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
-        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK)) {
-            return new BrowseObjectResponse([], false);
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+        if (!request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK)) {
+            return new BrowseObjectResponse([]);
         }
 
         const context = new ObjectServiceContext(request.objectId);
@@ -47,15 +55,18 @@ export abstract class SubmodelTypeDynamic extends SubmodelTypeBase {
             new GetObjectElementListRequest(
                 context,
                 request.additionalInfo.maxReferencesPerNode,
-                request.additionalInfo.referenceOffset,
+                request.additionalInfo.referenceOffset
             ),
         );
 
-        return this.processBrowseChildResponse(response);
+        return this.processBrowseObjectResponse(response,request.additionalInfo);
     }
 
-    private processBrowseChildResponse(response: GetObjectElementListResponse): BrowseObjectResponse {
+    private processBrowseObjectResponse(
+        response: GetObjectElementListResponse,
+        additionalInfo: UaBrowseAdditionalInfo): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = this.supportedReferenceType();
 
         for (const item of response.elements) {
             childDescriptors.push(
@@ -65,12 +76,12 @@ export abstract class SubmodelTypeDynamic extends SubmodelTypeBase {
                     item.id,
                     item.displayName,
                     item.typeId,
-                    UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true,
-                ),
+                    referenceType
+                )
             );
         }
 
-        return new BrowseObjectResponse(childDescriptors, response.containsMoreData);
+        let taskMask = (response.containsMoreData) ? UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK : 0;
+        return new BrowseObjectResponse(childDescriptors, taskMask, additionalInfo.referenceOffset + response.elements.length);
     }
 }

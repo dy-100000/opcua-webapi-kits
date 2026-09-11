@@ -1,5 +1,5 @@
 import { Attributes, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaDataValue, UaError, UaReadValueId, UaVariant, UaVariantType } from "opcua-webapi-ts";
+import { makeUaStatusCode, UaDataValue, UaError, UaVariant, UaVariantType } from "opcua-webapi-ts";
 import { ReadContext } from "../../..";
 import { NodeManagerReactiveObject } from "../../../addressspace/nodemanager/NodeManagerReactiveObject";
 import { UaChildIdentifier, UaChildId, UaObjectId, UaObjectIdentifier } from "../../../types";
@@ -34,8 +34,7 @@ export class UaReadMemberAttributeTransaction extends UaReadTransaction {
             const instanceDeclaration = this.nodeManager.findInstanceDeclaration(this.objectId);
             const request = new ReadMemberAttributeRequest(
                 new UaObjectId(this.objectId.id, instanceDeclaration),
-                new UaChildId(this.memberId.path, this.memberId.pathL2),
-                this.memberId.methodNode,
+                new UaChildId(this.memberId.path, this.memberId.pathL2)
             );
 
             const response = await objectType.onReadMemberAttributes(request);
@@ -88,11 +87,7 @@ export class UaReadMemberAttributeTransaction extends UaReadTransaction {
                     statusCode = makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid);
                 }
             } else if (item.attributeId === Attributes.Value) {
-                if (response.value !== null) {
-                    value = response.value;
-                } else {
-                    statusCode = makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid);
-                }
+                statusCode = makeUaStatusCode(StatusCodes.BadNodeAttributesInvalid);                
             } else if (item.attributeId === Attributes.NodeId) {
                 value = UaVariant.nodeId(item.nodeId);
             } else if (item.attributeId === Attributes.BrowseName) {

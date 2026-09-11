@@ -1,5 +1,5 @@
 import { NodeClass, StatusCodes } from "opcua-webapi";
-import { makeUaStatusCode, UaModellingRule, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaVariant } from "opcua-webapi-ts";
+import { makeUaStatusCode, UaModellingRule, ReferenceTypeIds, UaError, UaLocalizedText, UaNodeId, UaVariant, VariableTypeIds } from "opcua-webapi-ts";
 import { UaObjectTypes } from "../../addressspace/nodes/builtin";
 import {
     BrowseMemberRequest,
@@ -19,8 +19,6 @@ import {
     ReadHistoryDataResponse,
     ReadMemberAttributeRequest,
     ReadMemberAttributeResponse,
-    ReadObjectAttributeRequest,
-    ReadObjectAttributeResponse,
     ReadPropertyHistoryValuesRequest,
     ReadPropertyHistoryValuesResponse,
     ReadPropertyListValueRequest,
@@ -120,13 +118,23 @@ export abstract class ElementListType extends ElementType {
     }     
 
     /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.HasComponent);
+    }
+
+    /**
      * Internal framework callback used by the base type to browse child nodes.
      * Do not call or override this method directly.
      */
-    override async onBrowseObjectChildren(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
+    override async onBrowseObject(request: BrowseObjectRequest): Promise<BrowseObjectResponse> {
         const context = new ObjectServiceContext(request.objectId);
 
-        if (request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) &&
+        request.additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK);
+
+        if (request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK) &&
             this.supportObjectElementList()) {
             const response = await this.onGetObjectElementList(
                 new GetObjectElementListRequest(
@@ -136,12 +144,11 @@ export abstract class ElementListType extends ElementType {
                 ),
             );
 
-            return this.processBrowseObjectChildrenObjectResponse(response);
+            return this.processBrowseObjectResponse(response,request.additionalInfo);
         }
 
         if (request.additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK) &&
-            this.supportPropertyElementList() &&
-            !request.browseDescription.referenceTypeId.equal(UaNodeId.from(ReferenceTypeIds.HasProperty))) {
+            this.supportPropertyElementList()) {
             const response = await this.onGetPropertyElementList(
                 new GetPropertyElementListRequest(
                     context,
@@ -150,23 +157,23 @@ export abstract class ElementListType extends ElementType {
                 ),
             );
 
-            return this.processBrowseObjectChildrenPropertyResponse(response);
+            return this.processBrowsePropertyResponse(response,request.additionalInfo);
         }
 
-        return new BrowseObjectResponse([], false);
+        return new BrowseObjectResponse([]);
     }
 
     /**
      * Internal framework callback used by the base type to browse member children.
      * Do not call or override this method directly.
      */
-    override async onBrowseMemberChildren(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
+    override async onBrowseMember(request: BrowseMemberRequest): Promise<BrowseMemberResponse> {
         const context = new ObjectServiceContext(request.objectId);
         const response = await this.onGetPropertySubElements(
             new GetPropertySubElementsRequest(context, request.childId),
         );
 
-        return this.processBrowseMemberChildren(response);
+        return this.processBrowseMember(response);
     }
 
     /**
@@ -195,7 +202,7 @@ export abstract class ElementListType extends ElementType {
         const subPropertyIds = new Set<UaChildId>();
 
         for (const item of request.variableIds) {
-            const childId = this.toChildId(item);
+            const childId = UaChildId.fromString(item);
             if (childId.subElementName === null) {
                 propertyIds.add(childId.id);
             } else {
@@ -224,7 +231,7 @@ export abstract class ElementListType extends ElementType {
         const subPropertyIdsAndValues = new Map<UaChildId, UaVariant>();
 
         for (const [childId, value] of request.variableValues) {
-            const variableId = this.toChildId(childId);
+            const variableId = UaChildId.fromString(childId);
             if (variableId.subElementName === null) {
                 propertyIdAndValues.set(variableId.id, value);
             } else {
@@ -257,8 +264,11 @@ export abstract class ElementListType extends ElementType {
         return this.processReadHistoryValueResponse(response);
     }
 
-    private processBrowseObjectChildrenObjectResponse(response: GetObjectElementListResponse): BrowseObjectResponse {
+    private processBrowseObjectResponse(
+        response: GetObjectElementListResponse,
+        additionalInfo: UaBrowseAdditionalInfo): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = this.supportedReferenceType();
 
         for (const item of response.elements) {
             childDescriptors.push(
@@ -268,21 +278,21 @@ export abstract class ElementListType extends ElementType {
                     item.id,
                     item.displayName,
                     item.typeId,
-                    UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true,
+                    referenceType
                 ),
             );
         }
 
-        return new BrowseObjectResponse(
-            childDescriptors,
-            response.containsMoreData,
-            UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK | UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK,
-        );
+        let taskMask = (response.containsMoreData) ? additionalInfo.taskCheckListMasks : additionalInfo.taskCheckListMasks & ~UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK;
+        let offset = (response.containsMoreData) ? additionalInfo.referenceOffset + response.elements.length : 0;
+        return new BrowseObjectResponse(childDescriptors, taskMask, offset);
     }
 
-    private processBrowseObjectChildrenPropertyResponse(response: GetPropertyElementListResponse): BrowseObjectResponse {
+    private processBrowsePropertyResponse(
+        response: GetPropertyElementListResponse,
+        additionalInfo: UaBrowseAdditionalInfo): BrowseObjectResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const referenceType = (response.isProperty) ? UaNodeId.from(ReferenceTypeIds.HasProperty) : UaNodeId.from(ReferenceTypeIds.HasComponent);
 
         for (const item of response.elements) {
             childDescriptors.push(
@@ -292,21 +302,20 @@ export abstract class ElementListType extends ElementType {
                     item.id,
                     item.displayName,
                     item.typeId,
-                    UaNodeId.from(ReferenceTypeIds.HasComponent),
-                    true,
+                    referenceType
                 ),
             );
         }
 
-        return new BrowseObjectResponse(
-            childDescriptors,
-            response.containsMoreData,
-            UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK | UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK,
-        );
+        let taskMask = (response.containsMoreData) ? additionalInfo.taskCheckListMasks : additionalInfo.taskCheckListMasks & ~UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK;
+        let offset = (response.containsMoreData) ? additionalInfo.referenceOffset + response.elements.length : 0;
+        return new BrowseObjectResponse(childDescriptors,taskMask,offset);
     }
 
-    private processBrowseMemberChildren(response: GetPropertySubElementsResponse): BrowseMemberResponse {
+    private processBrowseMember(response: GetPropertySubElementsResponse): BrowseMemberResponse {
         const childDescriptors: Array<UaReferenceDescriptor> = [];
+        const variableType = UaNodeId.from(VariableTypeIds.PropertyType);
+        const referenceType = UaNodeId.from(ReferenceTypeIds.HasProperty);
 
         for (const item of response.subElementNames) {
             childDescriptors.push(
@@ -315,9 +324,8 @@ export abstract class ElementListType extends ElementType {
                     NodeClass.Variable,
                     item,
                     new UaLocalizedText(item),
-                    UaNodeId.from(ReferenceTypeIds.HasProperty),
-                    UaNodeId.from(ReferenceTypeIds.HasProperty),
-                    true,
+                    variableType,
+                    referenceType
                 ),
             );
         }
@@ -341,10 +349,5 @@ export abstract class ElementListType extends ElementType {
 
     private processReadHistoryValueResponse(response: ReadPropertyHistoryValuesResponse): ReadHistoryDataResponse {
         return new ReadHistoryDataResponse(response.dataValues, response.containsMoreData);
-    }
-
-    private toChildId(value: string): UaChildId {
-        const [id, subElementName] = value.split("#", 2);
-        return new UaChildId(id, subElementName ?? null);
     }
 }

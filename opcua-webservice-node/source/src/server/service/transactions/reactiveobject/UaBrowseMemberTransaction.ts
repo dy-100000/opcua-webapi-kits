@@ -42,24 +42,22 @@ export class UaBrowseMemberTransaction extends UaBrowseTransaction {
                 return;
             }
 
-            const isMethod = this.memberId.methodNode;
             const request = new BrowseMemberRequest(
                 this.objectId,
                 this.memberId.path,
-                isMethod,
                 this.getItem(),
             );
 
-            const response = await this.objectType.onBrowseMemberChildren(request);
-            this.browseMemberChildResult(isMethod, response);
+            const response = await this.objectType.onBrowseMember(request);
+            this.browseMemberChildResult(response);
         } catch (error) {
             this.buildErrorResults(error);
         }
     }
 
-    private browseMemberChildResult(isMethodParent: boolean, response: BrowseMemberResponse): void {
+    private browseMemberChildResult(response: BrowseMemberResponse): void {
         for (const item of response.children) {
-            if (item.id.length === 0 || !item.isForward || item.nodeClass !== NodeClass.Variable) {
+            if (item.id.length === 0 || item.nodeClass !== NodeClass.Variable) {
                 continue;
             }
 
@@ -71,8 +69,7 @@ export class UaBrowseMemberTransaction extends UaBrowseTransaction {
 
             const memberIdentifier = new UaChildIdentifier(
                 this.memberId.path,
-                item.id,
-                isMethodParent,
+                item.id
             );
 
             const newIdentifier = new UaInstanceIdentifier(objectIdentifier, memberIdentifier);
@@ -89,7 +86,7 @@ export class UaBrowseMemberTransaction extends UaBrowseTransaction {
                     item.browseName,
                     item.displayName,
                     item.referenceTypeId,
-                    item.isForward,
+                    true,
                     UaExpandedNodeId.from(item.typeDefinitionId),
                 ),
             );

@@ -12,7 +12,7 @@ import {
 } from "../../../types";
 import { BrowseObjectRequest, BrowseObjectResponse } from "../../message";
 import { UaBrowseTransaction } from "../base/UaBrowseTransaction";
-import { ServiceContext } from "../../..";
+import { ServiceContext, UaReferenceType } from "../../..";
 
 export class UaBrowseObjectTransaction extends UaBrowseTransaction {
     private readonly objectType: UaReactiveObjectType;
@@ -47,27 +47,34 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
                     this.objectType.nodeId,
                     this.objectType.browseName,
                     this.objectType.displayName);
-                this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_DEFINITION_TASK);
+                this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_DEFINITION_TASK);
             }
 
-            this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_PARENT_TASK);
+            let referenceType = this.nodeManager.getNode(this.objectType.supportedReferenceType());
+            let includeSubtypes = this.getItem().includeSubtypes;
 
-            if (!this.objectType.isGetLinkSupported())
+            if (referenceType === null || referenceType.nodeClass != NodeClass.ReferenceType)
             {
-                this._additionalInfo = this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_LINK_TASK);
+                this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK);
+            } else {
+                if (includeSubtypes) {
+                    if (!(referenceType as UaReferenceType).isSubtypeOf(this.getItem().referenceTypeId))
+                    {
+                        this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK);
+                    }
+                } else {
+                    if (!referenceType.nodeId.equal(this.getItem().referenceTypeId))
+                    {
+                        this._additionalInfo.taskComplete(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK);
+                    }
+                }                
             }
 
-            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_LINK_TASK)) {
-                const response = await this.objectType.onBrowseObjectLinks(request);
-                this.browseObjectResult(response);
-                return;
-            }
-
-            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_OBJECT_TASK) ||
+            if (this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_RELATED_OBJECT_TASK) ||
                 this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_VARIABLE_TASK) ||
                 this._additionalInfo.isTaskRequired(UaBrowseAdditionalInfo.GET_CHILD_METHOD_TASK))
             {
-                const response = await this.objectType.onBrowseObjectChildren(request);
+                const response = await this.objectType.onBrowseObject(request);
                 this.browseObjectResult(response);
             }
         } catch (error) {
@@ -87,7 +94,7 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
                         item.browseName,
                         item.displayName,
                         item.referenceTypeId,
-                        item.isForward,
+                        true,
                         UaExpandedNodeId.from(UaNodeId.nullNodeId)));
 
                 continue;
@@ -119,8 +126,7 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
 
                 let memberIdentifier = new UaChildIdentifier(
                         item.id,
-                        null,
-                        item.nodeClass == NodeClass.Method);
+                        null);
 
                 newIdentifier = new UaInstanceIdentifier(
                         objectIdentifier,
@@ -138,15 +144,17 @@ export class UaBrowseObjectTransaction extends UaBrowseTransaction {
                     item.browseName,
                     item.displayName,
                     item.referenceTypeId,
-                    item.isForward,
+                    true,
                     UaExpandedNodeId.from(item.typeDefinitionId)));
         }
 
-        if (response.containsMoreData && 0 != this._references.length)
+        if (0 != response.remainingTasks && 0 != this._references.length)
         {
-            this._additionalInfo = this._additionalInfo.updateOffset(this._references.length);
+            this._additionalInfo.taskCheckListMasks = response.remainingTasks;
+            this._additionalInfo.referenceOffset = response.offset;
         } else {
-            this._additionalInfo = this._additionalInfo.taskComplete(response.taskMask);
+            this._additionalInfo.taskCheckListMasks = 0;
+            this._additionalInfo.referenceOffset = 0;
         }
 
         if (!this._additionalInfo.isAllTaskComplete())

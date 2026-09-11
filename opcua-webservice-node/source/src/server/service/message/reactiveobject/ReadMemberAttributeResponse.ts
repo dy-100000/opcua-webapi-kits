@@ -12,7 +12,6 @@ export class ReadMemberAttributeResponse {
     private readonly _valueRank: number | null;
     private readonly _accessLevel: number | null;
     private readonly _historizing: boolean | null;
-    private readonly _value: UaVariant | null;
 
     constructor(
         nodeClass: NodeClass,
@@ -33,7 +32,6 @@ export class ReadMemberAttributeResponse {
         this._valueRank = valueRank;
         this._accessLevel = accessLevel;
         this._historizing = historizing;
-        this._value = value;
     }
 
     get nodeClass(): NodeClass {
@@ -66,10 +64,6 @@ export class ReadMemberAttributeResponse {
 
     get historizing(): boolean | null {
         return this._historizing;
-    }
-
-    get value(): UaVariant | null {
-        return this._value;
     }
 
     static fromInstanceDeclaration(instanceDeclaration: UaInstanceNode): ReadMemberAttributeResponse {
