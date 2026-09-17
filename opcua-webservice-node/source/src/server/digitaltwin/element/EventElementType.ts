@@ -1,5 +1,5 @@
 import { StatusCodes} from "opcua-webapi";
-import { UaLocalizedText, UaVariant, UaReadEventDetails, UaError, makeUaStatusCode, UaHistoryEventFieldList } from "opcua-webapi-ts";
+import { UaLocalizedText, UaVariant, UaReadEventDetails, UaError, makeUaStatusCode, UaHistoryEventFieldList, UaNodeId, ReferenceTypeIds } from "opcua-webapi-ts";
 import { ElementType } from "./ElementType";
 import { EventType } from "../event/EventType";
 import { DigitalTwinSpace } from "../DigitalTwinSpace";
@@ -45,6 +45,14 @@ export abstract class EventElementType extends ElementType {
      * Override in subclasses to read historical events.
      */
     abstract onReadEvents(request: ReadEventsRequest): Promise<ReadEventsResponse>;
+
+    /**
+     * Internal framework callback used by the base type to get the reference type id for this repository.
+     * Do not call or override this method directly.
+     */
+    supportedReferenceType(): UaNodeId {
+        return UaNodeId.from(ReferenceTypeIds.HasComponent);
+    }
 
     /**
      * Internal framework callback used by the base type to read history events.

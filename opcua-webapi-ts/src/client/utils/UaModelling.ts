@@ -96,7 +96,7 @@ export class UaModelling {
         if (!objectType) return null;
         if (objectType.isObjectMemberRead) return objectType;
 
-        let typeMemberBrowser = new UaNodeBrowser(this._client, [objectType.nodeId], UaNodeId.from(ReferenceTypeIds.Aggregates), NodeClass.Object, false);
+        let typeMemberBrowser = new UaNodeBrowser(this._client, [objectType.nodeId], UaNodeId.from(ReferenceTypeIds.Aggregates), NodeClass.Object);
         
         await typeMemberBrowser.browse();
         let browseMemberResults = typeMemberBrowser.results();
@@ -114,7 +114,7 @@ export class UaModelling {
             memberObjectIds.push(node[1].nodeId);
         }
 
-        let modellingRuleBrowser = new UaNodeBrowser(this._client, memberObjectIds, UaNodeId.from(ReferenceTypeIds.HasModellingRule), NodeClass.Object, false);
+        let modellingRuleBrowser = new UaNodeBrowser(this._client, memberObjectIds, UaNodeId.from(ReferenceTypeIds.HasModellingRule), NodeClass.Object);
         await modellingRuleBrowser.browse();
         let browseModellingRuleResults = modellingRuleBrowser.results();
 
